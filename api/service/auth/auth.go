@@ -81,6 +81,7 @@ func (i impl) Register(ctx context.Context, registerInput model.RegisterInput) (
 func (i impl) Login(ctx context.Context, loginInput model.LoginInput) (*model.Jwt, error) {
 	// Check exist
 	user, err := i.repository.User().FindUserByEmail(ctx, loginInput.Email)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorIncorrect), "email"), utils.ErrorCodeNotFound)
