@@ -1,0 +1,5 @@
+postgres:
+  connectionString: $POSTGRES_CONNECTION_STRING
+app:
+  jwtSecret: $JWT_SECRET
+  jwtDuration: $JWT_DURATION

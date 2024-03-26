@@ -1,0 +1,4 @@
+type Mutation {
+    Signup(input: RegisterInput!):String!
+    Login(input: LoginInput!):JWT!
+}

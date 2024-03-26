@@ -1,0 +1,16 @@
+type JWT {
+    accessToken: String!
+    refreshToken: String!
+}
+
+input RegisterInput {
+    displayName:String!
+    email:String!
+    password:String!
+    confirmPassword:String!
+}
+
+input LoginInput{
+    email:String!
+    password:String!
+}

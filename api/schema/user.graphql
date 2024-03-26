@@ -1,0 +1,22 @@
+type User {
+    id: ID!
+    displayName: String!
+    email: String!
+    password: String!
+    isLocked: Boolean!
+    role:Role!
+}
+
+type CreateUserInput {
+    displayName: String!
+    email: String!
+    password: String!
+    role:Role
+}
+
+enum Role {
+    CUSTOMER
+    RECEPTIONIST
+    TICKET_MANAGER
+    ADMIN
+}
