@@ -1,26 +1,20 @@
 package api
 
 import (
+	"PopcornMovie/cmd/middleware"
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
 	"PopcornMovie/resolver"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/requestid"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"net/http"
 	"os"
 )
 
@@ -51,51 +45,28 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 
 			// GraphQL schema resolver handler.
 			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(db, validator, validationTranslator, logger, configs.AppConfig))
-			// Handler for GraphQL Playground
-			playgroundHandler := playground.Handler("GraphQL Playground", "/graphql")
 
-			// Handle a method not allowed.
-			app := fiber.New(fiber.Config{
-				Prefork:       true,
-				CaseSensitive: true,
-				StrictRouting: true,
-				AppName:       "PopcornMovieAPI",
-				ServerHeader:  "Go Fiber",
-			})
+			// Create a Gin router instance
+			app := gin.Default()
 
-			// Use middleware
+			// middleware
 			app.Use(
-				recover.New(),
-				requestid.New(requestid.Config{
-					Header: "X-Request-ID",
-					Generator: func() string {
-						return uuid.New().String()
-					},
-				}),
-				cors.New(cors.Config{
-					AllowOrigins: "*",
-					AllowMethods: "GET,POST,HEAD",
-					AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Request-ID",
-					//AllowCredentials: true,
-				}),
-				compress.New(compress.Config{
-					Level: compress.LevelBestCompression,
-				}),
+				middleware.CorsMiddleware(),
+				middleware.RequestCtxMiddleware(),
+				middleware.AuthMiddleware(configs.AppConfig.JWTSecret),
 			)
 
-			// Create a new GraphQL
-			app.Post("/graphql", adaptor.HTTPHandler(resolverHandler))
+			// Define the GraphQL endpoint
+			app.POST("/query", gin.WrapH(resolverHandler))
 
-			app.Options("/graphql", func(c *fiber.Ctx) error {
-				return c.SendStatus(http.StatusOK)
+			// Define the GraphQL Playground endpoint
+			app.GET("/", func(c *gin.Context) {
+				playground.Handler("GraphQL", "/query").ServeHTTP(c.Writer, c.Request)
 			})
-
-			// Enable playground for query/testing
-			app.Get("/", adaptor.HTTPHandler(playgroundHandler))
 
 			// Listen on port 8000
 			logger.Info("Listening on port: 8000")
-			if err := app.Listen(":8000"); err != nil {
+			if err := app.Run(":8000"); err != nil {
 				logger.Error("Get error from run server", zap.Error(err))
 			}
 		},

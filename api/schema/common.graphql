@@ -1,6 +1,8 @@
 directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @validation(constraints: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
-
+# new directive
+directive @auth on FIELD_DEFINITION
+directive @hasRole(roles: [Role!]) on FIELD_DEFINITION
 scalar Time
 scalar Map
 scalar Cursor

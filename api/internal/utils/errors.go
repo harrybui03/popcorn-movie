@@ -25,6 +25,7 @@ const (
 	ErrorMessageInternal        ErrorMessage = "Internal Server Error"
 	ErrorInUse                  ErrorMessage = "%s is already in use"
 	ErrorIncorrect              ErrorMessage = "%s is incorrect"
+	ErrorUnauthorizedRequest    ErrorMessage = "Unauthorized Request"
 )
 
 var (

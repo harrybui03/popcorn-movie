@@ -7,8 +7,6 @@ import (
 	"PopcornMovie/model"
 	"PopcornMovie/repository"
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"go.uber.org/zap"
 )
@@ -83,11 +81,8 @@ func (i impl) Login(ctx context.Context, loginInput model.LoginInput) (*model.Jw
 	user, err := i.repository.User().FindUserByEmail(ctx, loginInput.Email)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorIncorrect), "email"), utils.ErrorCodeNotFound)
-		}
 		i.logger.Error(err.Error())
-		return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+		return nil, utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorIncorrect), "email"), utils.ErrorCodeNotFound)
 	}
 	// validate password
 	err = utils.ComparePassword(user.Password, loginInput.Password)
@@ -103,6 +98,6 @@ func (i impl) Login(ctx context.Context, loginInput model.LoginInput) (*model.Jw
 	}
 
 	return &model.Jwt{
-		AccessToken: accessToken,
+		AccessToken: "Bearer" + accessToken,
 	}, nil
 }
