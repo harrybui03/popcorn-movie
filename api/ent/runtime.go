@@ -4,6 +4,8 @@ package ent
 
 import (
 	"PopcornMovie/ent/schema"
+	"PopcornMovie/ent/session"
+	"PopcornMovie/ent/theater"
 	"PopcornMovie/ent/user"
 	"time"
 
@@ -14,6 +16,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	sessionFields := schema.Session{}.Fields()
+	_ = sessionFields
+	// sessionDescCreatedAt is the schema descriptor for created_at field.
+	sessionDescCreatedAt := sessionFields[4].Descriptor()
+	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
+	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
+	theaterFields := schema.Theater{}.Fields()
+	_ = theaterFields
+	// theaterDescCreatedAt is the schema descriptor for created_at field.
+	theaterDescCreatedAt := theaterFields[4].Descriptor()
+	// theater.DefaultCreatedAt holds the default value on creation for the created_at field.
+	theater.DefaultCreatedAt = theaterDescCreatedAt.Default.(func() time.Time)
+	// theaterDescUpdatedAt is the schema descriptor for updated_at field.
+	theaterDescUpdatedAt := theaterFields[5].Descriptor()
+	// theater.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	theater.DefaultUpdatedAt = theaterDescUpdatedAt.Default.(func() time.Time)
+	// theater.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	theater.UpdateDefaultUpdatedAt = theaterDescUpdatedAt.UpdateDefault.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescDisplayname is the schema descriptor for displayname field.

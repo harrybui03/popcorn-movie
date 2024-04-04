@@ -6,7 +6,21 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
+
+type ChangePasswordInput struct {
+	OldPassword        string `json:"oldPassword"`
+	NewPassword        string `json:"newPassword"`
+	ConfirmNewPassword string `json:"confirmNewPassword"`
+}
+
+type CreateSessionInput struct {
+	ID           string    `json:"id"`
+	UserID       string    `json:"UserID"`
+	RefreshToken string    `json:"RefreshToken"`
+	ExpiresAt    time.Time `json:"ExpiresAt"`
+}
 
 type CreateUserInput struct {
 	DisplayName string `json:"displayName"`
@@ -50,6 +64,10 @@ type RegisterInput struct {
 	Email           string `json:"email"`
 	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirmPassword"`
+}
+
+type RenewAccessTokenInput struct {
+	RefreshToken string `json:"refreshToken"`
 }
 
 type User struct {

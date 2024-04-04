@@ -5,11 +5,13 @@ import (
 	"unicode"
 )
 
+// ValidateEmail use for validate email
 func ValidateEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
 }
 
+// ValidatePassword use for validate password
 func ValidatePassword(password string) bool {
 	var (
 		hasMinLen  = false

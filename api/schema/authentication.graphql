@@ -14,3 +14,13 @@ input LoginInput{
     email:String!
     password:String!
 }
+
+input RenewAccessTokenInput {
+    refreshToken: String!
+}
+
+input ChangePasswordInput {
+    oldPassword:String!
+    newPassword:String!
+    confirmNewPassword:String!
+}

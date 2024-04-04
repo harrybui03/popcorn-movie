@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -43,15 +43,20 @@ func NewPayload(userID uuid.UUID, role string, duration time.Duration) (*Payload
 }
 
 // CreateToken generate token with userId and role
-func CreateToken(userID uuid.UUID, role string, duration time.Duration, jwtSecret string) (string, error) {
+func CreateToken(userID uuid.UUID, role string, duration time.Duration, jwtSecret string) (string, error, *Payload) {
 	payload, err := NewPayload(userID, role, duration)
 	if err != nil {
-		return "", err
+		return "", errors.WithStack(err), nil
 	}
 
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodES256, payload)
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
-	return jwtToken.SignedString([]byte(jwtSecret))
+	token, err := jwtToken.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return "", errors.WithStack(err), nil
+	}
+
+	return token, nil, payload
 }
 
 // VerifyToken verify token

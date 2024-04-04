@@ -1,0 +1,6 @@
+type CreateSessionInput {
+    id:ID!
+    UserID: ID!
+    RefreshToken: String!
+    ExpiresAt: Time!
+}

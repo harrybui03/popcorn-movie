@@ -3,3 +3,4 @@ postgres:
 app:
   jwtSecret: $JWT_SECRET
   jwtDuration: $JWT_DURATION
+  refreshTokenDuration: $REFRESH_TOKEN_DURATION

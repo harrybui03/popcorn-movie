@@ -30,6 +30,26 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 	return jwt, nil
 }
 
+// RenewAccessToken is the resolver for the RenewAccessToken field.
+func (r *mutationResolver) RenewAccessToken(ctx context.Context, input model.RenewAccessTokenInput) (*model.Jwt, error) {
+	assessToken, err := r.service.Auth().RenewAccessToken(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return assessToken, err
+}
+
+// ChangePassword is the resolver for the ChangePassword field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (string, error) {
+	changePasswordStr, err := r.service.Auth().ChangePassword(ctx, input)
+	if err != nil {
+		return "", err
+	}
+
+	return changePasswordStr, err
+}
+
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 

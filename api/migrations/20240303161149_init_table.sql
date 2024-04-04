@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS "comments" (
 
 CREATE TABLE IF NOT EXISTS "rooms" (
                                        id uuid not null default uuid_generate_v4() PRIMARY KEY,
-    "room_number" uuid not null not null,
+    "room_number" integer not null not null,
     "theater_id" uuid not null,
     created_at timestamp without time zone default now(),
     updated_at timestamp without time zone default now()
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS "theaters" (
                                           id uuid not null default uuid_generate_v4() PRIMARY KEY,
     "address" varchar not null,
     "name" varchar not null,
-    "phoneNumber" varchar not null,
+    "phone_number" varchar not null,
     created_at timestamp without time zone default now(),
     updated_at timestamp without time zone default now()
     );
@@ -120,13 +120,21 @@ CREATE TABLE IF NOT EXISTS "foods" (
     );
 
 CREATE TABLE IF NOT EXISTS "food_order_lines" (
-                                                  id uuid not null default uuid_generate_v4() PRIMARY KEY,
+    id uuid not null default uuid_generate_v4() PRIMARY KEY,
     "quantity" integer not null,
     "food_id" uuid not null,
     "transaction_id" uuid not null,
     created_at timestamp without time zone default now(),
     updated_at timestamp without time zone default now()
-    );
+);
+
+CREATE TABLE IF NOT EXISTS "sessions" (
+    id uuid not null PRIMARY KEY,
+    "user_id" uuid NOT NULL,
+    "refresh_token" varchar NOT NULL,
+    "expires_at" timestamp NOT NULL,
+    created_at timestamp without time zone default now()
+);
 
 ALTER TABLE "transactions" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 

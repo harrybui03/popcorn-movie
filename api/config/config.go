@@ -12,6 +12,7 @@ type PostgresConfig struct {
 }
 
 type AppConfig struct {
-	JWTSecret   string        `mapstructure:"jwtSecret"`
-	JWTDuration time.Duration `mapstructure:"jwtDuration"`
+	JWTSecret            string        `mapstructure:"jwtSecret"`
+	JWTDuration          time.Duration `mapstructure:"jwtDuration"`
+	RefreshTokenDuration time.Duration `mapstructure:"refreshTokenDuration"`
 }
