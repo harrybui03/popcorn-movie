@@ -4,8 +4,10 @@ package ent
 
 import (
 	"PopcornMovie/ent/predicate"
+	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/theater"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -22,6 +24,7 @@ type TheaterQuery struct {
 	order      []theater.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Theater
+	withRooms  *RoomQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +59,28 @@ func (tq *TheaterQuery) Unique(unique bool) *TheaterQuery {
 func (tq *TheaterQuery) Order(o ...theater.OrderOption) *TheaterQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryRooms chains the current query on the "rooms" edge.
+func (tq *TheaterQuery) QueryRooms() *RoomQuery {
+	query := (&RoomClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(theater.Table, theater.FieldID, selector),
+			sqlgraph.To(room.Table, room.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, theater.RoomsTable, theater.RoomsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Theater entity from the query.
@@ -250,10 +275,22 @@ func (tq *TheaterQuery) Clone() *TheaterQuery {
 		order:      append([]theater.OrderOption{}, tq.order...),
 		inters:     append([]Interceptor{}, tq.inters...),
 		predicates: append([]predicate.Theater{}, tq.predicates...),
+		withRooms:  tq.withRooms.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
 	}
+}
+
+// WithRooms tells the query-builder to eager-load the nodes that are connected to
+// the "rooms" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TheaterQuery) WithRooms(opts ...func(*RoomQuery)) *TheaterQuery {
+	query := (&RoomClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withRooms = query
+	return tq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,8 +369,11 @@ func (tq *TheaterQuery) prepareQuery(ctx context.Context) error {
 
 func (tq *TheaterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Theater, error) {
 	var (
-		nodes = []*Theater{}
-		_spec = tq.querySpec()
+		nodes       = []*Theater{}
+		_spec       = tq.querySpec()
+		loadedTypes = [1]bool{
+			tq.withRooms != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Theater).scanValues(nil, columns)
@@ -341,6 +381,7 @@ func (tq *TheaterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Thea
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Theater{config: tq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -352,7 +393,46 @@ func (tq *TheaterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Thea
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := tq.withRooms; query != nil {
+		if err := tq.loadRooms(ctx, query, nodes,
+			func(n *Theater) { n.Edges.Rooms = []*Room{} },
+			func(n *Theater, e *Room) { n.Edges.Rooms = append(n.Edges.Rooms, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (tq *TheaterQuery) loadRooms(ctx context.Context, query *RoomQuery, nodes []*Theater, init func(*Theater), assign func(*Theater, *Room)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Theater)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Room(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(theater.RoomsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.theater_rooms
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "theater_rooms" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "theater_rooms" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (tq *TheaterQuery) sqlCount(ctx context.Context) (int, error) {

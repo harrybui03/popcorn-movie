@@ -8,6 +8,25 @@ import (
 )
 
 var (
+	// RoomsColumns holds the columns for the "rooms" table.
+	RoomsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "theater_rooms", Type: field.TypeUUID, Nullable: true},
+	}
+	// RoomsTable holds the schema information for the "rooms" table.
+	RoomsTable = &schema.Table{
+		Name:       "rooms",
+		Columns:    RoomsColumns,
+		PrimaryKey: []*schema.Column{RoomsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "rooms_theaters_rooms",
+				Columns:    []*schema.Column{RoomsColumns[1]},
+				RefColumns: []*schema.Column{TheatersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// SessionsColumns holds the columns for the "sessions" table.
 	SessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -56,6 +75,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		RoomsTable,
 		SessionsTable,
 		TheatersTable,
 		UsersTable,
@@ -63,4 +83,5 @@ var (
 )
 
 func init() {
+	RoomsTable.ForeignKeys[0].RefTable = TheatersTable
 }

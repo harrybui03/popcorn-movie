@@ -8,12 +8,21 @@ import (
 	graphql1 "PopcornMovie/graphql"
 	"PopcornMovie/model"
 	"context"
-	"fmt"
 )
 
-// GetUser is the resolver for the GetUser field.
-func (r *queryResolver) GetUser(ctx context.Context, input string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: GetUser - GetUser"))
+// Theaters is the resolver for the Theaters field.
+func (r *queryResolver) Theaters(ctx context.Context, input model.ListTheatersInput) (*model.ListTheatersOutput, error) {
+	listTheater, count, err := r.service.Theater().ListTheaters(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.ListTheatersOutput{
+		Data: listTheater,
+		Pagination: &model.PaginationOutput{
+			Total: count,
+		},
+	}, nil
 }
 
 // Query returns graphql1.QueryResolver implementation.

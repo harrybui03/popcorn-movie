@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/session"
 	"PopcornMovie/ent/theater"
 	"PopcornMovie/ent/user"
@@ -75,6 +76,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			room.Table:    room.ValidColumn,
 			session.Table: session.ValidColumn,
 			theater.Table: theater.ValidColumn,
 			user.Table:    user.ValidColumn,

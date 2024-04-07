@@ -12,16 +12,11 @@ enum OrderDirection {
     DESC
 }
 
-type PageInfo {
-    hasNextPage: Boolean!
-    hasPreviousPage: Boolean!
-    startCursor: Cursor
-    endCursor: Cursor
+input PaginationInput {
+    page: Int!
+    limit: Int!
 }
 
-input PaginationInput {
-    after: Cursor
-    before: Cursor
-    first: Int
-    last: Int
+type PaginationOutput {
+    total: Int!
 }

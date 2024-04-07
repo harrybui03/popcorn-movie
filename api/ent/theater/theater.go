@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -23,8 +24,17 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeRooms holds the string denoting the rooms edge name in mutations.
+	EdgeRooms = "rooms"
 	// Table holds the table name of the theater in the database.
 	Table = "theaters"
+	// RoomsTable is the table that holds the rooms relation/edge.
+	RoomsTable = "rooms"
+	// RoomsInverseTable is the table name for the Room entity.
+	// It exists in this package in order to avoid circular dependency with the "room" package.
+	RoomsInverseTable = "rooms"
+	// RoomsColumn is the table column denoting the rooms relation/edge.
+	RoomsColumn = "theater_rooms"
 )
 
 // Columns holds all SQL columns for theater fields.
@@ -87,4 +97,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByRoomsCount orders the results by rooms count.
+func ByRoomsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoomsStep(), opts...)
+	}
+}
+
+// ByRooms orders the results by rooms terms.
+func ByRooms(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoomsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newRoomsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoomsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, RoomsTable, RoomsColumn),
+	)
 }

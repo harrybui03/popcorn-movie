@@ -5,6 +5,7 @@ import (
 	"PopcornMovie/ent/user"
 	"PopcornMovie/model"
 	"context"
+	"github.com/google/uuid"
 )
 
 // Repository is the interface for the user repository.
@@ -13,17 +14,12 @@ type Repository interface {
 	Create(ctx context.Context, input model.CreateUserInput) (*ent.User, error)
 
 	FindUserByEmail(ctx context.Context, email string) (*ent.User, error)
+
+	FindUserByID(ctx context.Context, id uuid.UUID) (*ent.User, error)
 }
 
 type impl struct {
 	client *ent.Client
-}
-
-// New creates a new user repository.
-func New(client *ent.Client) Repository {
-	return &impl{
-		client: client,
-	}
 }
 
 func (i impl) Create(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
@@ -48,4 +44,20 @@ func (i impl) FindUserByEmail(ctx context.Context, email string) (*ent.User, err
 	}
 
 	return userRecord, err
+}
+
+func (i impl) FindUserByID(ctx context.Context, id uuid.UUID) (*ent.User, error) {
+	userRecord, err := i.client.User.Query().Where(user.ID(id)).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return userRecord, err
+}
+
+// New creates a new user repository.
+func New(client *ent.Client) Repository {
+	return &impl{
+		client: client,
+	}
 }

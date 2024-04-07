@@ -8,24 +8,24 @@ import (
 	"time"
 )
 
-type Theater struct {
+// Room schema
+type Room struct {
 	ent.Schema
 }
 
-func (Theater) Fields() []ent.Field {
+// Field of Room
+func (Room) Field() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Immutable().Unique(),
-		field.String("address"),
-		field.String("name"),
-		field.String("phone_number"),
+		field.Int("room_number"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
-// Edges of the Theater.
-func (Theater) Edges() []ent.Edge {
+// Edges of Room
+func (Room) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("rooms", Room.Type),
+		edge.From("theater", Theater.Type).Ref("rooms").Unique(),
 	}
 }

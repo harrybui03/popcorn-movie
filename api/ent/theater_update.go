@@ -4,6 +4,7 @@ package ent
 
 import (
 	"PopcornMovie/ent/predicate"
+	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/theater"
 	"context"
 	"errors"
@@ -76,9 +77,45 @@ func (tu *TheaterUpdate) SetUpdatedAt(t time.Time) *TheaterUpdate {
 	return tu
 }
 
+// AddRoomIDs adds the "rooms" edge to the Room entity by IDs.
+func (tu *TheaterUpdate) AddRoomIDs(ids ...int) *TheaterUpdate {
+	tu.mutation.AddRoomIDs(ids...)
+	return tu
+}
+
+// AddRooms adds the "rooms" edges to the Room entity.
+func (tu *TheaterUpdate) AddRooms(r ...*Room) *TheaterUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tu.AddRoomIDs(ids...)
+}
+
 // Mutation returns the TheaterMutation object of the builder.
 func (tu *TheaterUpdate) Mutation() *TheaterMutation {
 	return tu.mutation
+}
+
+// ClearRooms clears all "rooms" edges to the Room entity.
+func (tu *TheaterUpdate) ClearRooms() *TheaterUpdate {
+	tu.mutation.ClearRooms()
+	return tu
+}
+
+// RemoveRoomIDs removes the "rooms" edge to Room entities by IDs.
+func (tu *TheaterUpdate) RemoveRoomIDs(ids ...int) *TheaterUpdate {
+	tu.mutation.RemoveRoomIDs(ids...)
+	return tu
+}
+
+// RemoveRooms removes "rooms" edges to Room entities.
+func (tu *TheaterUpdate) RemoveRooms(r ...*Room) *TheaterUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tu.RemoveRoomIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -137,6 +174,51 @@ func (tu *TheaterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.UpdatedAt(); ok {
 		_spec.SetField(theater.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if tu.mutation.RoomsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RemovedRoomsIDs(); len(nodes) > 0 && !tu.mutation.RoomsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.RoomsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -206,9 +288,45 @@ func (tuo *TheaterUpdateOne) SetUpdatedAt(t time.Time) *TheaterUpdateOne {
 	return tuo
 }
 
+// AddRoomIDs adds the "rooms" edge to the Room entity by IDs.
+func (tuo *TheaterUpdateOne) AddRoomIDs(ids ...int) *TheaterUpdateOne {
+	tuo.mutation.AddRoomIDs(ids...)
+	return tuo
+}
+
+// AddRooms adds the "rooms" edges to the Room entity.
+func (tuo *TheaterUpdateOne) AddRooms(r ...*Room) *TheaterUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tuo.AddRoomIDs(ids...)
+}
+
 // Mutation returns the TheaterMutation object of the builder.
 func (tuo *TheaterUpdateOne) Mutation() *TheaterMutation {
 	return tuo.mutation
+}
+
+// ClearRooms clears all "rooms" edges to the Room entity.
+func (tuo *TheaterUpdateOne) ClearRooms() *TheaterUpdateOne {
+	tuo.mutation.ClearRooms()
+	return tuo
+}
+
+// RemoveRoomIDs removes the "rooms" edge to Room entities by IDs.
+func (tuo *TheaterUpdateOne) RemoveRoomIDs(ids ...int) *TheaterUpdateOne {
+	tuo.mutation.RemoveRoomIDs(ids...)
+	return tuo
+}
+
+// RemoveRooms removes "rooms" edges to Room entities.
+func (tuo *TheaterUpdateOne) RemoveRooms(r ...*Room) *TheaterUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tuo.RemoveRoomIDs(ids...)
 }
 
 // Where appends a list predicates to the TheaterUpdate builder.
@@ -297,6 +415,51 @@ func (tuo *TheaterUpdateOne) sqlSave(ctx context.Context) (_node *Theater, err e
 	}
 	if value, ok := tuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(theater.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if tuo.mutation.RoomsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RemovedRoomsIDs(); len(nodes) > 0 && !tuo.mutation.RoomsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.RoomsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Theater{config: tuo.config}
 	_spec.Assign = _node.assignValues

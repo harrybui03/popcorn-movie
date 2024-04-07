@@ -44,7 +44,7 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 			}
 
 			// GraphQL schema resolver handler.
-			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(db, validator, validationTranslator, logger, configs.AppConfig))
+			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(db, logger, configs.AppConfig))
 
 			// Create a Gin router instance
 			app := gin.Default()

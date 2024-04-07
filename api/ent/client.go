@@ -11,6 +11,7 @@ import (
 
 	"PopcornMovie/ent/migrate"
 
+	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/session"
 	"PopcornMovie/ent/theater"
 	"PopcornMovie/ent/user"
@@ -18,6 +19,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -26,6 +28,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Room is the client for interacting with the Room builders.
+	Room *RoomClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
 	// Theater is the client for interacting with the Theater builders.
@@ -43,6 +47,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Room = NewRoomClient(c.config)
 	c.Session = NewSessionClient(c.config)
 	c.Theater = NewTheaterClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -138,6 +143,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
+		Room:    NewRoomClient(cfg),
 		Session: NewSessionClient(cfg),
 		Theater: NewTheaterClient(cfg),
 		User:    NewUserClient(cfg),
@@ -160,6 +166,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
+		Room:    NewRoomClient(cfg),
 		Session: NewSessionClient(cfg),
 		Theater: NewTheaterClient(cfg),
 		User:    NewUserClient(cfg),
@@ -169,7 +176,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Session.
+//		Room.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -191,6 +198,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Room.Use(hooks...)
 	c.Session.Use(hooks...)
 	c.Theater.Use(hooks...)
 	c.User.Use(hooks...)
@@ -199,6 +207,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Room.Intercept(interceptors...)
 	c.Session.Intercept(interceptors...)
 	c.Theater.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
@@ -207,6 +216,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *RoomMutation:
+		return c.Room.mutate(ctx, m)
 	case *SessionMutation:
 		return c.Session.mutate(ctx, m)
 	case *TheaterMutation:
@@ -215,6 +226,155 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// RoomClient is a client for the Room schema.
+type RoomClient struct {
+	config
+}
+
+// NewRoomClient returns a client for the Room from the given config.
+func NewRoomClient(c config) *RoomClient {
+	return &RoomClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `room.Hooks(f(g(h())))`.
+func (c *RoomClient) Use(hooks ...Hook) {
+	c.hooks.Room = append(c.hooks.Room, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `room.Intercept(f(g(h())))`.
+func (c *RoomClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Room = append(c.inters.Room, interceptors...)
+}
+
+// Create returns a builder for creating a Room entity.
+func (c *RoomClient) Create() *RoomCreate {
+	mutation := newRoomMutation(c.config, OpCreate)
+	return &RoomCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Room entities.
+func (c *RoomClient) CreateBulk(builders ...*RoomCreate) *RoomCreateBulk {
+	return &RoomCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *RoomClient) MapCreateBulk(slice any, setFunc func(*RoomCreate, int)) *RoomCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &RoomCreateBulk{err: fmt.Errorf("calling to RoomClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*RoomCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &RoomCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Room.
+func (c *RoomClient) Update() *RoomUpdate {
+	mutation := newRoomMutation(c.config, OpUpdate)
+	return &RoomUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *RoomClient) UpdateOne(r *Room) *RoomUpdateOne {
+	mutation := newRoomMutation(c.config, OpUpdateOne, withRoom(r))
+	return &RoomUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *RoomClient) UpdateOneID(id int) *RoomUpdateOne {
+	mutation := newRoomMutation(c.config, OpUpdateOne, withRoomID(id))
+	return &RoomUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Room.
+func (c *RoomClient) Delete() *RoomDelete {
+	mutation := newRoomMutation(c.config, OpDelete)
+	return &RoomDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *RoomClient) DeleteOne(r *Room) *RoomDeleteOne {
+	return c.DeleteOneID(r.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *RoomClient) DeleteOneID(id int) *RoomDeleteOne {
+	builder := c.Delete().Where(room.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &RoomDeleteOne{builder}
+}
+
+// Query returns a query builder for Room.
+func (c *RoomClient) Query() *RoomQuery {
+	return &RoomQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeRoom},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Room entity by its id.
+func (c *RoomClient) Get(ctx context.Context, id int) (*Room, error) {
+	return c.Query().Where(room.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *RoomClient) GetX(ctx context.Context, id int) *Room {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTheater queries the theater edge of a Room.
+func (c *RoomClient) QueryTheater(r *Room) *TheaterQuery {
+	query := (&TheaterClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(room.Table, room.FieldID, id),
+			sqlgraph.To(theater.Table, theater.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, room.TheaterTable, room.TheaterColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *RoomClient) Hooks() []Hook {
+	return c.hooks.Room
+}
+
+// Interceptors returns the client interceptors.
+func (c *RoomClient) Interceptors() []Interceptor {
+	return c.inters.Room
+}
+
+func (c *RoomClient) mutate(ctx context.Context, m *RoomMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&RoomCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&RoomUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&RoomUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&RoomDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Room mutation op: %q", m.Op())
 	}
 }
 
@@ -459,6 +619,22 @@ func (c *TheaterClient) GetX(ctx context.Context, id uuid.UUID) *Theater {
 	return obj
 }
 
+// QueryRooms queries the rooms edge of a Theater.
+func (c *TheaterClient) QueryRooms(t *Theater) *RoomQuery {
+	query := (&RoomClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(theater.Table, theater.FieldID, id),
+			sqlgraph.To(room.Table, room.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, theater.RoomsTable, theater.RoomsColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TheaterClient) Hooks() []Hook {
 	return c.hooks.Theater
@@ -620,9 +796,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Session, Theater, User []ent.Hook
+		Room, Session, Theater, User []ent.Hook
 	}
 	inters struct {
-		Session, Theater, User []ent.Interceptor
+		Room, Session, Theater, User []ent.Interceptor
 	}
 )

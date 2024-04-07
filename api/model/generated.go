@@ -3,6 +3,7 @@
 package model
 
 import (
+	"PopcornMovie/ent"
 	"fmt"
 	"io"
 	"strconv"
@@ -34,6 +35,21 @@ type Jwt struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type ListTheaterFilter struct {
+	Name    string `json:"name"`
+	Address string `json:"address"`
+}
+
+type ListTheatersInput struct {
+	Pagination *PaginationInput   `json:"pagination,omitempty"`
+	Filter     *ListTheaterFilter `json:"filter,omitempty"`
+}
+
+type ListTheatersOutput struct {
+	Data       []*ent.Theater    `json:"data,omitempty"`
+	Pagination *PaginationOutput `json:"pagination,omitempty"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -42,18 +58,13 @@ type LoginInput struct {
 type Mutation struct {
 }
 
-type PageInfo struct {
-	HasNextPage     bool    `json:"hasNextPage"`
-	HasPreviousPage bool    `json:"hasPreviousPage"`
-	StartCursor     *string `json:"startCursor,omitempty"`
-	EndCursor       *string `json:"endCursor,omitempty"`
+type PaginationInput struct {
+	Page  int `json:"page"`
+	Limit int `json:"limit"`
 }
 
-type PaginationInput struct {
-	After  *string `json:"after,omitempty"`
-	Before *string `json:"before,omitempty"`
-	First  *int    `json:"first,omitempty"`
-	Last   *int    `json:"last,omitempty"`
+type PaginationOutput struct {
+	Total int `json:"total"`
 }
 
 type Query struct {
@@ -68,15 +79,6 @@ type RegisterInput struct {
 
 type RenewAccessTokenInput struct {
 	RefreshToken string `json:"refreshToken"`
-}
-
-type User struct {
-	ID          string `json:"id"`
-	DisplayName string `json:"displayName"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	IsLocked    bool   `json:"isLocked"`
-	Role        Role   `json:"role"`
 }
 
 type OrderDirection string

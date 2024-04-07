@@ -9,3 +9,12 @@ func Contains[T comparable](elems []T, v T) bool {
 	}
 	return false
 }
+
+// CalculateOffset  use for paginate
+func CalculateOffset(page, limit int) int {
+	if page == 0 {
+		page = 1
+	}
+
+	return (page - 1) * limit
+}

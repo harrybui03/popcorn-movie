@@ -10,8 +10,6 @@ import (
 	"PopcornMovie/service"
 	"context"
 	"github.com/99designs/gqlgen/graphql"
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +23,7 @@ type Resolver struct {
 }
 
 // NewExecutableSchema creates an ExecutableSchema instance.
-func NewExecutableSchema(client *ent.Client, validator *validator.Validate, validationTranslator ut.Translator, logger *zap.Logger, appConfig config.AppConfig) graphql.ExecutableSchema {
+func NewExecutableSchema(client *ent.Client, logger *zap.Logger, appConfig config.AppConfig) graphql.ExecutableSchema {
 	service := service.New(client, logger, appConfig)
 
 	config := generated.Config{

@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/theater"
 	"context"
 	"errors"
@@ -71,6 +72,21 @@ func (tc *TheaterCreate) SetNillableUpdatedAt(t *time.Time) *TheaterCreate {
 func (tc *TheaterCreate) SetID(u uuid.UUID) *TheaterCreate {
 	tc.mutation.SetID(u)
 	return tc
+}
+
+// AddRoomIDs adds the "rooms" edge to the Room entity by IDs.
+func (tc *TheaterCreate) AddRoomIDs(ids ...int) *TheaterCreate {
+	tc.mutation.AddRoomIDs(ids...)
+	return tc
+}
+
+// AddRooms adds the "rooms" edges to the Room entity.
+func (tc *TheaterCreate) AddRooms(r ...*Room) *TheaterCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return tc.AddRoomIDs(ids...)
 }
 
 // Mutation returns the TheaterMutation object of the builder.
@@ -189,6 +205,22 @@ func (tc *TheaterCreate) createSpec() (*Theater, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.UpdatedAt(); ok {
 		_spec.SetField(theater.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := tc.mutation.RoomsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   theater.RoomsTable,
+			Columns: []string{theater.RoomsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

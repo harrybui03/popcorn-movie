@@ -1,0 +1,21 @@
+type Theater {
+    id: ID!
+    address: String!
+    name: String!
+    phoneNumber: String!
+}
+
+input ListTheaterFilter{
+    name:String!
+    address:String!
+}
+
+input ListTheatersInput {
+    pagination: PaginationInput
+    filter: ListTheaterFilter
+}
+
+type ListTheatersOutput{
+    data: [Theater]
+    pagination: PaginationOutput
+}

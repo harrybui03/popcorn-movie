@@ -9,6 +9,7 @@ import (
 type Repository interface {
 	TheaterQuery() *ent.TheaterQuery
 	GetAllTheaters(ctx context.Context, query *ent.TheaterQuery) ([]*ent.Theater, error)
+	CountTheaters(ctx context.Context, query *ent.TheaterQuery) (*int, error)
 }
 
 func (i impl) TheaterQuery() *ent.TheaterQuery {
@@ -26,6 +27,15 @@ func (i impl) GetAllTheaters(ctx context.Context, query *ent.TheaterQuery) ([]*e
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) CountTheaters(ctx context.Context, query *ent.TheaterQuery) (*int, error) {
+	count, err := query.Count(ctx)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &count, nil
 }
 
 func New(client *ent.Client) Repository {
