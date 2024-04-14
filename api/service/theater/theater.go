@@ -38,7 +38,7 @@ func (i impl) ListTheaters(ctx context.Context, input model.ListTheatersInput) (
 	count, err := i.repository.Theater().CountTheaters(ctx, query)
 	if err != nil {
 		i.logger.Error(err.Error())
-		return nil, 0, err
+		return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
 	}
 
 	if input.Pagination != nil {
@@ -46,10 +46,12 @@ func (i impl) ListTheaters(ctx context.Context, input model.ListTheatersInput) (
 		query.Limit(input.Pagination.Limit).Offset(offset)
 	}
 
+	query.Order(ent.Desc(theater.FieldUpdatedAt))
+
 	theaters, err := i.repository.Theater().GetAllTheaters(ctx, query)
 	if err != nil {
 		i.logger.Error(err.Error())
-		return nil, 0, err
+		return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
 	}
 
 	return theaters, *count, nil

@@ -7,6 +7,7 @@ import (
 	"PopcornMovie/ent/theater"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -15,9 +16,15 @@ import (
 
 // Room is the model entity for the Room schema.
 type Room struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// RoomNumber holds the value of the "room_number" field.
+	RoomNumber int `json:"room_number,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoomQuery when eager-loading is set.
 	Edges         RoomEdges `json:"edges"`
@@ -50,8 +57,12 @@ func (*Room) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case room.FieldID:
+		case room.FieldRoomNumber:
 			values[i] = new(sql.NullInt64)
+		case room.FieldCreatedAt, room.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
+		case room.FieldID:
+			values[i] = new(uuid.UUID)
 		case room.ForeignKeys[0]: // theater_rooms
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
@@ -70,11 +81,29 @@ func (r *Room) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case room.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				r.ID = *value
 			}
-			r.ID = int(value.Int64)
+		case room.FieldRoomNumber:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field room_number", values[i])
+			} else if value.Valid {
+				r.RoomNumber = int(value.Int64)
+			}
+		case room.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				r.CreatedAt = value.Time
+			}
+		case room.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				r.UpdatedAt = value.Time
+			}
 		case room.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field theater_rooms", values[i])
@@ -122,7 +151,15 @@ func (r *Room) Unwrap() *Room {
 func (r *Room) String() string {
 	var builder strings.Builder
 	builder.WriteString("Room(")
-	builder.WriteString(fmt.Sprintf("id=%v", r.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
+	builder.WriteString("room_number=")
+	builder.WriteString(fmt.Sprintf("%v", r.RoomNumber))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(r.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(r.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

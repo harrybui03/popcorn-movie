@@ -10,7 +10,10 @@ import (
 var (
 	// RoomsColumns holds the columns for the "rooms" table.
 	RoomsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "room_number", Type: field.TypeInt},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "theater_rooms", Type: field.TypeUUID, Nullable: true},
 	}
 	// RoomsTable holds the schema information for the "rooms" table.
@@ -21,7 +24,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "rooms_theaters_rooms",
-				Columns:    []*schema.Column{RoomsColumns[1]},
+				Columns:    []*schema.Column{RoomsColumns[4]},
 				RefColumns: []*schema.Column{TheatersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

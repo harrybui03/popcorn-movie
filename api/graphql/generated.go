@@ -42,6 +42,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Room() RoomResolver
 	Theater() TheaterResolver
 	User() UserResolver
 }
@@ -72,6 +73,11 @@ type ComplexityRoot struct {
 		RefreshToken func(childComplexity int) int
 	}
 
+	ListRoomOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
 	ListTheatersOutput struct {
 		Data       func(childComplexity int) int
 		Pagination func(childComplexity int) int
@@ -89,7 +95,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Rooms    func(childComplexity int, input model.ListRoomInput) int
 		Theaters func(childComplexity int, input model.ListTheatersInput) int
+	}
+
+	Room struct {
+		ID         func(childComplexity int) int
+		RoomNumber func(childComplexity int) int
+		Theater    func(childComplexity int) int
 	}
 
 	Theater struct {
@@ -117,6 +130,12 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Theaters(ctx context.Context, input model.ListTheatersInput) (*model.ListTheatersOutput, error)
+	Rooms(ctx context.Context, input model.ListRoomInput) (*model.ListRoomOutput, error)
+}
+type RoomResolver interface {
+	ID(ctx context.Context, obj *ent.Room) (string, error)
+
+	Theater(ctx context.Context, obj *ent.Room) (*ent.Theater, error)
 }
 type TheaterResolver interface {
 	ID(ctx context.Context, obj *ent.Theater) (string, error)
@@ -216,6 +235,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.JWT.RefreshToken(childComplexity), true
 
+	case "ListRoomOutput.data":
+		if e.complexity.ListRoomOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListRoomOutput.Data(childComplexity), true
+
+	case "ListRoomOutput.pagination":
+		if e.complexity.ListRoomOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListRoomOutput.Pagination(childComplexity), true
+
 	case "ListTheatersOutput.data":
 		if e.complexity.ListTheatersOutput.Data == nil {
 			break
@@ -285,6 +318,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PaginationOutput.Total(childComplexity), true
 
+	case "Query.Rooms":
+		if e.complexity.Query.Rooms == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Rooms_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Rooms(childComplexity, args["input"].(model.ListRoomInput)), true
+
 	case "Query.Theaters":
 		if e.complexity.Query.Theaters == nil {
 			break
@@ -296,6 +341,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Theaters(childComplexity, args["input"].(model.ListTheatersInput)), true
+
+	case "Room.id":
+		if e.complexity.Room.ID == nil {
+			break
+		}
+
+		return e.complexity.Room.ID(childComplexity), true
+
+	case "Room.roomNumber":
+		if e.complexity.Room.RoomNumber == nil {
+			break
+		}
+
+		return e.complexity.Room.RoomNumber(childComplexity), true
+
+	case "Room.theater":
+		if e.complexity.Room.Theater == nil {
+			break
+		}
+
+		return e.complexity.Room.Theater(childComplexity), true
 
 	case "Theater.address":
 		if e.complexity.Theater.Address == nil {
@@ -376,6 +442,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputChangePasswordInput,
+		ec.unmarshalInputListRoomFilter,
+		ec.unmarshalInputListRoomInput,
 		ec.unmarshalInputListTheaterFilter,
 		ec.unmarshalInputListTheatersInput,
 		ec.unmarshalInputLoginInput,
@@ -536,6 +604,26 @@ type PaginationOutput {
 }`, BuiltIn: false},
 	{Name: "../schema/query.graphql", Input: `type Query {
     Theaters(input: ListTheatersInput!): ListTheatersOutput!
+    Rooms(input: ListRoomInput!):ListRoomOutput!
+}`, BuiltIn: false},
+	{Name: "../schema/room.graphql", Input: `type Room {
+    id:ID!
+    roomNumber:Int!
+    theater:Theater!
+}
+
+input ListRoomFilter {
+    theaterID: ID!
+}
+
+input ListRoomInput {
+    filter: ListRoomFilter
+    pagination: PaginationInput
+}
+
+type ListRoomOutput {
+    data: [Room]
+    pagination: PaginationOutput
 }`, BuiltIn: false},
 	{Name: "../schema/session.graphql", Input: `type CreateSessionInput {
     id:ID!
@@ -676,6 +764,21 @@ func (ec *executionContext) field_Mutation_Signup_args(ctx context.Context, rawA
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNRegisterInput2PopcornMovieᚋmodelᚐRegisterInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Rooms_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListRoomInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListRoomInput2PopcornMovieᚋmodelᚐListRoomInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1189,6 +1292,100 @@ func (ec *executionContext) fieldContext_JWT_refreshToken(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _ListRoomOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListRoomOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListRoomOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Room)
+	fc.Result = res
+	return ec.marshalORoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListRoomOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListRoomOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Room_id(ctx, field)
+			case "roomNumber":
+				return ec.fieldContext_Room_roomNumber(ctx, field)
+			case "theater":
+				return ec.fieldContext_Room_theater(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Room", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListRoomOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListRoomOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListRoomOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalOPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListRoomOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListRoomOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ListTheatersOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListTheatersOutput) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ListTheatersOutput_data(ctx, field)
 	if err != nil {
@@ -1662,6 +1859,67 @@ func (ec *executionContext) fieldContext_Query_Theaters(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_Rooms(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_Rooms(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Rooms(rctx, fc.Args["input"].(model.ListRoomInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListRoomOutput)
+	fc.Result = res
+	return ec.marshalNListRoomOutput2ᚖPopcornMovieᚋmodelᚐListRoomOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_Rooms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListRoomOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListRoomOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListRoomOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_Rooms_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -1786,6 +2044,148 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Room_id(ctx context.Context, field graphql.CollectedField, obj *ent.Room) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Room_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Room().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Room_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Room",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Room_roomNumber(ctx context.Context, field graphql.CollectedField, obj *ent.Room) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Room_roomNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RoomNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Room_roomNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Room",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Room_theater(ctx context.Context, field graphql.CollectedField, obj *ent.Room) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Room_theater(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Room().Theater(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Theater)
+	fc.Result = res
+	return ec.marshalNTheater2ᚖPopcornMovieᚋentᚐTheater(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Room_theater(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Room",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Theater_id(ctx, field)
+			case "address":
+				return ec.fieldContext_Theater_address(ctx, field)
+			case "name":
+				return ec.fieldContext_Theater_name(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Theater_phoneNumber(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Theater", field.Name)
 		},
 	}
 	return fc, nil
@@ -4045,6 +4445,67 @@ func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputListRoomFilter(ctx context.Context, obj interface{}) (model.ListRoomFilter, error) {
+	var it model.ListRoomFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"theaterID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "theaterID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("theaterID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TheaterID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListRoomInput(ctx context.Context, obj interface{}) (model.ListRoomInput, error) {
+	var it model.ListRoomInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filter", "pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalOListRoomFilter2ᚖPopcornMovieᚋmodelᚐListRoomFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = data
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputListTheaterFilter(ctx context.Context, obj interface{}) (model.ListTheaterFilter, error) {
 	var it model.ListTheaterFilter
 	asMap := map[string]interface{}{}
@@ -4413,6 +4874,44 @@ func (ec *executionContext) _JWT(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var listRoomOutputImplementors = []string{"ListRoomOutput"}
+
+func (ec *executionContext) _ListRoomOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListRoomOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listRoomOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListRoomOutput")
+		case "data":
+			out.Values[i] = ec._ListRoomOutput_data(ctx, field, obj)
+		case "pagination":
+			out.Values[i] = ec._ListRoomOutput_pagination(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var listTheatersOutputImplementors = []string{"ListTheatersOutput"}
 
 func (ec *executionContext) _ListTheatersOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListTheatersOutput) graphql.Marshaler {
@@ -4601,6 +5100,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "Rooms":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Rooms(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "__type":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___type(ctx, field)
@@ -4609,6 +5130,117 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var roomImplementors = []string{"Room"}
+
+func (ec *executionContext) _Room(ctx context.Context, sel ast.SelectionSet, obj *ent.Room) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, roomImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Room")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Room_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "roomNumber":
+			out.Values[i] = ec._Room_roomNumber(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "theater":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Room_theater(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5233,6 +5865,25 @@ func (ec *executionContext) marshalNJWT2ᚖPopcornMovieᚋmodelᚐJwt(ctx contex
 	return ec._JWT(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNListRoomInput2PopcornMovieᚋmodelᚐListRoomInput(ctx context.Context, v interface{}) (model.ListRoomInput, error) {
+	res, err := ec.unmarshalInputListRoomInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListRoomOutput2PopcornMovieᚋmodelᚐListRoomOutput(ctx context.Context, sel ast.SelectionSet, v model.ListRoomOutput) graphql.Marshaler {
+	return ec._ListRoomOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListRoomOutput2ᚖPopcornMovieᚋmodelᚐListRoomOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListRoomOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListRoomOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNListTheatersInput2PopcornMovieᚋmodelᚐListTheatersInput(ctx context.Context, v interface{}) (model.ListTheatersInput, error) {
 	res, err := ec.unmarshalInputListTheatersInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5290,6 +5941,20 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTheater2PopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v ent.Theater) graphql.Marshaler {
+	return ec._Theater(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTheater2ᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v *ent.Theater) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Theater(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
@@ -5586,6 +6251,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOListRoomFilter2ᚖPopcornMovieᚋmodelᚐListRoomFilter(ctx context.Context, v interface{}) (*model.ListRoomFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputListRoomFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOListTheaterFilter2ᚖPopcornMovieᚋmodelᚐListTheaterFilter(ctx context.Context, v interface{}) (*model.ListTheaterFilter, error) {
 	if v == nil {
 		return nil, nil
@@ -5690,6 +6363,54 @@ func (ec *executionContext) marshalORole2ᚖPopcornMovieᚋmodelᚐRole(ctx cont
 		return graphql.Null
 	}
 	return v
+}
+
+func (ec *executionContext) marshalORoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v []*ent.Room) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalORoom2ᚖPopcornMovieᚋentᚐRoom(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalORoom2ᚖPopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v *ent.Room) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Room(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

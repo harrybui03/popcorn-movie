@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -26,6 +27,33 @@ type RoomUpdate struct {
 // Where appends a list predicates to the RoomUpdate builder.
 func (ru *RoomUpdate) Where(ps ...predicate.Room) *RoomUpdate {
 	ru.mutation.Where(ps...)
+	return ru
+}
+
+// SetRoomNumber sets the "room_number" field.
+func (ru *RoomUpdate) SetRoomNumber(i int) *RoomUpdate {
+	ru.mutation.ResetRoomNumber()
+	ru.mutation.SetRoomNumber(i)
+	return ru
+}
+
+// SetNillableRoomNumber sets the "room_number" field if the given value is not nil.
+func (ru *RoomUpdate) SetNillableRoomNumber(i *int) *RoomUpdate {
+	if i != nil {
+		ru.SetRoomNumber(*i)
+	}
+	return ru
+}
+
+// AddRoomNumber adds i to the "room_number" field.
+func (ru *RoomUpdate) AddRoomNumber(i int) *RoomUpdate {
+	ru.mutation.AddRoomNumber(i)
+	return ru
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (ru *RoomUpdate) SetUpdatedAt(t time.Time) *RoomUpdate {
+	ru.mutation.SetUpdatedAt(t)
 	return ru
 }
 
@@ -61,6 +89,7 @@ func (ru *RoomUpdate) ClearTheater() *RoomUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ru *RoomUpdate) Save(ctx context.Context) (int, error) {
+	ru.defaults()
 	return withHooks(ctx, ru.sqlSave, ru.mutation, ru.hooks)
 }
 
@@ -86,14 +115,44 @@ func (ru *RoomUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ru *RoomUpdate) defaults() {
+	if _, ok := ru.mutation.UpdatedAt(); !ok {
+		v := room.UpdateDefaultUpdatedAt()
+		ru.mutation.SetUpdatedAt(v)
+	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (ru *RoomUpdate) check() error {
+	if v, ok := ru.mutation.RoomNumber(); ok {
+		if err := room.RoomNumberValidator(v); err != nil {
+			return &ValidationError{Name: "room_number", err: fmt.Errorf(`ent: validator failed for field "Room.room_number": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (ru *RoomUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(room.Table, room.Columns, sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt))
+	if err := ru.check(); err != nil {
+		return n, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(room.Table, room.Columns, sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID))
 	if ps := ru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := ru.mutation.RoomNumber(); ok {
+		_spec.SetField(room.FieldRoomNumber, field.TypeInt, value)
+	}
+	if value, ok := ru.mutation.AddedRoomNumber(); ok {
+		_spec.AddField(room.FieldRoomNumber, field.TypeInt, value)
+	}
+	if value, ok := ru.mutation.UpdatedAt(); ok {
+		_spec.SetField(room.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if ru.mutation.TheaterCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -144,6 +203,33 @@ type RoomUpdateOne struct {
 	mutation *RoomMutation
 }
 
+// SetRoomNumber sets the "room_number" field.
+func (ruo *RoomUpdateOne) SetRoomNumber(i int) *RoomUpdateOne {
+	ruo.mutation.ResetRoomNumber()
+	ruo.mutation.SetRoomNumber(i)
+	return ruo
+}
+
+// SetNillableRoomNumber sets the "room_number" field if the given value is not nil.
+func (ruo *RoomUpdateOne) SetNillableRoomNumber(i *int) *RoomUpdateOne {
+	if i != nil {
+		ruo.SetRoomNumber(*i)
+	}
+	return ruo
+}
+
+// AddRoomNumber adds i to the "room_number" field.
+func (ruo *RoomUpdateOne) AddRoomNumber(i int) *RoomUpdateOne {
+	ruo.mutation.AddRoomNumber(i)
+	return ruo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (ruo *RoomUpdateOne) SetUpdatedAt(t time.Time) *RoomUpdateOne {
+	ruo.mutation.SetUpdatedAt(t)
+	return ruo
+}
+
 // SetTheaterID sets the "theater" edge to the Theater entity by ID.
 func (ruo *RoomUpdateOne) SetTheaterID(id uuid.UUID) *RoomUpdateOne {
 	ruo.mutation.SetTheaterID(id)
@@ -189,6 +275,7 @@ func (ruo *RoomUpdateOne) Select(field string, fields ...string) *RoomUpdateOne 
 
 // Save executes the query and returns the updated Room entity.
 func (ruo *RoomUpdateOne) Save(ctx context.Context) (*Room, error) {
+	ruo.defaults()
 	return withHooks(ctx, ruo.sqlSave, ruo.mutation, ruo.hooks)
 }
 
@@ -214,8 +301,29 @@ func (ruo *RoomUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ruo *RoomUpdateOne) defaults() {
+	if _, ok := ruo.mutation.UpdatedAt(); !ok {
+		v := room.UpdateDefaultUpdatedAt()
+		ruo.mutation.SetUpdatedAt(v)
+	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (ruo *RoomUpdateOne) check() error {
+	if v, ok := ruo.mutation.RoomNumber(); ok {
+		if err := room.RoomNumberValidator(v); err != nil {
+			return &ValidationError{Name: "room_number", err: fmt.Errorf(`ent: validator failed for field "Room.room_number": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (ruo *RoomUpdateOne) sqlSave(ctx context.Context) (_node *Room, err error) {
-	_spec := sqlgraph.NewUpdateSpec(room.Table, room.Columns, sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt))
+	if err := ruo.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(room.Table, room.Columns, sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID))
 	id, ok := ruo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Room.id" for update`)}
@@ -239,6 +347,15 @@ func (ruo *RoomUpdateOne) sqlSave(ctx context.Context) (_node *Room, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := ruo.mutation.RoomNumber(); ok {
+		_spec.SetField(room.FieldRoomNumber, field.TypeInt, value)
+	}
+	if value, ok := ruo.mutation.AddedRoomNumber(); ok {
+		_spec.AddField(room.FieldRoomNumber, field.TypeInt, value)
+	}
+	if value, ok := ruo.mutation.UpdatedAt(); ok {
+		_spec.SetField(room.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if ruo.mutation.TheaterCleared() {
 		edge := &sqlgraph.EdgeSpec{

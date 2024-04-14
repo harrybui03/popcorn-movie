@@ -4,54 +4,191 @@ package room
 
 import (
 	"PopcornMovie/ent/predicate"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Room {
+func ID(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Room {
+func IDEQ(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Room {
+func IDNEQ(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Room {
+func IDIn(ids ...uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Room {
+func IDNotIn(ids ...uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Room {
+func IDGT(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Room {
+func IDGTE(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Room {
+func IDLT(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Room {
+func IDLTE(id uuid.UUID) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldID, id))
+}
+
+// RoomNumber applies equality check predicate on the "room_number" field. It's identical to RoomNumberEQ.
+func RoomNumber(v int) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldRoomNumber, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// RoomNumberEQ applies the EQ predicate on the "room_number" field.
+func RoomNumberEQ(v int) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldRoomNumber, v))
+}
+
+// RoomNumberNEQ applies the NEQ predicate on the "room_number" field.
+func RoomNumberNEQ(v int) predicate.Room {
+	return predicate.Room(sql.FieldNEQ(FieldRoomNumber, v))
+}
+
+// RoomNumberIn applies the In predicate on the "room_number" field.
+func RoomNumberIn(vs ...int) predicate.Room {
+	return predicate.Room(sql.FieldIn(FieldRoomNumber, vs...))
+}
+
+// RoomNumberNotIn applies the NotIn predicate on the "room_number" field.
+func RoomNumberNotIn(vs ...int) predicate.Room {
+	return predicate.Room(sql.FieldNotIn(FieldRoomNumber, vs...))
+}
+
+// RoomNumberGT applies the GT predicate on the "room_number" field.
+func RoomNumberGT(v int) predicate.Room {
+	return predicate.Room(sql.FieldGT(FieldRoomNumber, v))
+}
+
+// RoomNumberGTE applies the GTE predicate on the "room_number" field.
+func RoomNumberGTE(v int) predicate.Room {
+	return predicate.Room(sql.FieldGTE(FieldRoomNumber, v))
+}
+
+// RoomNumberLT applies the LT predicate on the "room_number" field.
+func RoomNumberLT(v int) predicate.Room {
+	return predicate.Room(sql.FieldLT(FieldRoomNumber, v))
+}
+
+// RoomNumberLTE applies the LTE predicate on the "room_number" field.
+func RoomNumberLTE(v int) predicate.Room {
+	return predicate.Room(sql.FieldLTE(FieldRoomNumber, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Room {
+	return predicate.Room(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Room {
+	return predicate.Room(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Room {
+	return predicate.Room(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Room {
+	return predicate.Room(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Room {
+	return predicate.Room(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // HasTheater applies the HasEdge predicate on the "theater" edge.

@@ -3,6 +3,8 @@
 package room
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -12,6 +14,12 @@ const (
 	Label = "room"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldRoomNumber holds the string denoting the room_number field in the database.
+	FieldRoomNumber = "room_number"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// EdgeTheater holds the string denoting the theater edge name in mutations.
 	EdgeTheater = "theater"
 	// Table holds the table name of the room in the database.
@@ -28,6 +36,9 @@ const (
 // Columns holds all SQL columns for room fields.
 var Columns = []string{
 	FieldID,
+	FieldRoomNumber,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "rooms"
@@ -51,12 +62,38 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// RoomNumberValidator is a validator for the "room_number" field. It is called by the builders before save.
+	RoomNumberValidator func(int) error
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
+)
+
 // OrderOption defines the ordering options for the Room queries.
 type OrderOption func(*sql.Selector)
 
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByRoomNumber orders the results by the room_number field.
+func ByRoomNumber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRoomNumber, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByTheaterField orders the results by theater field.

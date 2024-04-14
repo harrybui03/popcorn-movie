@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/schema"
 	"PopcornMovie/ent/session"
 	"PopcornMovie/ent/theater"
@@ -16,6 +17,22 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	roomFields := schema.Room{}.Fields()
+	_ = roomFields
+	// roomDescRoomNumber is the schema descriptor for room_number field.
+	roomDescRoomNumber := roomFields[1].Descriptor()
+	// room.RoomNumberValidator is a validator for the "room_number" field. It is called by the builders before save.
+	room.RoomNumberValidator = roomDescRoomNumber.Validators[0].(func(int) error)
+	// roomDescCreatedAt is the schema descriptor for created_at field.
+	roomDescCreatedAt := roomFields[2].Descriptor()
+	// room.DefaultCreatedAt holds the default value on creation for the created_at field.
+	room.DefaultCreatedAt = roomDescCreatedAt.Default.(func() time.Time)
+	// roomDescUpdatedAt is the schema descriptor for updated_at field.
+	roomDescUpdatedAt := roomFields[3].Descriptor()
+	// room.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	room.DefaultUpdatedAt = roomDescUpdatedAt.Default.(func() time.Time)
+	// room.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	room.UpdateDefaultUpdatedAt = roomDescUpdatedAt.UpdateDefault.(func() time.Time)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescCreatedAt is the schema descriptor for created_at field.

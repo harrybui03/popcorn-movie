@@ -35,6 +35,20 @@ type Jwt struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type ListRoomFilter struct {
+	TheaterID string `json:"theaterID"`
+}
+
+type ListRoomInput struct {
+	Filter     *ListRoomFilter  `json:"filter,omitempty"`
+	Pagination *PaginationInput `json:"pagination,omitempty"`
+}
+
+type ListRoomOutput struct {
+	Data       []*ent.Room       `json:"data,omitempty"`
+	Pagination *PaginationOutput `json:"pagination,omitempty"`
+}
+
 type ListTheaterFilter struct {
 	Name    string `json:"name"`
 	Address string `json:"address"`

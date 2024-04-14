@@ -75,14 +75,14 @@ func (tc *TheaterCreate) SetID(u uuid.UUID) *TheaterCreate {
 }
 
 // AddRoomIDs adds the "rooms" edge to the Room entity by IDs.
-func (tc *TheaterCreate) AddRoomIDs(ids ...int) *TheaterCreate {
+func (tc *TheaterCreate) AddRoomIDs(ids ...uuid.UUID) *TheaterCreate {
 	tc.mutation.AddRoomIDs(ids...)
 	return tc
 }
 
 // AddRooms adds the "rooms" edges to the Room entity.
 func (tc *TheaterCreate) AddRooms(r ...*Room) *TheaterCreate {
-	ids := make([]int, len(r))
+	ids := make([]uuid.UUID, len(r))
 	for i := range r {
 		ids[i] = r[i].ID
 	}
@@ -214,7 +214,7 @@ func (tc *TheaterCreate) createSpec() (*Theater, *sqlgraph.CreateSpec) {
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

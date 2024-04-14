@@ -1,0 +1,19 @@
+type Room {
+    id:ID!
+    roomNumber:Int!
+    theater:Theater!
+}
+
+input ListRoomFilter {
+    theaterID: ID!
+}
+
+input ListRoomInput {
+    filter: ListRoomFilter
+    pagination: PaginationInput
+}
+
+type ListRoomOutput {
+    data: [Room]
+    pagination: PaginationOutput
+}

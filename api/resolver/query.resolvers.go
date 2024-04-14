@@ -8,6 +8,7 @@ import (
 	graphql1 "PopcornMovie/graphql"
 	"PopcornMovie/model"
 	"context"
+	"fmt"
 )
 
 // Theaters is the resolver for the Theaters field.
@@ -23,6 +24,11 @@ func (r *queryResolver) Theaters(ctx context.Context, input model.ListTheatersIn
 			Total: count,
 		},
 	}, nil
+}
+
+// Rooms is the resolver for the Rooms field.
+func (r *queryResolver) Rooms(ctx context.Context, input model.ListRoomInput) (*model.ListRoomOutput, error) {
+	panic(fmt.Errorf("not implemented: Rooms - Rooms"))
 }
 
 // Query returns graphql1.QueryResolver implementation.

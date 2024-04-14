@@ -107,8 +107,8 @@ func (rq *RoomQuery) FirstX(ctx context.Context) *Room {
 
 // FirstID returns the first Room ID from the query.
 // Returns a *NotFoundError when no Room ID was found.
-func (rq *RoomQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (rq *RoomQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = rq.Limit(1).IDs(setContextOp(ctx, rq.ctx, "FirstID")); err != nil {
 		return
 	}
@@ -120,7 +120,7 @@ func (rq *RoomQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rq *RoomQuery) FirstIDX(ctx context.Context) int {
+func (rq *RoomQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := rq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -158,8 +158,8 @@ func (rq *RoomQuery) OnlyX(ctx context.Context) *Room {
 // OnlyID is like Only, but returns the only Room ID in the query.
 // Returns a *NotSingularError when more than one Room ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rq *RoomQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (rq *RoomQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = rq.Limit(2).IDs(setContextOp(ctx, rq.ctx, "OnlyID")); err != nil {
 		return
 	}
@@ -175,7 +175,7 @@ func (rq *RoomQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rq *RoomQuery) OnlyIDX(ctx context.Context) int {
+func (rq *RoomQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := rq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,7 +203,7 @@ func (rq *RoomQuery) AllX(ctx context.Context) []*Room {
 }
 
 // IDs executes the query and returns a list of Room IDs.
-func (rq *RoomQuery) IDs(ctx context.Context) (ids []int, err error) {
+func (rq *RoomQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if rq.ctx.Unique == nil && rq.path != nil {
 		rq.Unique(true)
 	}
@@ -215,7 +215,7 @@ func (rq *RoomQuery) IDs(ctx context.Context) (ids []int, err error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rq *RoomQuery) IDsX(ctx context.Context) []int {
+func (rq *RoomQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := rq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -295,6 +295,18 @@ func (rq *RoomQuery) WithTheater(opts ...func(*TheaterQuery)) *RoomQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		RoomNumber int `json:"room_number,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Room.Query().
+//		GroupBy(room.FieldRoomNumber).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (rq *RoomQuery) GroupBy(field string, fields ...string) *RoomGroupBy {
 	rq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &RoomGroupBy{build: rq}
@@ -306,6 +318,16 @@ func (rq *RoomQuery) GroupBy(field string, fields ...string) *RoomGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		RoomNumber int `json:"room_number,omitempty"`
+//	}
+//
+//	client.Room.Query().
+//		Select(room.FieldRoomNumber).
+//		Scan(ctx, &v)
 func (rq *RoomQuery) Select(fields ...string) *RoomSelect {
 	rq.ctx.Fields = append(rq.ctx.Fields, fields...)
 	sbuild := &RoomSelect{RoomQuery: rq}
@@ -430,7 +452,7 @@ func (rq *RoomQuery) sqlCount(ctx context.Context) (int, error) {
 }
 
 func (rq *RoomQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(room.Table, room.Columns, sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt))
+	_spec := sqlgraph.NewQuerySpec(room.Table, room.Columns, sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID))
 	_spec.From = rq.sql
 	if unique := rq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique

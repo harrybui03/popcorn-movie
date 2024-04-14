@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // TheaterUpdate is the builder for updating Theater entities.
@@ -78,14 +79,14 @@ func (tu *TheaterUpdate) SetUpdatedAt(t time.Time) *TheaterUpdate {
 }
 
 // AddRoomIDs adds the "rooms" edge to the Room entity by IDs.
-func (tu *TheaterUpdate) AddRoomIDs(ids ...int) *TheaterUpdate {
+func (tu *TheaterUpdate) AddRoomIDs(ids ...uuid.UUID) *TheaterUpdate {
 	tu.mutation.AddRoomIDs(ids...)
 	return tu
 }
 
 // AddRooms adds the "rooms" edges to the Room entity.
 func (tu *TheaterUpdate) AddRooms(r ...*Room) *TheaterUpdate {
-	ids := make([]int, len(r))
+	ids := make([]uuid.UUID, len(r))
 	for i := range r {
 		ids[i] = r[i].ID
 	}
@@ -104,14 +105,14 @@ func (tu *TheaterUpdate) ClearRooms() *TheaterUpdate {
 }
 
 // RemoveRoomIDs removes the "rooms" edge to Room entities by IDs.
-func (tu *TheaterUpdate) RemoveRoomIDs(ids ...int) *TheaterUpdate {
+func (tu *TheaterUpdate) RemoveRoomIDs(ids ...uuid.UUID) *TheaterUpdate {
 	tu.mutation.RemoveRoomIDs(ids...)
 	return tu
 }
 
 // RemoveRooms removes "rooms" edges to Room entities.
 func (tu *TheaterUpdate) RemoveRooms(r ...*Room) *TheaterUpdate {
-	ids := make([]int, len(r))
+	ids := make([]uuid.UUID, len(r))
 	for i := range r {
 		ids[i] = r[i].ID
 	}
@@ -183,7 +184,7 @@ func (tu *TheaterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -196,7 +197,7 @@ func (tu *TheaterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -212,7 +213,7 @@ func (tu *TheaterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -289,14 +290,14 @@ func (tuo *TheaterUpdateOne) SetUpdatedAt(t time.Time) *TheaterUpdateOne {
 }
 
 // AddRoomIDs adds the "rooms" edge to the Room entity by IDs.
-func (tuo *TheaterUpdateOne) AddRoomIDs(ids ...int) *TheaterUpdateOne {
+func (tuo *TheaterUpdateOne) AddRoomIDs(ids ...uuid.UUID) *TheaterUpdateOne {
 	tuo.mutation.AddRoomIDs(ids...)
 	return tuo
 }
 
 // AddRooms adds the "rooms" edges to the Room entity.
 func (tuo *TheaterUpdateOne) AddRooms(r ...*Room) *TheaterUpdateOne {
-	ids := make([]int, len(r))
+	ids := make([]uuid.UUID, len(r))
 	for i := range r {
 		ids[i] = r[i].ID
 	}
@@ -315,14 +316,14 @@ func (tuo *TheaterUpdateOne) ClearRooms() *TheaterUpdateOne {
 }
 
 // RemoveRoomIDs removes the "rooms" edge to Room entities by IDs.
-func (tuo *TheaterUpdateOne) RemoveRoomIDs(ids ...int) *TheaterUpdateOne {
+func (tuo *TheaterUpdateOne) RemoveRoomIDs(ids ...uuid.UUID) *TheaterUpdateOne {
 	tuo.mutation.RemoveRoomIDs(ids...)
 	return tuo
 }
 
 // RemoveRooms removes "rooms" edges to Room entities.
 func (tuo *TheaterUpdateOne) RemoveRooms(r ...*Room) *TheaterUpdateOne {
-	ids := make([]int, len(r))
+	ids := make([]uuid.UUID, len(r))
 	for i := range r {
 		ids[i] = r[i].ID
 	}
@@ -424,7 +425,7 @@ func (tuo *TheaterUpdateOne) sqlSave(ctx context.Context) (_node *Theater, err e
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -437,7 +438,7 @@ func (tuo *TheaterUpdateOne) sqlSave(ctx context.Context) (_node *Theater, err e
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -453,7 +454,7 @@ func (tuo *TheaterUpdateOne) sqlSave(ctx context.Context) (_node *Theater, err e
 			Columns: []string{theater.RoomsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

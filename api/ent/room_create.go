@@ -6,7 +6,9 @@ import (
 	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/theater"
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,6 +20,46 @@ type RoomCreate struct {
 	config
 	mutation *RoomMutation
 	hooks    []Hook
+}
+
+// SetRoomNumber sets the "room_number" field.
+func (rc *RoomCreate) SetRoomNumber(i int) *RoomCreate {
+	rc.mutation.SetRoomNumber(i)
+	return rc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (rc *RoomCreate) SetCreatedAt(t time.Time) *RoomCreate {
+	rc.mutation.SetCreatedAt(t)
+	return rc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (rc *RoomCreate) SetNillableCreatedAt(t *time.Time) *RoomCreate {
+	if t != nil {
+		rc.SetCreatedAt(*t)
+	}
+	return rc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (rc *RoomCreate) SetUpdatedAt(t time.Time) *RoomCreate {
+	rc.mutation.SetUpdatedAt(t)
+	return rc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (rc *RoomCreate) SetNillableUpdatedAt(t *time.Time) *RoomCreate {
+	if t != nil {
+		rc.SetUpdatedAt(*t)
+	}
+	return rc
+}
+
+// SetID sets the "id" field.
+func (rc *RoomCreate) SetID(u uuid.UUID) *RoomCreate {
+	rc.mutation.SetID(u)
+	return rc
 }
 
 // SetTheaterID sets the "theater" edge to the Theater entity by ID.
@@ -46,6 +88,7 @@ func (rc *RoomCreate) Mutation() *RoomMutation {
 
 // Save creates the Room in the database.
 func (rc *RoomCreate) Save(ctx context.Context) (*Room, error) {
+	rc.defaults()
 	return withHooks(ctx, rc.sqlSave, rc.mutation, rc.hooks)
 }
 
@@ -71,8 +114,34 @@ func (rc *RoomCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rc *RoomCreate) defaults() {
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		v := room.DefaultCreatedAt()
+		rc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := rc.mutation.UpdatedAt(); !ok {
+		v := room.DefaultUpdatedAt()
+		rc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (rc *RoomCreate) check() error {
+	if _, ok := rc.mutation.RoomNumber(); !ok {
+		return &ValidationError{Name: "room_number", err: errors.New(`ent: missing required field "Room.room_number"`)}
+	}
+	if v, ok := rc.mutation.RoomNumber(); ok {
+		if err := room.RoomNumberValidator(v); err != nil {
+			return &ValidationError{Name: "room_number", err: fmt.Errorf(`ent: validator failed for field "Room.room_number": %w`, err)}
+		}
+	}
+	if _, ok := rc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Room.created_at"`)}
+	}
+	if _, ok := rc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Room.updated_at"`)}
+	}
 	return nil
 }
 
@@ -87,8 +156,13 @@ func (rc *RoomCreate) sqlSave(ctx context.Context) (*Room, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	rc.mutation.id = &_node.ID
 	rc.mutation.done = true
 	return _node, nil
@@ -97,8 +171,24 @@ func (rc *RoomCreate) sqlSave(ctx context.Context) (*Room, error) {
 func (rc *RoomCreate) createSpec() (*Room, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Room{config: rc.config}
-		_spec = sqlgraph.NewCreateSpec(room.Table, sqlgraph.NewFieldSpec(room.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(room.Table, sqlgraph.NewFieldSpec(room.FieldID, field.TypeUUID))
 	)
+	if id, ok := rc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := rc.mutation.RoomNumber(); ok {
+		_spec.SetField(room.FieldRoomNumber, field.TypeInt, value)
+		_node.RoomNumber = value
+	}
+	if value, ok := rc.mutation.CreatedAt(); ok {
+		_spec.SetField(room.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := rc.mutation.UpdatedAt(); ok {
+		_spec.SetField(room.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if nodes := rc.mutation.TheaterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -137,6 +227,7 @@ func (rcb *RoomCreateBulk) Save(ctx context.Context) ([]*Room, error) {
 	for i := range rcb.builders {
 		func(i int, root context.Context) {
 			builder := rcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RoomMutation)
 				if !ok {
@@ -163,10 +254,6 @@ func (rcb *RoomCreateBulk) Save(ctx context.Context) ([]*Room, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

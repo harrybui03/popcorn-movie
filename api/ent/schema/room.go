@@ -13,11 +13,11 @@ type Room struct {
 	ent.Schema
 }
 
-// Field of Room
-func (Room) Field() []ent.Field {
+// Fields of Room
+func (Room) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Immutable().Unique(),
-		field.Int("room_number"),
+		field.Int("room_number").Positive(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
