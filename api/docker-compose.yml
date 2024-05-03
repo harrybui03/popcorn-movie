@@ -42,3 +42,20 @@ services:
       - "db"
     networks:
       - backend-api
+
+  backend-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["api"]
+    depends_on:
+      - db
+    restart: always
+    environment:
+      POSTGRES_CONNECTION_STRING: "postgres://backend_user:backend_password@db:5432/backend_db?sslmode=disable"
+    links:
+      - db
+    ports:
+      - '8000:8000'
+    networks:
+      - backend-api
