@@ -9,6 +9,7 @@ import AdminPage from './page/AdminPage'
 import CustomerPage from './page/CustomerPage'
 import DefaultPage from './page/DefaultPage'
 import TicketManagerPage from './page/TicketManagerPage'
+import DemoPage from './page/DemoPage'
 import ReceptionistPage from './page/ReceptionistPage'
 import OrderTicket from './components/customerPage/OrderTicket'
 import PaymentSuccess from './components/customerPage/PaymentSuccess';
@@ -135,6 +136,7 @@ function App() {
               )
             }
           />
+          <Route path='/demo' element={<DemoPage/>}/>
         </Routes>
       </BrowserRouter>
 
