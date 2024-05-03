@@ -25,10 +25,6 @@ func (i impl) GetAllTheaters(ctx context.Context, query *ent.TheaterQuery) ([]*e
 	return theaters, nil
 }
 
-type impl struct {
-	client *ent.Client
-}
-
 func (i impl) CountTheaters(ctx context.Context, query *ent.TheaterQuery) (*int, error) {
 	count, err := query.Count(ctx)
 	if err != nil {
@@ -36,6 +32,10 @@ func (i impl) CountTheaters(ctx context.Context, query *ent.TheaterQuery) (*int,
 	}
 
 	return &count, nil
+}
+
+type impl struct {
+	client *ent.Client
 }
 
 func New(client *ent.Client) Repository {

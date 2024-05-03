@@ -18,6 +18,7 @@ func (Room) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Immutable().Unique(),
 		field.Int("room_number").Positive(),
+		field.UUID("theater_id", uuid.UUID{}),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
@@ -26,6 +27,8 @@ func (Room) Fields() []ent.Field {
 // Edges of Room
 func (Room) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("theater", Theater.Type).Ref("rooms").Unique(),
+		edge.From("theater", Theater.Type).Field("theater_id").Ref("rooms").Required().Unique(),
+		edge.To("seats", Seat.Type),
+		edge.To("showTimes", ShowTime.Type),
 	}
 }

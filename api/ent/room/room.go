@@ -16,12 +16,18 @@ const (
 	FieldID = "id"
 	// FieldRoomNumber holds the string denoting the room_number field in the database.
 	FieldRoomNumber = "room_number"
+	// FieldTheaterID holds the string denoting the theater_id field in the database.
+	FieldTheaterID = "theater_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeTheater holds the string denoting the theater edge name in mutations.
 	EdgeTheater = "theater"
+	// EdgeSeats holds the string denoting the seats edge name in mutations.
+	EdgeSeats = "seats"
+	// EdgeShowTimes holds the string denoting the showtimes edge name in mutations.
+	EdgeShowTimes = "showTimes"
 	// Table holds the table name of the room in the database.
 	Table = "rooms"
 	// TheaterTable is the table that holds the theater relation/edge.
@@ -30,32 +36,36 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "theater" package.
 	TheaterInverseTable = "theaters"
 	// TheaterColumn is the table column denoting the theater relation/edge.
-	TheaterColumn = "theater_rooms"
+	TheaterColumn = "theater_id"
+	// SeatsTable is the table that holds the seats relation/edge.
+	SeatsTable = "seats"
+	// SeatsInverseTable is the table name for the Seat entity.
+	// It exists in this package in order to avoid circular dependency with the "seat" package.
+	SeatsInverseTable = "seats"
+	// SeatsColumn is the table column denoting the seats relation/edge.
+	SeatsColumn = "room_id"
+	// ShowTimesTable is the table that holds the showTimes relation/edge.
+	ShowTimesTable = "show_times"
+	// ShowTimesInverseTable is the table name for the ShowTime entity.
+	// It exists in this package in order to avoid circular dependency with the "showtime" package.
+	ShowTimesInverseTable = "show_times"
+	// ShowTimesColumn is the table column denoting the showTimes relation/edge.
+	ShowTimesColumn = "room_id"
 )
 
 // Columns holds all SQL columns for room fields.
 var Columns = []string{
 	FieldID,
 	FieldRoomNumber,
+	FieldTheaterID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "rooms"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"theater_rooms",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -86,6 +96,11 @@ func ByRoomNumber(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRoomNumber, opts...).ToFunc()
 }
 
+// ByTheaterID orders the results by the theater_id field.
+func ByTheaterID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTheaterID, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -102,10 +117,52 @@ func ByTheaterField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTheaterStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// BySeatsCount orders the results by seats count.
+func BySeatsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSeatsStep(), opts...)
+	}
+}
+
+// BySeats orders the results by seats terms.
+func BySeats(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSeatsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByShowTimesCount orders the results by showTimes count.
+func ByShowTimesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newShowTimesStep(), opts...)
+	}
+}
+
+// ByShowTimes orders the results by showTimes terms.
+func ByShowTimes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newShowTimesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTheaterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TheaterInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, TheaterTable, TheaterColumn),
+	)
+}
+func newSeatsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SeatsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SeatsTable, SeatsColumn),
+	)
+}
+func newShowTimesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ShowTimesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ShowTimesTable, ShowTimesColumn),
 	)
 }

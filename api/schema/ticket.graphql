@@ -1,0 +1,13 @@
+type Ticket {
+    ID: String!
+    Seat:Seat!
+    IsBooked:Boolean!
+    ShowTime:ShowTime!
+    Price:Float!
+    Transaction:Transaction!
+}
+
+input CreateTicketInput{
+    seatID: ID!
+    price: Float!
+}

@@ -16,11 +16,27 @@ type ChangePasswordInput struct {
 	ConfirmNewPassword string `json:"confirmNewPassword"`
 }
 
+type CreateFoodOrderLineInput struct {
+	FoodID   string `json:"foodID"`
+	Quantity int    `json:"quantity"`
+}
+
 type CreateSessionInput struct {
 	ID           string    `json:"id"`
 	UserID       string    `json:"UserID"`
 	RefreshToken string    `json:"RefreshToken"`
 	ExpiresAt    time.Time `json:"ExpiresAt"`
+}
+
+type CreateTicketInput struct {
+	SeatID string  `json:"seatID"`
+	Price  float64 `json:"price"`
+}
+
+type CreateTransactionInput struct {
+	SeatIDs    []*CreateTicketInput        `json:"seatIDs"`
+	Foods      []*CreateFoodOrderLineInput `json:"foods"`
+	ShowTimeID string                      `json:"showTimeID"`
 }
 
 type CreateUserInput struct {
@@ -35,8 +51,78 @@ type Jwt struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type ListAvailableRoomFilter struct {
+	StartAt    *time.Time `json:"startAt,omitempty"`
+	EndAt      *time.Time `json:"endAt,omitempty"`
+	ShowTimeID *string    `json:"showTimeID,omitempty"`
+}
+
+type ListAvailableRoomInput struct {
+	Filter     *ListAvailableRoomFilter `json:"filter,omitempty"`
+	Pagination *PaginationInput         `json:"pagination,omitempty"`
+}
+
+type ListAvailableRoomOutput struct {
+	Data       []*ent.Room       `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListAvailableSeatFilter struct {
+	ShowTimeID *string `json:"showTimeID,omitempty"`
+}
+
+type ListAvailableSeatInput struct {
+	Filter     *ListAvailableSeatFilter `json:"filter"`
+	Pagination *PaginationInput         `json:"pagination"`
+}
+
+type ListAvailableSeatOutput struct {
+	Data       []*ent.Seat       `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListCommentFilter struct {
+	MovieID string `json:"movieId"`
+}
+
+type ListCommentInput struct {
+	Filter     *ListMovieFilter `json:"filter"`
+	Pagination *PaginationInput `json:"pagination"`
+}
+
+type ListCommentOutput struct {
+	Data       []*ent.Comment    `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListFoodInput struct {
+	Pagination *PaginationInput `json:"pagination,omitempty"`
+}
+
+type ListFoodOutput struct {
+	Data       []*ent.Food       `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListMovieFilter struct {
+	Status *MovieStatus `json:"status,omitempty"`
+}
+
+type ListMovieInput struct {
+	Filter     *ListMovieFilter `json:"filter,omitempty"`
+	Pagination *PaginationInput `json:"pagination,omitempty"`
+}
+
+type ListMovieOutput struct {
+	Data       []*ent.Movie      `json:"data,omitempty"`
+	Pagination *PaginationOutput `json:"pagination,omitempty"`
+}
+
 type ListRoomFilter struct {
-	TheaterID string `json:"theaterID"`
+	TheaterID  string     `json:"theaterID"`
+	ShowTimeID *string    `json:"showTimeID,omitempty"`
+	StartAt    *time.Time `json:"startAt,omitempty"`
+	EndAt      *time.Time `json:"endAt,omitempty"`
 }
 
 type ListRoomInput struct {
@@ -45,8 +131,31 @@ type ListRoomInput struct {
 }
 
 type ListRoomOutput struct {
-	Data       []*ent.Room       `json:"data,omitempty"`
-	Pagination *PaginationOutput `json:"pagination,omitempty"`
+	Data       []*ent.Room       `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListSeatInput struct {
+	Pagination *PaginationInput `json:"pagination"`
+}
+
+type ListSeatOutput struct {
+	Data       []*ent.Seat       `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListShowTimeFilter struct {
+	MovieID *string `json:"movieId,omitempty"`
+}
+
+type ListShowTimeInput struct {
+	Filter     *ListShowTimeFilter `json:"filter"`
+	Pagination *PaginationInput    `json:"pagination"`
+}
+
+type ListShowTimeOutput struct {
+	Data       []*ent.ShowTime   `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
 }
 
 type ListTheaterFilter struct {
@@ -60,8 +169,8 @@ type ListTheatersInput struct {
 }
 
 type ListTheatersOutput struct {
-	Data       []*ent.Theater    `json:"data,omitempty"`
-	Pagination *PaginationOutput `json:"pagination,omitempty"`
+	Data       []*ent.Theater    `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
 }
 
 type LoginInput struct {
@@ -93,6 +202,49 @@ type RegisterInput struct {
 
 type RenewAccessTokenInput struct {
 	RefreshToken string `json:"refreshToken"`
+}
+
+type MovieStatus string
+
+const (
+	MovieStatusUpcoming MovieStatus = "UPCOMING"
+	MovieStatusOngoing  MovieStatus = "ONGOING"
+	MovieStatusOver     MovieStatus = "OVER"
+)
+
+var AllMovieStatus = []MovieStatus{
+	MovieStatusUpcoming,
+	MovieStatusOngoing,
+	MovieStatusOver,
+}
+
+func (e MovieStatus) IsValid() bool {
+	switch e {
+	case MovieStatusUpcoming, MovieStatusOngoing, MovieStatusOver:
+		return true
+	}
+	return false
+}
+
+func (e MovieStatus) String() string {
+	return string(e)
+}
+
+func (e *MovieStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MovieStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MovieStatus", str)
+	}
+	return nil
+}
+
+func (e MovieStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type OrderDirection string
@@ -178,5 +330,46 @@ func (e *Role) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Role) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type SeatCategory string
+
+const (
+	SeatCategoryStandard SeatCategory = "STANDARD"
+	SeatCategoryDouble   SeatCategory = "DOUBLE"
+)
+
+var AllSeatCategory = []SeatCategory{
+	SeatCategoryStandard,
+	SeatCategoryDouble,
+}
+
+func (e SeatCategory) IsValid() bool {
+	switch e {
+	case SeatCategoryStandard, SeatCategoryDouble:
+		return true
+	}
+	return false
+}
+
+func (e SeatCategory) String() string {
+	return string(e)
+}
+
+func (e *SeatCategory) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SeatCategory(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SeatCategory", str)
+	}
+	return nil
+}
+
+func (e SeatCategory) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

@@ -1,0 +1,35 @@
+type Movie{
+    id:ID!
+    title:String!
+    genre:String!
+    status:MovieStatus!
+    language:String!
+    director:String!
+    cast:String!
+    poster:String!
+    rated:String!
+    duration:Int!
+    trailer:String!
+    openingDay:Time!
+    story:String!
+}
+
+enum MovieStatus{
+    UPCOMING
+    ONGOING
+    OVER
+}
+
+input ListMovieFilter{
+    status: MovieStatus
+}
+
+input ListMovieInput {
+    filter: ListMovieFilter
+    pagination: PaginationInput
+}
+
+type ListMovieOutput {
+    data:[Movie]
+    pagination:PaginationOutput
+}

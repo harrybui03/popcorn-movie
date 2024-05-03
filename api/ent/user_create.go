@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"PopcornMovie/ent/comment"
+	"PopcornMovie/ent/transaction"
 	"PopcornMovie/ent/user"
 	"context"
 	"errors"
@@ -107,6 +109,36 @@ func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
 		uc.SetID(*u)
 	}
 	return uc
+}
+
+// AddTransactionIDs adds the "transactions" edge to the Transaction entity by IDs.
+func (uc *UserCreate) AddTransactionIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddTransactionIDs(ids...)
+	return uc
+}
+
+// AddTransactions adds the "transactions" edges to the Transaction entity.
+func (uc *UserCreate) AddTransactions(t ...*Transaction) *UserCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uc.AddTransactionIDs(ids...)
+}
+
+// AddCommentIDs adds the "comments" edge to the Comment entity by IDs.
+func (uc *UserCreate) AddCommentIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddCommentIDs(ids...)
+	return uc
+}
+
+// AddComments adds the "comments" edges to the Comment entity.
+func (uc *UserCreate) AddComments(c ...*Comment) *UserCreate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddCommentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -271,6 +303,38 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := uc.mutation.TransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.CommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

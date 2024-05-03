@@ -21,24 +21,29 @@ type Room struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// RoomNumber holds the value of the "room_number" field.
 	RoomNumber int `json:"room_number,omitempty"`
+	// TheaterID holds the value of the "theater_id" field.
+	TheaterID uuid.UUID `json:"theater_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoomQuery when eager-loading is set.
-	Edges         RoomEdges `json:"edges"`
-	theater_rooms *uuid.UUID
-	selectValues  sql.SelectValues
+	Edges        RoomEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // RoomEdges holds the relations/edges for other nodes in the graph.
 type RoomEdges struct {
 	// Theater holds the value of the theater edge.
 	Theater *Theater `json:"theater,omitempty"`
+	// Seats holds the value of the seats edge.
+	Seats []*Seat `json:"seats,omitempty"`
+	// ShowTimes holds the value of the showTimes edge.
+	ShowTimes []*ShowTime `json:"showTimes,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // TheaterOrErr returns the Theater value or an error if the edge
@@ -52,6 +57,24 @@ func (e RoomEdges) TheaterOrErr() (*Theater, error) {
 	return nil, &NotLoadedError{edge: "theater"}
 }
 
+// SeatsOrErr returns the Seats value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoomEdges) SeatsOrErr() ([]*Seat, error) {
+	if e.loadedTypes[1] {
+		return e.Seats, nil
+	}
+	return nil, &NotLoadedError{edge: "seats"}
+}
+
+// ShowTimesOrErr returns the ShowTimes value or an error if the edge
+// was not loaded in eager-loading.
+func (e RoomEdges) ShowTimesOrErr() ([]*ShowTime, error) {
+	if e.loadedTypes[2] {
+		return e.ShowTimes, nil
+	}
+	return nil, &NotLoadedError{edge: "showTimes"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Room) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -61,10 +84,8 @@ func (*Room) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case room.FieldCreatedAt, room.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case room.FieldID:
+		case room.FieldID, room.FieldTheaterID:
 			values[i] = new(uuid.UUID)
-		case room.ForeignKeys[0]: // theater_rooms
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -92,6 +113,12 @@ func (r *Room) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				r.RoomNumber = int(value.Int64)
 			}
+		case room.FieldTheaterID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field theater_id", values[i])
+			} else if value != nil {
+				r.TheaterID = *value
+			}
 		case room.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -103,13 +130,6 @@ func (r *Room) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				r.UpdatedAt = value.Time
-			}
-		case room.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field theater_rooms", values[i])
-			} else if value.Valid {
-				r.theater_rooms = new(uuid.UUID)
-				*r.theater_rooms = *value.S.(*uuid.UUID)
 			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
@@ -127,6 +147,16 @@ func (r *Room) Value(name string) (ent.Value, error) {
 // QueryTheater queries the "theater" edge of the Room entity.
 func (r *Room) QueryTheater() *TheaterQuery {
 	return NewRoomClient(r.config).QueryTheater(r)
+}
+
+// QuerySeats queries the "seats" edge of the Room entity.
+func (r *Room) QuerySeats() *SeatQuery {
+	return NewRoomClient(r.config).QuerySeats(r)
+}
+
+// QueryShowTimes queries the "showTimes" edge of the Room entity.
+func (r *Room) QueryShowTimes() *ShowTimeQuery {
+	return NewRoomClient(r.config).QueryShowTimes(r)
 }
 
 // Update returns a builder for updating this Room.
@@ -154,6 +184,9 @@ func (r *Room) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
 	builder.WriteString("room_number=")
 	builder.WriteString(fmt.Sprintf("%v", r.RoomNumber))
+	builder.WriteString(", ")
+	builder.WriteString("theater_id=")
+	builder.WriteString(fmt.Sprintf("%v", r.TheaterID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(r.CreatedAt.Format(time.ANSIC))

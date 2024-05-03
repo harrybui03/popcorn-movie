@@ -1,0 +1,10 @@
+type FoodOrderLine {
+    id: ID!
+    food: Food!
+    quantity: Int!
+}
+
+input CreateFoodOrderLineInput {
+    foodID: ID!
+    quantity: Int!
+}

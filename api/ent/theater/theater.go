@@ -34,7 +34,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "room" package.
 	RoomsInverseTable = "rooms"
 	// RoomsColumn is the table column denoting the rooms relation/edge.
-	RoomsColumn = "theater_rooms"
+	RoomsColumn = "theater_id"
 )
 
 // Columns holds all SQL columns for theater fields.

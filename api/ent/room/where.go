@@ -61,6 +61,11 @@ func RoomNumber(v int) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldRoomNumber, v))
 }
 
+// TheaterID applies equality check predicate on the "theater_id" field. It's identical to TheaterIDEQ.
+func TheaterID(v uuid.UUID) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldTheaterID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Room {
 	return predicate.Room(sql.FieldEQ(FieldCreatedAt, v))
@@ -109,6 +114,26 @@ func RoomNumberLT(v int) predicate.Room {
 // RoomNumberLTE applies the LTE predicate on the "room_number" field.
 func RoomNumberLTE(v int) predicate.Room {
 	return predicate.Room(sql.FieldLTE(FieldRoomNumber, v))
+}
+
+// TheaterIDEQ applies the EQ predicate on the "theater_id" field.
+func TheaterIDEQ(v uuid.UUID) predicate.Room {
+	return predicate.Room(sql.FieldEQ(FieldTheaterID, v))
+}
+
+// TheaterIDNEQ applies the NEQ predicate on the "theater_id" field.
+func TheaterIDNEQ(v uuid.UUID) predicate.Room {
+	return predicate.Room(sql.FieldNEQ(FieldTheaterID, v))
+}
+
+// TheaterIDIn applies the In predicate on the "theater_id" field.
+func TheaterIDIn(vs ...uuid.UUID) predicate.Room {
+	return predicate.Room(sql.FieldIn(FieldTheaterID, vs...))
+}
+
+// TheaterIDNotIn applies the NotIn predicate on the "theater_id" field.
+func TheaterIDNotIn(vs ...uuid.UUID) predicate.Room {
+	return predicate.Room(sql.FieldNotIn(FieldTheaterID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -206,6 +231,52 @@ func HasTheater() predicate.Room {
 func HasTheaterWith(preds ...predicate.Theater) predicate.Room {
 	return predicate.Room(func(s *sql.Selector) {
 		step := newTheaterStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSeats applies the HasEdge predicate on the "seats" edge.
+func HasSeats() predicate.Room {
+	return predicate.Room(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, SeatsTable, SeatsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSeatsWith applies the HasEdge predicate on the "seats" edge with a given conditions (other predicates).
+func HasSeatsWith(preds ...predicate.Seat) predicate.Room {
+	return predicate.Room(func(s *sql.Selector) {
+		step := newSeatsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasShowTimes applies the HasEdge predicate on the "showTimes" edge.
+func HasShowTimes() predicate.Room {
+	return predicate.Room(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ShowTimesTable, ShowTimesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasShowTimesWith applies the HasEdge predicate on the "showTimes" edge with a given conditions (other predicates).
+func HasShowTimesWith(preds ...predicate.ShowTime) predicate.Room {
+	return predicate.Room(func(s *sql.Selector) {
+		step := newShowTimesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

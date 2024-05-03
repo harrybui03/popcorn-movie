@@ -16,6 +16,6 @@ input ListTheatersInput {
 }
 
 type ListTheatersOutput{
-    data: [Theater]
-    pagination: PaginationOutput
+    data: [Theater]!
+    pagination: PaginationOutput!
 }

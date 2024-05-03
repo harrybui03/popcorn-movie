@@ -2,10 +2,15 @@ type Room {
     id:ID!
     roomNumber:Int!
     theater:Theater!
+    showTime:[ShowTime]!
+    seat:[Seat]!
 }
 
 input ListRoomFilter {
     theaterID: ID!
+    showTimeID: ID
+    startAt:Time
+    endAt:Time
 }
 
 input ListRoomInput {
@@ -13,7 +18,23 @@ input ListRoomInput {
     pagination: PaginationInput
 }
 
+input ListAvailableRoomFilter {
+    startAt:Time
+    endAt:Time
+    showTimeID:ID
+}
+
+input ListAvailableRoomInput {
+    filter: ListAvailableRoomFilter
+    pagination: PaginationInput
+}
+
 type ListRoomOutput {
-    data: [Room]
-    pagination: PaginationOutput
+    data: [Room]!
+    pagination: PaginationOutput!
+}
+
+type ListAvailableRoomOutput {
+    data: [Room]!
+    pagination: PaginationOutput!
 }

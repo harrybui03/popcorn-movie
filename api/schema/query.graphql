@@ -1,4 +1,18 @@
 type Query {
+    # Theater
     Theaters(input: ListTheatersInput!): ListTheatersOutput!
+    #Room
     Rooms(input: ListRoomInput!):ListRoomOutput!
+    GetAvailableRooms(input: ListAvailableRoomInput!):ListAvailableRoomOutput!
+    #Food
+    Foods(input: ListFoodInput!):ListFoodOutput!
+    #Movie
+    Movies(input: ListMovieInput!):ListMovieOutput!
+    #Comment
+    Comments(input: ListCommentInput!):ListCommentOutput!
+    #ShowTime
+    ShowTimes(input: ListShowTimeInput!):ListShowTimeOutput!
+    #Seats
+    Seats(input: ListSeatInput!):ListSeatOutput!
+    GetAvailableSeats(input: ListAvailableSeatInput!):ListAvailableSeatOutput!
 }

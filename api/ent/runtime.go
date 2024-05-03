@@ -3,10 +3,18 @@
 package ent
 
 import (
+	"PopcornMovie/ent/comment"
+	"PopcornMovie/ent/food"
+	"PopcornMovie/ent/foodorderline"
+	"PopcornMovie/ent/movie"
 	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/schema"
+	"PopcornMovie/ent/seat"
 	"PopcornMovie/ent/session"
+	"PopcornMovie/ent/showtime"
 	"PopcornMovie/ent/theater"
+	"PopcornMovie/ent/ticket"
+	"PopcornMovie/ent/transaction"
 	"PopcornMovie/ent/user"
 	"time"
 
@@ -17,6 +25,70 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	commentFields := schema.Comment{}.Fields()
+	_ = commentFields
+	// commentDescRating is the schema descriptor for rating field.
+	commentDescRating := commentFields[3].Descriptor()
+	// comment.RatingValidator is a validator for the "rating" field. It is called by the builders before save.
+	comment.RatingValidator = commentDescRating.Validators[0].(func(float64) error)
+	// commentDescCreatedAt is the schema descriptor for created_at field.
+	commentDescCreatedAt := commentFields[5].Descriptor()
+	// comment.DefaultCreatedAt holds the default value on creation for the created_at field.
+	comment.DefaultCreatedAt = commentDescCreatedAt.Default.(func() time.Time)
+	// commentDescUpdatedAt is the schema descriptor for updated_at field.
+	commentDescUpdatedAt := commentFields[6].Descriptor()
+	// comment.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	comment.DefaultUpdatedAt = commentDescUpdatedAt.Default.(func() time.Time)
+	// comment.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	comment.UpdateDefaultUpdatedAt = commentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// commentDescID is the schema descriptor for id field.
+	commentDescID := commentFields[0].Descriptor()
+	// comment.DefaultID holds the default value on creation for the id field.
+	comment.DefaultID = commentDescID.Default.(func() uuid.UUID)
+	foodFields := schema.Food{}.Fields()
+	_ = foodFields
+	// foodDescCreatedAt is the schema descriptor for created_at field.
+	foodDescCreatedAt := foodFields[4].Descriptor()
+	// food.DefaultCreatedAt holds the default value on creation for the created_at field.
+	food.DefaultCreatedAt = foodDescCreatedAt.Default.(func() time.Time)
+	// foodDescUpdatedAt is the schema descriptor for updated_at field.
+	foodDescUpdatedAt := foodFields[5].Descriptor()
+	// food.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	food.DefaultUpdatedAt = foodDescUpdatedAt.Default.(func() time.Time)
+	// food.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	food.UpdateDefaultUpdatedAt = foodDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// foodDescID is the schema descriptor for id field.
+	foodDescID := foodFields[0].Descriptor()
+	// food.DefaultID holds the default value on creation for the id field.
+	food.DefaultID = foodDescID.Default.(func() uuid.UUID)
+	foodorderlineFields := schema.FoodOrderLine{}.Fields()
+	_ = foodorderlineFields
+	// foodorderlineDescCreatedAt is the schema descriptor for created_at field.
+	foodorderlineDescCreatedAt := foodorderlineFields[4].Descriptor()
+	// foodorderline.DefaultCreatedAt holds the default value on creation for the created_at field.
+	foodorderline.DefaultCreatedAt = foodorderlineDescCreatedAt.Default.(func() time.Time)
+	// foodorderlineDescUpdatedAt is the schema descriptor for updated_at field.
+	foodorderlineDescUpdatedAt := foodorderlineFields[5].Descriptor()
+	// foodorderline.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	foodorderline.DefaultUpdatedAt = foodorderlineDescUpdatedAt.Default.(func() time.Time)
+	// foodorderline.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	foodorderline.UpdateDefaultUpdatedAt = foodorderlineDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// foodorderlineDescID is the schema descriptor for id field.
+	foodorderlineDescID := foodorderlineFields[0].Descriptor()
+	// foodorderline.DefaultID holds the default value on creation for the id field.
+	foodorderline.DefaultID = foodorderlineDescID.Default.(func() uuid.UUID)
+	movieFields := schema.Movie{}.Fields()
+	_ = movieFields
+	// movieDescCreatedAt is the schema descriptor for created_at field.
+	movieDescCreatedAt := movieFields[13].Descriptor()
+	// movie.DefaultCreatedAt holds the default value on creation for the created_at field.
+	movie.DefaultCreatedAt = movieDescCreatedAt.Default.(func() time.Time)
+	// movieDescUpdatedAt is the schema descriptor for updated_at field.
+	movieDescUpdatedAt := movieFields[14].Descriptor()
+	// movie.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	movie.DefaultUpdatedAt = movieDescUpdatedAt.Default.(func() time.Time)
+	// movie.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	movie.UpdateDefaultUpdatedAt = movieDescUpdatedAt.UpdateDefault.(func() time.Time)
 	roomFields := schema.Room{}.Fields()
 	_ = roomFields
 	// roomDescRoomNumber is the schema descriptor for room_number field.
@@ -24,21 +96,45 @@ func init() {
 	// room.RoomNumberValidator is a validator for the "room_number" field. It is called by the builders before save.
 	room.RoomNumberValidator = roomDescRoomNumber.Validators[0].(func(int) error)
 	// roomDescCreatedAt is the schema descriptor for created_at field.
-	roomDescCreatedAt := roomFields[2].Descriptor()
+	roomDescCreatedAt := roomFields[3].Descriptor()
 	// room.DefaultCreatedAt holds the default value on creation for the created_at field.
 	room.DefaultCreatedAt = roomDescCreatedAt.Default.(func() time.Time)
 	// roomDescUpdatedAt is the schema descriptor for updated_at field.
-	roomDescUpdatedAt := roomFields[3].Descriptor()
+	roomDescUpdatedAt := roomFields[4].Descriptor()
 	// room.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	room.DefaultUpdatedAt = roomDescUpdatedAt.Default.(func() time.Time)
 	// room.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	room.UpdateDefaultUpdatedAt = roomDescUpdatedAt.UpdateDefault.(func() time.Time)
+	seatFields := schema.Seat{}.Fields()
+	_ = seatFields
+	// seatDescCreatedAt is the schema descriptor for created_at field.
+	seatDescCreatedAt := seatFields[4].Descriptor()
+	// seat.DefaultCreatedAt holds the default value on creation for the created_at field.
+	seat.DefaultCreatedAt = seatDescCreatedAt.Default.(func() time.Time)
+	// seatDescUpdatedAt is the schema descriptor for updated_at field.
+	seatDescUpdatedAt := seatFields[5].Descriptor()
+	// seat.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	seat.DefaultUpdatedAt = seatDescUpdatedAt.Default.(func() time.Time)
+	// seat.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	seat.UpdateDefaultUpdatedAt = seatDescUpdatedAt.UpdateDefault.(func() time.Time)
 	sessionFields := schema.Session{}.Fields()
 	_ = sessionFields
 	// sessionDescCreatedAt is the schema descriptor for created_at field.
 	sessionDescCreatedAt := sessionFields[4].Descriptor()
 	// session.DefaultCreatedAt holds the default value on creation for the created_at field.
 	session.DefaultCreatedAt = sessionDescCreatedAt.Default.(func() time.Time)
+	showtimeFields := schema.ShowTime{}.Fields()
+	_ = showtimeFields
+	// showtimeDescCreatedAt is the schema descriptor for created_at field.
+	showtimeDescCreatedAt := showtimeFields[5].Descriptor()
+	// showtime.DefaultCreatedAt holds the default value on creation for the created_at field.
+	showtime.DefaultCreatedAt = showtimeDescCreatedAt.Default.(func() time.Time)
+	// showtimeDescUpdatedAt is the schema descriptor for updated_at field.
+	showtimeDescUpdatedAt := showtimeFields[6].Descriptor()
+	// showtime.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	showtime.DefaultUpdatedAt = showtimeDescUpdatedAt.Default.(func() time.Time)
+	// showtime.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	showtime.UpdateDefaultUpdatedAt = showtimeDescUpdatedAt.UpdateDefault.(func() time.Time)
 	theaterFields := schema.Theater{}.Fields()
 	_ = theaterFields
 	// theaterDescCreatedAt is the schema descriptor for created_at field.
@@ -51,6 +147,38 @@ func init() {
 	theater.DefaultUpdatedAt = theaterDescUpdatedAt.Default.(func() time.Time)
 	// theater.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	theater.UpdateDefaultUpdatedAt = theaterDescUpdatedAt.UpdateDefault.(func() time.Time)
+	ticketFields := schema.Ticket{}.Fields()
+	_ = ticketFields
+	// ticketDescIsBooked is the schema descriptor for is_booked field.
+	ticketDescIsBooked := ticketFields[1].Descriptor()
+	// ticket.DefaultIsBooked holds the default value on creation for the is_booked field.
+	ticket.DefaultIsBooked = ticketDescIsBooked.Default.(bool)
+	// ticketDescPrice is the schema descriptor for price field.
+	ticketDescPrice := ticketFields[2].Descriptor()
+	// ticket.PriceValidator is a validator for the "price" field. It is called by the builders before save.
+	ticket.PriceValidator = ticketDescPrice.Validators[0].(func(float64) error)
+	// ticketDescCreatedAt is the schema descriptor for created_at field.
+	ticketDescCreatedAt := ticketFields[6].Descriptor()
+	// ticket.DefaultCreatedAt holds the default value on creation for the created_at field.
+	ticket.DefaultCreatedAt = ticketDescCreatedAt.Default.(func() time.Time)
+	// ticketDescUpdatedAt is the schema descriptor for updated_at field.
+	ticketDescUpdatedAt := ticketFields[7].Descriptor()
+	// ticket.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	ticket.DefaultUpdatedAt = ticketDescUpdatedAt.Default.(func() time.Time)
+	// ticket.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	ticket.UpdateDefaultUpdatedAt = ticketDescUpdatedAt.UpdateDefault.(func() time.Time)
+	transactionFields := schema.Transaction{}.Fields()
+	_ = transactionFields
+	// transactionDescCreatedAt is the schema descriptor for created_at field.
+	transactionDescCreatedAt := transactionFields[3].Descriptor()
+	// transaction.DefaultCreatedAt holds the default value on creation for the created_at field.
+	transaction.DefaultCreatedAt = transactionDescCreatedAt.Default.(func() time.Time)
+	// transactionDescUpdatedAt is the schema descriptor for updated_at field.
+	transactionDescUpdatedAt := transactionFields[4].Descriptor()
+	// transaction.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	transaction.DefaultUpdatedAt = transactionDescUpdatedAt.Default.(func() time.Time)
+	// transaction.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	transaction.UpdateDefaultUpdatedAt = transactionDescUpdatedAt.UpdateDefault.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescDisplayname is the schema descriptor for displayname field.

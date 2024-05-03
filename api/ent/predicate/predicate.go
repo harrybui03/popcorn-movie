@@ -6,14 +6,38 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Comment is the predicate function for comment builders.
+type Comment func(*sql.Selector)
+
+// Food is the predicate function for food builders.
+type Food func(*sql.Selector)
+
+// FoodOrderLine is the predicate function for foodorderline builders.
+type FoodOrderLine func(*sql.Selector)
+
+// Movie is the predicate function for movie builders.
+type Movie func(*sql.Selector)
+
 // Room is the predicate function for room builders.
 type Room func(*sql.Selector)
+
+// Seat is the predicate function for seat builders.
+type Seat func(*sql.Selector)
 
 // Session is the predicate function for session builders.
 type Session func(*sql.Selector)
 
+// ShowTime is the predicate function for showtime builders.
+type ShowTime func(*sql.Selector)
+
 // Theater is the predicate function for theater builders.
 type Theater func(*sql.Selector)
+
+// Ticket is the predicate function for ticket builders.
+type Ticket func(*sql.Selector)
+
+// Transaction is the predicate function for transaction builders.
+type Transaction func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

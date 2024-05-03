@@ -4,6 +4,7 @@ import (
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
 	"PopcornMovie/ent/room"
+	"PopcornMovie/ent/showtime"
 	"PopcornMovie/ent/theater"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
@@ -26,7 +27,7 @@ type impl struct {
 }
 
 func (i impl) ListRooms(ctx context.Context, input model.ListRoomInput) ([]*ent.Room, int, error) {
-	query := i.repository.Room().RoomQuery()
+	query := i.repository.Room().RoomQuery().WithTheater().WithShowTimes().WithSeats()
 	if input.Filter != nil {
 		theaterID, err := uuid.Parse(input.Filter.TheaterID)
 		if err != nil {
@@ -35,6 +36,24 @@ func (i impl) ListRooms(ctx context.Context, input model.ListRoomInput) ([]*ent.
 		}
 
 		query.Where(room.HasTheaterWith(theater.ID(theaterID)))
+
+		if input.Filter.StartAt != nil {
+			query.Where(room.HasShowTimesWith(showtime.StartAtGTE(*input.Filter.StartAt)))
+		}
+
+		if input.Filter.EndAt != nil {
+			query.Where(room.HasShowTimesWith(showtime.EndAtLTE(*input.Filter.EndAt)))
+		}
+
+		if input.Filter.ShowTimeID != nil {
+			showTimeID, err := uuid.Parse(*input.Filter.ShowTimeID)
+			if err != nil {
+				i.logger.Error(err.Error())
+				return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+			}
+
+			query.Where(room.HasShowTimesWith(showtime.ID(showTimeID)))
+		}
 	}
 
 	count, err := i.repository.Room().CountRooms(ctx, query)

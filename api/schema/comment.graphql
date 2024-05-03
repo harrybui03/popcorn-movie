@@ -1,0 +1,21 @@
+type Comment {
+    id:ID!
+    rating:Float!
+    description:String!
+    movie:Movie!
+    user:User!
+}
+
+input ListCommentFilter{
+    movieId: String!
+}
+
+input ListCommentInput {
+    filter:ListMovieFilter!
+    pagination:PaginationInput!
+}
+
+type ListCommentOutput {
+    data:[Comment]!
+    pagination:PaginationOutput!
+}

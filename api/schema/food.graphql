@@ -1,0 +1,15 @@
+type Food {
+    id:ID!
+    name:String!
+    price:Float!
+    image:String!
+}
+
+input ListFoodInput{
+    pagination: PaginationInput
+}
+
+type ListFoodOutput {
+    data: [Food]!
+    pagination:PaginationOutput!
+}

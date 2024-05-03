@@ -413,7 +413,9 @@ func (tq *TheaterQuery) loadRooms(ctx context.Context, query *RoomQuery, nodes [
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(room.FieldTheaterID)
+	}
 	query.Where(predicate.Room(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(theater.RoomsColumn), fks...))
 	}))
@@ -422,13 +424,10 @@ func (tq *TheaterQuery) loadRooms(ctx context.Context, query *RoomQuery, nodes [
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.theater_rooms
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "theater_rooms" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.TheaterID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "theater_rooms" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "theater_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

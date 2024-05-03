@@ -5,6 +5,8 @@ package ent
 import (
 	"PopcornMovie/ent/predicate"
 	"PopcornMovie/ent/room"
+	"PopcornMovie/ent/seat"
+	"PopcornMovie/ent/showtime"
 	"PopcornMovie/ent/theater"
 	"context"
 	"errors"
@@ -51,29 +53,59 @@ func (ru *RoomUpdate) AddRoomNumber(i int) *RoomUpdate {
 	return ru
 }
 
+// SetTheaterID sets the "theater_id" field.
+func (ru *RoomUpdate) SetTheaterID(u uuid.UUID) *RoomUpdate {
+	ru.mutation.SetTheaterID(u)
+	return ru
+}
+
+// SetNillableTheaterID sets the "theater_id" field if the given value is not nil.
+func (ru *RoomUpdate) SetNillableTheaterID(u *uuid.UUID) *RoomUpdate {
+	if u != nil {
+		ru.SetTheaterID(*u)
+	}
+	return ru
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (ru *RoomUpdate) SetUpdatedAt(t time.Time) *RoomUpdate {
 	ru.mutation.SetUpdatedAt(t)
 	return ru
 }
 
-// SetTheaterID sets the "theater" edge to the Theater entity by ID.
-func (ru *RoomUpdate) SetTheaterID(id uuid.UUID) *RoomUpdate {
-	ru.mutation.SetTheaterID(id)
-	return ru
-}
-
-// SetNillableTheaterID sets the "theater" edge to the Theater entity by ID if the given value is not nil.
-func (ru *RoomUpdate) SetNillableTheaterID(id *uuid.UUID) *RoomUpdate {
-	if id != nil {
-		ru = ru.SetTheaterID(*id)
-	}
-	return ru
-}
-
 // SetTheater sets the "theater" edge to the Theater entity.
 func (ru *RoomUpdate) SetTheater(t *Theater) *RoomUpdate {
 	return ru.SetTheaterID(t.ID)
+}
+
+// AddSeatIDs adds the "seats" edge to the Seat entity by IDs.
+func (ru *RoomUpdate) AddSeatIDs(ids ...uuid.UUID) *RoomUpdate {
+	ru.mutation.AddSeatIDs(ids...)
+	return ru
+}
+
+// AddSeats adds the "seats" edges to the Seat entity.
+func (ru *RoomUpdate) AddSeats(s ...*Seat) *RoomUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.AddSeatIDs(ids...)
+}
+
+// AddShowTimeIDs adds the "showTimes" edge to the ShowTime entity by IDs.
+func (ru *RoomUpdate) AddShowTimeIDs(ids ...uuid.UUID) *RoomUpdate {
+	ru.mutation.AddShowTimeIDs(ids...)
+	return ru
+}
+
+// AddShowTimes adds the "showTimes" edges to the ShowTime entity.
+func (ru *RoomUpdate) AddShowTimes(s ...*ShowTime) *RoomUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.AddShowTimeIDs(ids...)
 }
 
 // Mutation returns the RoomMutation object of the builder.
@@ -85,6 +117,48 @@ func (ru *RoomUpdate) Mutation() *RoomMutation {
 func (ru *RoomUpdate) ClearTheater() *RoomUpdate {
 	ru.mutation.ClearTheater()
 	return ru
+}
+
+// ClearSeats clears all "seats" edges to the Seat entity.
+func (ru *RoomUpdate) ClearSeats() *RoomUpdate {
+	ru.mutation.ClearSeats()
+	return ru
+}
+
+// RemoveSeatIDs removes the "seats" edge to Seat entities by IDs.
+func (ru *RoomUpdate) RemoveSeatIDs(ids ...uuid.UUID) *RoomUpdate {
+	ru.mutation.RemoveSeatIDs(ids...)
+	return ru
+}
+
+// RemoveSeats removes "seats" edges to Seat entities.
+func (ru *RoomUpdate) RemoveSeats(s ...*Seat) *RoomUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.RemoveSeatIDs(ids...)
+}
+
+// ClearShowTimes clears all "showTimes" edges to the ShowTime entity.
+func (ru *RoomUpdate) ClearShowTimes() *RoomUpdate {
+	ru.mutation.ClearShowTimes()
+	return ru
+}
+
+// RemoveShowTimeIDs removes the "showTimes" edge to ShowTime entities by IDs.
+func (ru *RoomUpdate) RemoveShowTimeIDs(ids ...uuid.UUID) *RoomUpdate {
+	ru.mutation.RemoveShowTimeIDs(ids...)
+	return ru
+}
+
+// RemoveShowTimes removes "showTimes" edges to ShowTime entities.
+func (ru *RoomUpdate) RemoveShowTimes(s ...*ShowTime) *RoomUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.RemoveShowTimeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -129,6 +203,9 @@ func (ru *RoomUpdate) check() error {
 		if err := room.RoomNumberValidator(v); err != nil {
 			return &ValidationError{Name: "room_number", err: fmt.Errorf(`ent: validator failed for field "Room.room_number": %w`, err)}
 		}
+	}
+	if _, ok := ru.mutation.TheaterID(); ru.mutation.TheaterCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Room.theater"`)
 	}
 	return nil
 }
@@ -183,6 +260,96 @@ func (ru *RoomUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ru.mutation.SeatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedSeatsIDs(); len(nodes) > 0 && !ru.mutation.SeatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.SeatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.ShowTimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedShowTimesIDs(); len(nodes) > 0 && !ru.mutation.ShowTimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.ShowTimesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{room.Label}
@@ -224,29 +391,59 @@ func (ruo *RoomUpdateOne) AddRoomNumber(i int) *RoomUpdateOne {
 	return ruo
 }
 
+// SetTheaterID sets the "theater_id" field.
+func (ruo *RoomUpdateOne) SetTheaterID(u uuid.UUID) *RoomUpdateOne {
+	ruo.mutation.SetTheaterID(u)
+	return ruo
+}
+
+// SetNillableTheaterID sets the "theater_id" field if the given value is not nil.
+func (ruo *RoomUpdateOne) SetNillableTheaterID(u *uuid.UUID) *RoomUpdateOne {
+	if u != nil {
+		ruo.SetTheaterID(*u)
+	}
+	return ruo
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (ruo *RoomUpdateOne) SetUpdatedAt(t time.Time) *RoomUpdateOne {
 	ruo.mutation.SetUpdatedAt(t)
 	return ruo
 }
 
-// SetTheaterID sets the "theater" edge to the Theater entity by ID.
-func (ruo *RoomUpdateOne) SetTheaterID(id uuid.UUID) *RoomUpdateOne {
-	ruo.mutation.SetTheaterID(id)
-	return ruo
-}
-
-// SetNillableTheaterID sets the "theater" edge to the Theater entity by ID if the given value is not nil.
-func (ruo *RoomUpdateOne) SetNillableTheaterID(id *uuid.UUID) *RoomUpdateOne {
-	if id != nil {
-		ruo = ruo.SetTheaterID(*id)
-	}
-	return ruo
-}
-
 // SetTheater sets the "theater" edge to the Theater entity.
 func (ruo *RoomUpdateOne) SetTheater(t *Theater) *RoomUpdateOne {
 	return ruo.SetTheaterID(t.ID)
+}
+
+// AddSeatIDs adds the "seats" edge to the Seat entity by IDs.
+func (ruo *RoomUpdateOne) AddSeatIDs(ids ...uuid.UUID) *RoomUpdateOne {
+	ruo.mutation.AddSeatIDs(ids...)
+	return ruo
+}
+
+// AddSeats adds the "seats" edges to the Seat entity.
+func (ruo *RoomUpdateOne) AddSeats(s ...*Seat) *RoomUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.AddSeatIDs(ids...)
+}
+
+// AddShowTimeIDs adds the "showTimes" edge to the ShowTime entity by IDs.
+func (ruo *RoomUpdateOne) AddShowTimeIDs(ids ...uuid.UUID) *RoomUpdateOne {
+	ruo.mutation.AddShowTimeIDs(ids...)
+	return ruo
+}
+
+// AddShowTimes adds the "showTimes" edges to the ShowTime entity.
+func (ruo *RoomUpdateOne) AddShowTimes(s ...*ShowTime) *RoomUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.AddShowTimeIDs(ids...)
 }
 
 // Mutation returns the RoomMutation object of the builder.
@@ -258,6 +455,48 @@ func (ruo *RoomUpdateOne) Mutation() *RoomMutation {
 func (ruo *RoomUpdateOne) ClearTheater() *RoomUpdateOne {
 	ruo.mutation.ClearTheater()
 	return ruo
+}
+
+// ClearSeats clears all "seats" edges to the Seat entity.
+func (ruo *RoomUpdateOne) ClearSeats() *RoomUpdateOne {
+	ruo.mutation.ClearSeats()
+	return ruo
+}
+
+// RemoveSeatIDs removes the "seats" edge to Seat entities by IDs.
+func (ruo *RoomUpdateOne) RemoveSeatIDs(ids ...uuid.UUID) *RoomUpdateOne {
+	ruo.mutation.RemoveSeatIDs(ids...)
+	return ruo
+}
+
+// RemoveSeats removes "seats" edges to Seat entities.
+func (ruo *RoomUpdateOne) RemoveSeats(s ...*Seat) *RoomUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.RemoveSeatIDs(ids...)
+}
+
+// ClearShowTimes clears all "showTimes" edges to the ShowTime entity.
+func (ruo *RoomUpdateOne) ClearShowTimes() *RoomUpdateOne {
+	ruo.mutation.ClearShowTimes()
+	return ruo
+}
+
+// RemoveShowTimeIDs removes the "showTimes" edge to ShowTime entities by IDs.
+func (ruo *RoomUpdateOne) RemoveShowTimeIDs(ids ...uuid.UUID) *RoomUpdateOne {
+	ruo.mutation.RemoveShowTimeIDs(ids...)
+	return ruo
+}
+
+// RemoveShowTimes removes "showTimes" edges to ShowTime entities.
+func (ruo *RoomUpdateOne) RemoveShowTimes(s ...*ShowTime) *RoomUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.RemoveShowTimeIDs(ids...)
 }
 
 // Where appends a list predicates to the RoomUpdate builder.
@@ -315,6 +554,9 @@ func (ruo *RoomUpdateOne) check() error {
 		if err := room.RoomNumberValidator(v); err != nil {
 			return &ValidationError{Name: "room_number", err: fmt.Errorf(`ent: validator failed for field "Room.room_number": %w`, err)}
 		}
+	}
+	if _, ok := ruo.mutation.TheaterID(); ruo.mutation.TheaterCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Room.theater"`)
 	}
 	return nil
 }
@@ -379,6 +621,96 @@ func (ruo *RoomUpdateOne) sqlSave(ctx context.Context) (_node *Room, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(theater.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.SeatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedSeatsIDs(); len(nodes) > 0 && !ruo.mutation.SeatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.SeatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.ShowTimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedShowTimesIDs(); len(nodes) > 0 && !ruo.mutation.ShowTimesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.ShowTimesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

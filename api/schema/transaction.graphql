@@ -1,0 +1,13 @@
+type Transaction {
+    id: ID!
+    user: User!
+    total: Float!
+    tickets: [Ticket!]!
+    foods: [FoodOrderLine!]!
+}
+
+input CreateTransactionInput{
+    seatIDs: [CreateTicketInput!]!
+    foods: [CreateFoodOrderLineInput!]!
+    showTimeID: ID!
+}

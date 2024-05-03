@@ -1,0 +1,21 @@
+type ShowTime{
+    id:ID!
+    startAt:Time!
+    endAt:Time!
+    movie:Movie!
+    room:Room!
+}
+
+input ListShowTimeFilter{
+    movieId: String
+}
+
+input ListShowTimeInput{
+    filter:ListShowTimeFilter!
+    pagination:PaginationInput!
+}
+
+type ListShowTimeOutput{
+    data:[ShowTime!]!
+    pagination:PaginationOutput!
+}

@@ -4,6 +4,8 @@ package ent
 
 import (
 	"PopcornMovie/ent/room"
+	"PopcornMovie/ent/seat"
+	"PopcornMovie/ent/showtime"
 	"PopcornMovie/ent/theater"
 	"context"
 	"errors"
@@ -25,6 +27,12 @@ type RoomCreate struct {
 // SetRoomNumber sets the "room_number" field.
 func (rc *RoomCreate) SetRoomNumber(i int) *RoomCreate {
 	rc.mutation.SetRoomNumber(i)
+	return rc
+}
+
+// SetTheaterID sets the "theater_id" field.
+func (rc *RoomCreate) SetTheaterID(u uuid.UUID) *RoomCreate {
+	rc.mutation.SetTheaterID(u)
 	return rc
 }
 
@@ -62,23 +70,39 @@ func (rc *RoomCreate) SetID(u uuid.UUID) *RoomCreate {
 	return rc
 }
 
-// SetTheaterID sets the "theater" edge to the Theater entity by ID.
-func (rc *RoomCreate) SetTheaterID(id uuid.UUID) *RoomCreate {
-	rc.mutation.SetTheaterID(id)
-	return rc
-}
-
-// SetNillableTheaterID sets the "theater" edge to the Theater entity by ID if the given value is not nil.
-func (rc *RoomCreate) SetNillableTheaterID(id *uuid.UUID) *RoomCreate {
-	if id != nil {
-		rc = rc.SetTheaterID(*id)
-	}
-	return rc
-}
-
 // SetTheater sets the "theater" edge to the Theater entity.
 func (rc *RoomCreate) SetTheater(t *Theater) *RoomCreate {
 	return rc.SetTheaterID(t.ID)
+}
+
+// AddSeatIDs adds the "seats" edge to the Seat entity by IDs.
+func (rc *RoomCreate) AddSeatIDs(ids ...uuid.UUID) *RoomCreate {
+	rc.mutation.AddSeatIDs(ids...)
+	return rc
+}
+
+// AddSeats adds the "seats" edges to the Seat entity.
+func (rc *RoomCreate) AddSeats(s ...*Seat) *RoomCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return rc.AddSeatIDs(ids...)
+}
+
+// AddShowTimeIDs adds the "showTimes" edge to the ShowTime entity by IDs.
+func (rc *RoomCreate) AddShowTimeIDs(ids ...uuid.UUID) *RoomCreate {
+	rc.mutation.AddShowTimeIDs(ids...)
+	return rc
+}
+
+// AddShowTimes adds the "showTimes" edges to the ShowTime entity.
+func (rc *RoomCreate) AddShowTimes(s ...*ShowTime) *RoomCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return rc.AddShowTimeIDs(ids...)
 }
 
 // Mutation returns the RoomMutation object of the builder.
@@ -136,11 +160,17 @@ func (rc *RoomCreate) check() error {
 			return &ValidationError{Name: "room_number", err: fmt.Errorf(`ent: validator failed for field "Room.room_number": %w`, err)}
 		}
 	}
+	if _, ok := rc.mutation.TheaterID(); !ok {
+		return &ValidationError{Name: "theater_id", err: errors.New(`ent: missing required field "Room.theater_id"`)}
+	}
 	if _, ok := rc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Room.created_at"`)}
 	}
 	if _, ok := rc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Room.updated_at"`)}
+	}
+	if _, ok := rc.mutation.TheaterID(); !ok {
+		return &ValidationError{Name: "theater", err: errors.New(`ent: missing required edge "Room.theater"`)}
 	}
 	return nil
 }
@@ -203,7 +233,39 @@ func (rc *RoomCreate) createSpec() (*Room, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.theater_rooms = &nodes[0]
+		_node.TheaterID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.SeatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.SeatsTable,
+			Columns: []string{room.SeatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.ShowTimesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   room.ShowTimesTable,
+			Columns: []string{room.ShowTimesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(showtime.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

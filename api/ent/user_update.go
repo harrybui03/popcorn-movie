@@ -3,7 +3,9 @@
 package ent
 
 import (
+	"PopcornMovie/ent/comment"
 	"PopcornMovie/ent/predicate"
+	"PopcornMovie/ent/transaction"
 	"PopcornMovie/ent/user"
 	"context"
 	"errors"
@@ -13,6 +15,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -104,9 +107,81 @@ func (uu *UserUpdate) SetUpdatedAt(t time.Time) *UserUpdate {
 	return uu
 }
 
+// AddTransactionIDs adds the "transactions" edge to the Transaction entity by IDs.
+func (uu *UserUpdate) AddTransactionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddTransactionIDs(ids...)
+	return uu
+}
+
+// AddTransactions adds the "transactions" edges to the Transaction entity.
+func (uu *UserUpdate) AddTransactions(t ...*Transaction) *UserUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uu.AddTransactionIDs(ids...)
+}
+
+// AddCommentIDs adds the "comments" edge to the Comment entity by IDs.
+func (uu *UserUpdate) AddCommentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddCommentIDs(ids...)
+	return uu
+}
+
+// AddComments adds the "comments" edges to the Comment entity.
+func (uu *UserUpdate) AddComments(c ...*Comment) *UserUpdate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddCommentIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearTransactions clears all "transactions" edges to the Transaction entity.
+func (uu *UserUpdate) ClearTransactions() *UserUpdate {
+	uu.mutation.ClearTransactions()
+	return uu
+}
+
+// RemoveTransactionIDs removes the "transactions" edge to Transaction entities by IDs.
+func (uu *UserUpdate) RemoveTransactionIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveTransactionIDs(ids...)
+	return uu
+}
+
+// RemoveTransactions removes "transactions" edges to Transaction entities.
+func (uu *UserUpdate) RemoveTransactions(t ...*Transaction) *UserUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uu.RemoveTransactionIDs(ids...)
+}
+
+// ClearComments clears all "comments" edges to the Comment entity.
+func (uu *UserUpdate) ClearComments() *UserUpdate {
+	uu.mutation.ClearComments()
+	return uu
+}
+
+// RemoveCommentIDs removes the "comments" edge to Comment entities by IDs.
+func (uu *UserUpdate) RemoveCommentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveCommentIDs(ids...)
+	return uu
+}
+
+// RemoveComments removes "comments" edges to Comment entities.
+func (uu *UserUpdate) RemoveComments(c ...*Comment) *UserUpdate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveCommentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -199,6 +274,96 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := uu.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uu.mutation.TransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedTransactionsIDs(); len(nodes) > 0 && !uu.mutation.TransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.TransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !uu.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.CommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -296,9 +461,81 @@ func (uuo *UserUpdateOne) SetUpdatedAt(t time.Time) *UserUpdateOne {
 	return uuo
 }
 
+// AddTransactionIDs adds the "transactions" edge to the Transaction entity by IDs.
+func (uuo *UserUpdateOne) AddTransactionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddTransactionIDs(ids...)
+	return uuo
+}
+
+// AddTransactions adds the "transactions" edges to the Transaction entity.
+func (uuo *UserUpdateOne) AddTransactions(t ...*Transaction) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uuo.AddTransactionIDs(ids...)
+}
+
+// AddCommentIDs adds the "comments" edge to the Comment entity by IDs.
+func (uuo *UserUpdateOne) AddCommentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddCommentIDs(ids...)
+	return uuo
+}
+
+// AddComments adds the "comments" edges to the Comment entity.
+func (uuo *UserUpdateOne) AddComments(c ...*Comment) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddCommentIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearTransactions clears all "transactions" edges to the Transaction entity.
+func (uuo *UserUpdateOne) ClearTransactions() *UserUpdateOne {
+	uuo.mutation.ClearTransactions()
+	return uuo
+}
+
+// RemoveTransactionIDs removes the "transactions" edge to Transaction entities by IDs.
+func (uuo *UserUpdateOne) RemoveTransactionIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveTransactionIDs(ids...)
+	return uuo
+}
+
+// RemoveTransactions removes "transactions" edges to Transaction entities.
+func (uuo *UserUpdateOne) RemoveTransactions(t ...*Transaction) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return uuo.RemoveTransactionIDs(ids...)
+}
+
+// ClearComments clears all "comments" edges to the Comment entity.
+func (uuo *UserUpdateOne) ClearComments() *UserUpdateOne {
+	uuo.mutation.ClearComments()
+	return uuo
+}
+
+// RemoveCommentIDs removes the "comments" edge to Comment entities by IDs.
+func (uuo *UserUpdateOne) RemoveCommentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveCommentIDs(ids...)
+	return uuo
+}
+
+// RemoveComments removes "comments" edges to Comment entities.
+func (uuo *UserUpdateOne) RemoveComments(c ...*Comment) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveCommentIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -421,6 +658,96 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if value, ok := uuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(user.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if uuo.mutation.TransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedTransactionsIDs(); len(nodes) > 0 && !uuo.mutation.TransactionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.TransactionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.TransactionsTable,
+			Columns: []string{user.TransactionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(transaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !uuo.mutation.CommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.CommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CommentsTable,
+			Columns: []string{user.CommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(comment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

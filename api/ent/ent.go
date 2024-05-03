@@ -3,9 +3,17 @@
 package ent
 
 import (
+	"PopcornMovie/ent/comment"
+	"PopcornMovie/ent/food"
+	"PopcornMovie/ent/foodorderline"
+	"PopcornMovie/ent/movie"
 	"PopcornMovie/ent/room"
+	"PopcornMovie/ent/seat"
 	"PopcornMovie/ent/session"
+	"PopcornMovie/ent/showtime"
 	"PopcornMovie/ent/theater"
+	"PopcornMovie/ent/ticket"
+	"PopcornMovie/ent/transaction"
 	"PopcornMovie/ent/user"
 	"context"
 	"errors"
@@ -76,10 +84,18 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			room.Table:    room.ValidColumn,
-			session.Table: session.ValidColumn,
-			theater.Table: theater.ValidColumn,
-			user.Table:    user.ValidColumn,
+			comment.Table:       comment.ValidColumn,
+			food.Table:          food.ValidColumn,
+			foodorderline.Table: foodorderline.ValidColumn,
+			movie.Table:         movie.ValidColumn,
+			room.Table:          room.ValidColumn,
+			seat.Table:          seat.ValidColumn,
+			session.Table:       session.ValidColumn,
+			showtime.Table:      showtime.ValidColumn,
+			theater.Table:       theater.ValidColumn,
+			ticket.Table:        ticket.ValidColumn,
+			transaction.Table:   transaction.ValidColumn,
+			user.Table:          user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

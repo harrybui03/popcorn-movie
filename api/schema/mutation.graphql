@@ -1,6 +1,9 @@
 type Mutation {
+    #Auth
     Signup(input: RegisterInput!):String!
     Login(input: LoginInput!):JWT!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
     ChangePassword(input: ChangePasswordInput!):String! @auth
+    #Transaction
+    CreateTransaction(input: CreateTransactionInput!):Transaction! @auth
 }

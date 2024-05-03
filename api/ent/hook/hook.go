@@ -8,6 +8,54 @@ import (
 	"fmt"
 )
 
+// The CommentFunc type is an adapter to allow the use of ordinary
+// function as Comment mutator.
+type CommentFunc func(context.Context, *ent.CommentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CommentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CommentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CommentMutation", m)
+}
+
+// The FoodFunc type is an adapter to allow the use of ordinary
+// function as Food mutator.
+type FoodFunc func(context.Context, *ent.FoodMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FoodFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FoodMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FoodMutation", m)
+}
+
+// The FoodOrderLineFunc type is an adapter to allow the use of ordinary
+// function as FoodOrderLine mutator.
+type FoodOrderLineFunc func(context.Context, *ent.FoodOrderLineMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f FoodOrderLineFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.FoodOrderLineMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FoodOrderLineMutation", m)
+}
+
+// The MovieFunc type is an adapter to allow the use of ordinary
+// function as Movie mutator.
+type MovieFunc func(context.Context, *ent.MovieMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f MovieFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.MovieMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MovieMutation", m)
+}
+
 // The RoomFunc type is an adapter to allow the use of ordinary
 // function as Room mutator.
 type RoomFunc func(context.Context, *ent.RoomMutation) (ent.Value, error)
@@ -18,6 +66,18 @@ func (f RoomFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RoomMutation", m)
+}
+
+// The SeatFunc type is an adapter to allow the use of ordinary
+// function as Seat mutator.
+type SeatFunc func(context.Context, *ent.SeatMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SeatFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SeatMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SeatMutation", m)
 }
 
 // The SessionFunc type is an adapter to allow the use of ordinary
@@ -32,6 +92,18 @@ func (f SessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SessionMutation", m)
 }
 
+// The ShowTimeFunc type is an adapter to allow the use of ordinary
+// function as ShowTime mutator.
+type ShowTimeFunc func(context.Context, *ent.ShowTimeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ShowTimeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ShowTimeMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ShowTimeMutation", m)
+}
+
 // The TheaterFunc type is an adapter to allow the use of ordinary
 // function as Theater mutator.
 type TheaterFunc func(context.Context, *ent.TheaterMutation) (ent.Value, error)
@@ -42,6 +114,30 @@ func (f TheaterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TheaterMutation", m)
+}
+
+// The TicketFunc type is an adapter to allow the use of ordinary
+// function as Ticket mutator.
+type TicketFunc func(context.Context, *ent.TicketMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TicketFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TicketMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TicketMutation", m)
+}
+
+// The TransactionFunc type is an adapter to allow the use of ordinary
+// function as Transaction mutator.
+type TransactionFunc func(context.Context, *ent.TransactionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TransactionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TransactionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TransactionMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

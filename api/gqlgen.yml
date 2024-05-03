@@ -60,4 +60,19 @@ models:
     model: ./ent.Theater
   Room:
     model: ./ent.Room
-
+  ShowTime:
+    model: ./ent.ShowTime
+  Movie:
+    model: ./ent.Movie
+  Comment:
+    model: ./ent.Comment
+  Food:
+    model: ./ent.Food
+  Seat:
+    model: ./ent.Seat
+  Ticket:
+    model: ./ent.Ticket
+  Transaction:
+    model: ./ent.Transaction
+  FoodOrderLine:
+    model: ./ent.FoodOrderLine

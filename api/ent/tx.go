@@ -12,12 +12,28 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Comment is the client for interacting with the Comment builders.
+	Comment *CommentClient
+	// Food is the client for interacting with the Food builders.
+	Food *FoodClient
+	// FoodOrderLine is the client for interacting with the FoodOrderLine builders.
+	FoodOrderLine *FoodOrderLineClient
+	// Movie is the client for interacting with the Movie builders.
+	Movie *MovieClient
 	// Room is the client for interacting with the Room builders.
 	Room *RoomClient
+	// Seat is the client for interacting with the Seat builders.
+	Seat *SeatClient
 	// Session is the client for interacting with the Session builders.
 	Session *SessionClient
+	// ShowTime is the client for interacting with the ShowTime builders.
+	ShowTime *ShowTimeClient
 	// Theater is the client for interacting with the Theater builders.
 	Theater *TheaterClient
+	// Ticket is the client for interacting with the Ticket builders.
+	Ticket *TicketClient
+	// Transaction is the client for interacting with the Transaction builders.
+	Transaction *TransactionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -151,9 +167,17 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Comment = NewCommentClient(tx.config)
+	tx.Food = NewFoodClient(tx.config)
+	tx.FoodOrderLine = NewFoodOrderLineClient(tx.config)
+	tx.Movie = NewMovieClient(tx.config)
 	tx.Room = NewRoomClient(tx.config)
+	tx.Seat = NewSeatClient(tx.config)
 	tx.Session = NewSessionClient(tx.config)
+	tx.ShowTime = NewShowTimeClient(tx.config)
 	tx.Theater = NewTheaterClient(tx.config)
+	tx.Ticket = NewTicketClient(tx.config)
+	tx.Transaction = NewTransactionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 
@@ -164,7 +188,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Room.QueryXXX(), the query will be executed
+// applies a query, for example: Comment.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

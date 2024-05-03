@@ -5,8 +5,11 @@ package ent
 import (
 	"PopcornMovie/ent/predicate"
 	"PopcornMovie/ent/room"
+	"PopcornMovie/ent/seat"
+	"PopcornMovie/ent/showtime"
 	"PopcornMovie/ent/theater"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -19,12 +22,13 @@ import (
 // RoomQuery is the builder for querying Room entities.
 type RoomQuery struct {
 	config
-	ctx         *QueryContext
-	order       []room.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.Room
-	withTheater *TheaterQuery
-	withFKs     bool
+	ctx           *QueryContext
+	order         []room.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Room
+	withTheater   *TheaterQuery
+	withSeats     *SeatQuery
+	withShowTimes *ShowTimeQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +80,50 @@ func (rq *RoomQuery) QueryTheater() *TheaterQuery {
 			sqlgraph.From(room.Table, room.FieldID, selector),
 			sqlgraph.To(theater.Table, theater.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, room.TheaterTable, room.TheaterColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySeats chains the current query on the "seats" edge.
+func (rq *RoomQuery) QuerySeats() *SeatQuery {
+	query := (&SeatClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(room.Table, room.FieldID, selector),
+			sqlgraph.To(seat.Table, seat.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, room.SeatsTable, room.SeatsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryShowTimes chains the current query on the "showTimes" edge.
+func (rq *RoomQuery) QueryShowTimes() *ShowTimeQuery {
+	query := (&ShowTimeClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(room.Table, room.FieldID, selector),
+			sqlgraph.To(showtime.Table, showtime.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, room.ShowTimesTable, room.ShowTimesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +318,14 @@ func (rq *RoomQuery) Clone() *RoomQuery {
 		return nil
 	}
 	return &RoomQuery{
-		config:      rq.config,
-		ctx:         rq.ctx.Clone(),
-		order:       append([]room.OrderOption{}, rq.order...),
-		inters:      append([]Interceptor{}, rq.inters...),
-		predicates:  append([]predicate.Room{}, rq.predicates...),
-		withTheater: rq.withTheater.Clone(),
+		config:        rq.config,
+		ctx:           rq.ctx.Clone(),
+		order:         append([]room.OrderOption{}, rq.order...),
+		inters:        append([]Interceptor{}, rq.inters...),
+		predicates:    append([]predicate.Room{}, rq.predicates...),
+		withTheater:   rq.withTheater.Clone(),
+		withSeats:     rq.withSeats.Clone(),
+		withShowTimes: rq.withShowTimes.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
@@ -290,6 +340,28 @@ func (rq *RoomQuery) WithTheater(opts ...func(*TheaterQuery)) *RoomQuery {
 		opt(query)
 	}
 	rq.withTheater = query
+	return rq
+}
+
+// WithSeats tells the query-builder to eager-load the nodes that are connected to
+// the "seats" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RoomQuery) WithSeats(opts ...func(*SeatQuery)) *RoomQuery {
+	query := (&SeatClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withSeats = query
+	return rq
+}
+
+// WithShowTimes tells the query-builder to eager-load the nodes that are connected to
+// the "showTimes" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RoomQuery) WithShowTimes(opts ...func(*ShowTimeQuery)) *RoomQuery {
+	query := (&ShowTimeClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withShowTimes = query
 	return rq
 }
 
@@ -370,18 +442,13 @@ func (rq *RoomQuery) prepareQuery(ctx context.Context) error {
 func (rq *RoomQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Room, error) {
 	var (
 		nodes       = []*Room{}
-		withFKs     = rq.withFKs
 		_spec       = rq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			rq.withTheater != nil,
+			rq.withSeats != nil,
+			rq.withShowTimes != nil,
 		}
 	)
-	if rq.withTheater != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, room.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Room).scanValues(nil, columns)
 	}
@@ -406,6 +473,20 @@ func (rq *RoomQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Room, e
 			return nil, err
 		}
 	}
+	if query := rq.withSeats; query != nil {
+		if err := rq.loadSeats(ctx, query, nodes,
+			func(n *Room) { n.Edges.Seats = []*Seat{} },
+			func(n *Room, e *Seat) { n.Edges.Seats = append(n.Edges.Seats, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withShowTimes; query != nil {
+		if err := rq.loadShowTimes(ctx, query, nodes,
+			func(n *Room) { n.Edges.ShowTimes = []*ShowTime{} },
+			func(n *Room, e *ShowTime) { n.Edges.ShowTimes = append(n.Edges.ShowTimes, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -413,10 +494,7 @@ func (rq *RoomQuery) loadTheater(ctx context.Context, query *TheaterQuery, nodes
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Room)
 	for i := range nodes {
-		if nodes[i].theater_rooms == nil {
-			continue
-		}
-		fk := *nodes[i].theater_rooms
+		fk := nodes[i].TheaterID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -433,11 +511,71 @@ func (rq *RoomQuery) loadTheater(ctx context.Context, query *TheaterQuery, nodes
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "theater_rooms" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "theater_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (rq *RoomQuery) loadSeats(ctx context.Context, query *SeatQuery, nodes []*Room, init func(*Room), assign func(*Room, *Seat)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Room)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(seat.FieldRoomID)
+	}
+	query.Where(predicate.Seat(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(room.SeatsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RoomID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "room_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (rq *RoomQuery) loadShowTimes(ctx context.Context, query *ShowTimeQuery, nodes []*Room, init func(*Room), assign func(*Room, *ShowTime)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Room)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(showtime.FieldRoomID)
+	}
+	query.Where(predicate.ShowTime(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(room.ShowTimesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RoomID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "room_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -466,6 +604,9 @@ func (rq *RoomQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != room.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if rq.withTheater != nil {
+			_spec.Node.AddColumnOnce(room.FieldTheaterID)
 		}
 	}
 	if ps := rq.predicates; len(ps) > 0 {

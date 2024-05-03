@@ -1,0 +1,33 @@
+type Seat {
+    ID: String!
+    SeatNumber:String!
+    Category:SeatCategory!
+}
+
+enum SeatCategory{
+    STANDARD
+    DOUBLE
+}
+
+input ListAvailableSeatFilter{
+    showTimeID: String
+}
+
+input ListSeatInput{
+    pagination:PaginationInput!
+}
+
+input ListAvailableSeatInput{
+    filter:ListAvailableSeatFilter!
+    pagination:PaginationInput!
+}
+
+type ListAvailableSeatOutput{
+    data:[Seat!]!
+    pagination:PaginationOutput!
+}
+
+type ListSeatOutput{
+    data:[Seat!]!
+    pagination:PaginationOutput!
+}

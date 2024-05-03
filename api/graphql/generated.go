@@ -40,10 +40,18 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Comment() CommentResolver
+	Food() FoodResolver
+	FoodOrderLine() FoodOrderLineResolver
+	Movie() MovieResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Room() RoomResolver
+	Seat() SeatResolver
+	ShowTime() ShowTimeResolver
 	Theater() TheaterResolver
+	Ticket() TicketResolver
+	Transaction() TransactionResolver
 	User() UserResolver
 }
 
@@ -54,6 +62,14 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Comment struct {
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Movie       func(childComplexity int) int
+		Rating      func(childComplexity int) int
+		User        func(childComplexity int) int
+	}
+
 	CreateSessionInput struct {
 		ExpiresAt    func(childComplexity int) int
 		ID           func(childComplexity int) int
@@ -68,12 +84,60 @@ type ComplexityRoot struct {
 		Role        func(childComplexity int) int
 	}
 
+	Food struct {
+		ID    func(childComplexity int) int
+		Image func(childComplexity int) int
+		Name  func(childComplexity int) int
+		Price func(childComplexity int) int
+	}
+
+	FoodOrderLine struct {
+		Food     func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Quantity func(childComplexity int) int
+	}
+
 	JWT struct {
 		AccessToken  func(childComplexity int) int
 		RefreshToken func(childComplexity int) int
 	}
 
+	ListAvailableRoomOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
+	ListAvailableSeatOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
+	ListCommentOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
+	ListFoodOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
+	ListMovieOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
 	ListRoomOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
+	ListSeatOutput struct {
+		Data       func(childComplexity int) int
+		Pagination func(childComplexity int) int
+	}
+
+	ListShowTimeOutput struct {
 		Data       func(childComplexity int) int
 		Pagination func(childComplexity int) int
 	}
@@ -83,11 +147,28 @@ type ComplexityRoot struct {
 		Pagination func(childComplexity int) int
 	}
 
+	Movie struct {
+		Cast       func(childComplexity int) int
+		Director   func(childComplexity int) int
+		Duration   func(childComplexity int) int
+		Genre      func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Language   func(childComplexity int) int
+		OpeningDay func(childComplexity int) int
+		Poster     func(childComplexity int) int
+		Rated      func(childComplexity int) int
+		Status     func(childComplexity int) int
+		Story      func(childComplexity int) int
+		Title      func(childComplexity int) int
+		Trailer    func(childComplexity int) int
+	}
+
 	Mutation struct {
-		ChangePassword   func(childComplexity int, input model.ChangePasswordInput) int
-		Login            func(childComplexity int, input model.LoginInput) int
-		RenewAccessToken func(childComplexity int, input model.RenewAccessTokenInput) int
-		Signup           func(childComplexity int, input model.RegisterInput) int
+		ChangePassword    func(childComplexity int, input model.ChangePasswordInput) int
+		CreateTransaction func(childComplexity int, input model.CreateTransactionInput) int
+		Login             func(childComplexity int, input model.LoginInput) int
+		RenewAccessToken  func(childComplexity int, input model.RenewAccessTokenInput) int
+		Signup            func(childComplexity int, input model.RegisterInput) int
 	}
 
 	PaginationOutput struct {
@@ -95,14 +176,37 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Rooms    func(childComplexity int, input model.ListRoomInput) int
-		Theaters func(childComplexity int, input model.ListTheatersInput) int
+		Comments          func(childComplexity int, input model.ListCommentInput) int
+		Foods             func(childComplexity int, input model.ListFoodInput) int
+		GetAvailableRooms func(childComplexity int, input model.ListAvailableRoomInput) int
+		GetAvailableSeats func(childComplexity int, input model.ListAvailableSeatInput) int
+		Movies            func(childComplexity int, input model.ListMovieInput) int
+		Rooms             func(childComplexity int, input model.ListRoomInput) int
+		Seats             func(childComplexity int, input model.ListSeatInput) int
+		ShowTimes         func(childComplexity int, input model.ListShowTimeInput) int
+		Theaters          func(childComplexity int, input model.ListTheatersInput) int
 	}
 
 	Room struct {
 		ID         func(childComplexity int) int
 		RoomNumber func(childComplexity int) int
+		Seat       func(childComplexity int) int
+		ShowTime   func(childComplexity int) int
 		Theater    func(childComplexity int) int
+	}
+
+	Seat struct {
+		Category   func(childComplexity int) int
+		ID         func(childComplexity int) int
+		SeatNumber func(childComplexity int) int
+	}
+
+	ShowTime struct {
+		EndAt   func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Movie   func(childComplexity int) int
+		Room    func(childComplexity int) int
+		StartAt func(childComplexity int) int
 	}
 
 	Theater struct {
@@ -110,6 +214,23 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		Name        func(childComplexity int) int
 		PhoneNumber func(childComplexity int) int
+	}
+
+	Ticket struct {
+		ID          func(childComplexity int) int
+		IsBooked    func(childComplexity int) int
+		Price       func(childComplexity int) int
+		Seat        func(childComplexity int) int
+		ShowTime    func(childComplexity int) int
+		Transaction func(childComplexity int) int
+	}
+
+	Transaction struct {
+		Foods   func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Tickets func(childComplexity int) int
+		Total   func(childComplexity int) int
+		User    func(childComplexity int) int
 	}
 
 	User struct {
@@ -122,23 +243,77 @@ type ComplexityRoot struct {
 	}
 }
 
+type CommentResolver interface {
+	ID(ctx context.Context, obj *ent.Comment) (string, error)
+
+	Movie(ctx context.Context, obj *ent.Comment) (*ent.Movie, error)
+	User(ctx context.Context, obj *ent.Comment) (*ent.User, error)
+}
+type FoodResolver interface {
+	ID(ctx context.Context, obj *ent.Food) (string, error)
+}
+type FoodOrderLineResolver interface {
+	ID(ctx context.Context, obj *ent.FoodOrderLine) (string, error)
+	Food(ctx context.Context, obj *ent.FoodOrderLine) (*ent.Food, error)
+}
+type MovieResolver interface {
+	ID(ctx context.Context, obj *ent.Movie) (string, error)
+
+	Status(ctx context.Context, obj *ent.Movie) (model.MovieStatus, error)
+}
 type MutationResolver interface {
 	Signup(ctx context.Context, input model.RegisterInput) (string, error)
 	Login(ctx context.Context, input model.LoginInput) (*model.Jwt, error)
 	RenewAccessToken(ctx context.Context, input model.RenewAccessTokenInput) (*model.Jwt, error)
 	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (string, error)
+	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*ent.Transaction, error)
 }
 type QueryResolver interface {
 	Theaters(ctx context.Context, input model.ListTheatersInput) (*model.ListTheatersOutput, error)
 	Rooms(ctx context.Context, input model.ListRoomInput) (*model.ListRoomOutput, error)
+	GetAvailableRooms(ctx context.Context, input model.ListAvailableRoomInput) (*model.ListAvailableRoomOutput, error)
+	Foods(ctx context.Context, input model.ListFoodInput) (*model.ListFoodOutput, error)
+	Movies(ctx context.Context, input model.ListMovieInput) (*model.ListMovieOutput, error)
+	Comments(ctx context.Context, input model.ListCommentInput) (*model.ListCommentOutput, error)
+	ShowTimes(ctx context.Context, input model.ListShowTimeInput) (*model.ListShowTimeOutput, error)
+	Seats(ctx context.Context, input model.ListSeatInput) (*model.ListSeatOutput, error)
+	GetAvailableSeats(ctx context.Context, input model.ListAvailableSeatInput) (*model.ListAvailableSeatOutput, error)
 }
 type RoomResolver interface {
 	ID(ctx context.Context, obj *ent.Room) (string, error)
 
 	Theater(ctx context.Context, obj *ent.Room) (*ent.Theater, error)
+	ShowTime(ctx context.Context, obj *ent.Room) ([]*ent.ShowTime, error)
+	Seat(ctx context.Context, obj *ent.Room) ([]*ent.Seat, error)
+}
+type SeatResolver interface {
+	ID(ctx context.Context, obj *ent.Seat) (string, error)
+
+	Category(ctx context.Context, obj *ent.Seat) (model.SeatCategory, error)
+}
+type ShowTimeResolver interface {
+	ID(ctx context.Context, obj *ent.ShowTime) (string, error)
+
+	Movie(ctx context.Context, obj *ent.ShowTime) (*ent.Movie, error)
+	Room(ctx context.Context, obj *ent.ShowTime) (*ent.Room, error)
 }
 type TheaterResolver interface {
 	ID(ctx context.Context, obj *ent.Theater) (string, error)
+}
+type TicketResolver interface {
+	ID(ctx context.Context, obj *ent.Ticket) (string, error)
+	Seat(ctx context.Context, obj *ent.Ticket) (*ent.Seat, error)
+
+	ShowTime(ctx context.Context, obj *ent.Ticket) (*ent.ShowTime, error)
+
+	Transaction(ctx context.Context, obj *ent.Ticket) (*ent.Transaction, error)
+}
+type TransactionResolver interface {
+	ID(ctx context.Context, obj *ent.Transaction) (string, error)
+	User(ctx context.Context, obj *ent.Transaction) (*ent.User, error)
+
+	Tickets(ctx context.Context, obj *ent.Transaction) ([]*ent.Ticket, error)
+	Foods(ctx context.Context, obj *ent.Transaction) ([]*ent.FoodOrderLine, error)
 }
 type UserResolver interface {
 	ID(ctx context.Context, obj *ent.User) (string, error)
@@ -164,6 +339,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Comment.description":
+		if e.complexity.Comment.Description == nil {
+			break
+		}
+
+		return e.complexity.Comment.Description(childComplexity), true
+
+	case "Comment.id":
+		if e.complexity.Comment.ID == nil {
+			break
+		}
+
+		return e.complexity.Comment.ID(childComplexity), true
+
+	case "Comment.movie":
+		if e.complexity.Comment.Movie == nil {
+			break
+		}
+
+		return e.complexity.Comment.Movie(childComplexity), true
+
+	case "Comment.rating":
+		if e.complexity.Comment.Rating == nil {
+			break
+		}
+
+		return e.complexity.Comment.Rating(childComplexity), true
+
+	case "Comment.user":
+		if e.complexity.Comment.User == nil {
+			break
+		}
+
+		return e.complexity.Comment.User(childComplexity), true
 
 	case "CreateSessionInput.ExpiresAt":
 		if e.complexity.CreateSessionInput.ExpiresAt == nil {
@@ -221,6 +431,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateUserInput.Role(childComplexity), true
 
+	case "Food.id":
+		if e.complexity.Food.ID == nil {
+			break
+		}
+
+		return e.complexity.Food.ID(childComplexity), true
+
+	case "Food.image":
+		if e.complexity.Food.Image == nil {
+			break
+		}
+
+		return e.complexity.Food.Image(childComplexity), true
+
+	case "Food.name":
+		if e.complexity.Food.Name == nil {
+			break
+		}
+
+		return e.complexity.Food.Name(childComplexity), true
+
+	case "Food.price":
+		if e.complexity.Food.Price == nil {
+			break
+		}
+
+		return e.complexity.Food.Price(childComplexity), true
+
+	case "FoodOrderLine.food":
+		if e.complexity.FoodOrderLine.Food == nil {
+			break
+		}
+
+		return e.complexity.FoodOrderLine.Food(childComplexity), true
+
+	case "FoodOrderLine.id":
+		if e.complexity.FoodOrderLine.ID == nil {
+			break
+		}
+
+		return e.complexity.FoodOrderLine.ID(childComplexity), true
+
+	case "FoodOrderLine.quantity":
+		if e.complexity.FoodOrderLine.Quantity == nil {
+			break
+		}
+
+		return e.complexity.FoodOrderLine.Quantity(childComplexity), true
+
 	case "JWT.accessToken":
 		if e.complexity.JWT.AccessToken == nil {
 			break
@@ -234,6 +493,76 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.JWT.RefreshToken(childComplexity), true
+
+	case "ListAvailableRoomOutput.data":
+		if e.complexity.ListAvailableRoomOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListAvailableRoomOutput.Data(childComplexity), true
+
+	case "ListAvailableRoomOutput.pagination":
+		if e.complexity.ListAvailableRoomOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListAvailableRoomOutput.Pagination(childComplexity), true
+
+	case "ListAvailableSeatOutput.data":
+		if e.complexity.ListAvailableSeatOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListAvailableSeatOutput.Data(childComplexity), true
+
+	case "ListAvailableSeatOutput.pagination":
+		if e.complexity.ListAvailableSeatOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListAvailableSeatOutput.Pagination(childComplexity), true
+
+	case "ListCommentOutput.data":
+		if e.complexity.ListCommentOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListCommentOutput.Data(childComplexity), true
+
+	case "ListCommentOutput.pagination":
+		if e.complexity.ListCommentOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListCommentOutput.Pagination(childComplexity), true
+
+	case "ListFoodOutput.data":
+		if e.complexity.ListFoodOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListFoodOutput.Data(childComplexity), true
+
+	case "ListFoodOutput.pagination":
+		if e.complexity.ListFoodOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListFoodOutput.Pagination(childComplexity), true
+
+	case "ListMovieOutput.data":
+		if e.complexity.ListMovieOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListMovieOutput.Data(childComplexity), true
+
+	case "ListMovieOutput.pagination":
+		if e.complexity.ListMovieOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListMovieOutput.Pagination(childComplexity), true
 
 	case "ListRoomOutput.data":
 		if e.complexity.ListRoomOutput.Data == nil {
@@ -249,6 +578,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ListRoomOutput.Pagination(childComplexity), true
 
+	case "ListSeatOutput.data":
+		if e.complexity.ListSeatOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListSeatOutput.Data(childComplexity), true
+
+	case "ListSeatOutput.pagination":
+		if e.complexity.ListSeatOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListSeatOutput.Pagination(childComplexity), true
+
+	case "ListShowTimeOutput.data":
+		if e.complexity.ListShowTimeOutput.Data == nil {
+			break
+		}
+
+		return e.complexity.ListShowTimeOutput.Data(childComplexity), true
+
+	case "ListShowTimeOutput.pagination":
+		if e.complexity.ListShowTimeOutput.Pagination == nil {
+			break
+		}
+
+		return e.complexity.ListShowTimeOutput.Pagination(childComplexity), true
+
 	case "ListTheatersOutput.data":
 		if e.complexity.ListTheatersOutput.Data == nil {
 			break
@@ -263,6 +620,97 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ListTheatersOutput.Pagination(childComplexity), true
 
+	case "Movie.cast":
+		if e.complexity.Movie.Cast == nil {
+			break
+		}
+
+		return e.complexity.Movie.Cast(childComplexity), true
+
+	case "Movie.director":
+		if e.complexity.Movie.Director == nil {
+			break
+		}
+
+		return e.complexity.Movie.Director(childComplexity), true
+
+	case "Movie.duration":
+		if e.complexity.Movie.Duration == nil {
+			break
+		}
+
+		return e.complexity.Movie.Duration(childComplexity), true
+
+	case "Movie.genre":
+		if e.complexity.Movie.Genre == nil {
+			break
+		}
+
+		return e.complexity.Movie.Genre(childComplexity), true
+
+	case "Movie.id":
+		if e.complexity.Movie.ID == nil {
+			break
+		}
+
+		return e.complexity.Movie.ID(childComplexity), true
+
+	case "Movie.language":
+		if e.complexity.Movie.Language == nil {
+			break
+		}
+
+		return e.complexity.Movie.Language(childComplexity), true
+
+	case "Movie.openingDay":
+		if e.complexity.Movie.OpeningDay == nil {
+			break
+		}
+
+		return e.complexity.Movie.OpeningDay(childComplexity), true
+
+	case "Movie.poster":
+		if e.complexity.Movie.Poster == nil {
+			break
+		}
+
+		return e.complexity.Movie.Poster(childComplexity), true
+
+	case "Movie.rated":
+		if e.complexity.Movie.Rated == nil {
+			break
+		}
+
+		return e.complexity.Movie.Rated(childComplexity), true
+
+	case "Movie.status":
+		if e.complexity.Movie.Status == nil {
+			break
+		}
+
+		return e.complexity.Movie.Status(childComplexity), true
+
+	case "Movie.story":
+		if e.complexity.Movie.Story == nil {
+			break
+		}
+
+		return e.complexity.Movie.Story(childComplexity), true
+
+	case "Movie.title":
+		if e.complexity.Movie.Title == nil {
+			break
+		}
+
+		return e.complexity.Movie.Title(childComplexity), true
+
+	case "Movie.trailer":
+		if e.complexity.Movie.Trailer == nil {
+			break
+		}
+
+		return e.complexity.Movie.Trailer(childComplexity), true
+
 	case "Mutation.ChangePassword":
 		if e.complexity.Mutation.ChangePassword == nil {
 			break
@@ -274,6 +722,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ChangePassword(childComplexity, args["input"].(model.ChangePasswordInput)), true
+
+	case "Mutation.CreateTransaction":
+		if e.complexity.Mutation.CreateTransaction == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_CreateTransaction_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTransaction(childComplexity, args["input"].(model.CreateTransactionInput)), true
 
 	case "Mutation.Login":
 		if e.complexity.Mutation.Login == nil {
@@ -318,6 +778,66 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PaginationOutput.Total(childComplexity), true
 
+	case "Query.Comments":
+		if e.complexity.Query.Comments == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Comments_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Comments(childComplexity, args["input"].(model.ListCommentInput)), true
+
+	case "Query.Foods":
+		if e.complexity.Query.Foods == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Foods_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Foods(childComplexity, args["input"].(model.ListFoodInput)), true
+
+	case "Query.GetAvailableRooms":
+		if e.complexity.Query.GetAvailableRooms == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetAvailableRooms_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAvailableRooms(childComplexity, args["input"].(model.ListAvailableRoomInput)), true
+
+	case "Query.GetAvailableSeats":
+		if e.complexity.Query.GetAvailableSeats == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetAvailableSeats_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAvailableSeats(childComplexity, args["input"].(model.ListAvailableSeatInput)), true
+
+	case "Query.Movies":
+		if e.complexity.Query.Movies == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Movies_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Movies(childComplexity, args["input"].(model.ListMovieInput)), true
+
 	case "Query.Rooms":
 		if e.complexity.Query.Rooms == nil {
 			break
@@ -329,6 +849,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Rooms(childComplexity, args["input"].(model.ListRoomInput)), true
+
+	case "Query.Seats":
+		if e.complexity.Query.Seats == nil {
+			break
+		}
+
+		args, err := ec.field_Query_Seats_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Seats(childComplexity, args["input"].(model.ListSeatInput)), true
+
+	case "Query.ShowTimes":
+		if e.complexity.Query.ShowTimes == nil {
+			break
+		}
+
+		args, err := ec.field_Query_ShowTimes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ShowTimes(childComplexity, args["input"].(model.ListShowTimeInput)), true
 
 	case "Query.Theaters":
 		if e.complexity.Query.Theaters == nil {
@@ -356,12 +900,82 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Room.RoomNumber(childComplexity), true
 
+	case "Room.seat":
+		if e.complexity.Room.Seat == nil {
+			break
+		}
+
+		return e.complexity.Room.Seat(childComplexity), true
+
+	case "Room.showTime":
+		if e.complexity.Room.ShowTime == nil {
+			break
+		}
+
+		return e.complexity.Room.ShowTime(childComplexity), true
+
 	case "Room.theater":
 		if e.complexity.Room.Theater == nil {
 			break
 		}
 
 		return e.complexity.Room.Theater(childComplexity), true
+
+	case "Seat.Category":
+		if e.complexity.Seat.Category == nil {
+			break
+		}
+
+		return e.complexity.Seat.Category(childComplexity), true
+
+	case "Seat.ID":
+		if e.complexity.Seat.ID == nil {
+			break
+		}
+
+		return e.complexity.Seat.ID(childComplexity), true
+
+	case "Seat.SeatNumber":
+		if e.complexity.Seat.SeatNumber == nil {
+			break
+		}
+
+		return e.complexity.Seat.SeatNumber(childComplexity), true
+
+	case "ShowTime.endAt":
+		if e.complexity.ShowTime.EndAt == nil {
+			break
+		}
+
+		return e.complexity.ShowTime.EndAt(childComplexity), true
+
+	case "ShowTime.id":
+		if e.complexity.ShowTime.ID == nil {
+			break
+		}
+
+		return e.complexity.ShowTime.ID(childComplexity), true
+
+	case "ShowTime.movie":
+		if e.complexity.ShowTime.Movie == nil {
+			break
+		}
+
+		return e.complexity.ShowTime.Movie(childComplexity), true
+
+	case "ShowTime.room":
+		if e.complexity.ShowTime.Room == nil {
+			break
+		}
+
+		return e.complexity.ShowTime.Room(childComplexity), true
+
+	case "ShowTime.startAt":
+		if e.complexity.ShowTime.StartAt == nil {
+			break
+		}
+
+		return e.complexity.ShowTime.StartAt(childComplexity), true
 
 	case "Theater.address":
 		if e.complexity.Theater.Address == nil {
@@ -390,6 +1004,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Theater.PhoneNumber(childComplexity), true
+
+	case "Ticket.ID":
+		if e.complexity.Ticket.ID == nil {
+			break
+		}
+
+		return e.complexity.Ticket.ID(childComplexity), true
+
+	case "Ticket.IsBooked":
+		if e.complexity.Ticket.IsBooked == nil {
+			break
+		}
+
+		return e.complexity.Ticket.IsBooked(childComplexity), true
+
+	case "Ticket.Price":
+		if e.complexity.Ticket.Price == nil {
+			break
+		}
+
+		return e.complexity.Ticket.Price(childComplexity), true
+
+	case "Ticket.Seat":
+		if e.complexity.Ticket.Seat == nil {
+			break
+		}
+
+		return e.complexity.Ticket.Seat(childComplexity), true
+
+	case "Ticket.ShowTime":
+		if e.complexity.Ticket.ShowTime == nil {
+			break
+		}
+
+		return e.complexity.Ticket.ShowTime(childComplexity), true
+
+	case "Ticket.Transaction":
+		if e.complexity.Ticket.Transaction == nil {
+			break
+		}
+
+		return e.complexity.Ticket.Transaction(childComplexity), true
+
+	case "Transaction.foods":
+		if e.complexity.Transaction.Foods == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Foods(childComplexity), true
+
+	case "Transaction.id":
+		if e.complexity.Transaction.ID == nil {
+			break
+		}
+
+		return e.complexity.Transaction.ID(childComplexity), true
+
+	case "Transaction.tickets":
+		if e.complexity.Transaction.Tickets == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Tickets(childComplexity), true
+
+	case "Transaction.total":
+		if e.complexity.Transaction.Total == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Total(childComplexity), true
+
+	case "Transaction.user":
+		if e.complexity.Transaction.User == nil {
+			break
+		}
+
+		return e.complexity.Transaction.User(childComplexity), true
 
 	case "User.displayName":
 		if e.complexity.User.Displayname == nil {
@@ -442,8 +1133,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputChangePasswordInput,
+		ec.unmarshalInputCreateFoodOrderLineInput,
+		ec.unmarshalInputCreateTicketInput,
+		ec.unmarshalInputCreateTransactionInput,
+		ec.unmarshalInputListAvailableRoomFilter,
+		ec.unmarshalInputListAvailableRoomInput,
+		ec.unmarshalInputListAvailableSeatFilter,
+		ec.unmarshalInputListAvailableSeatInput,
+		ec.unmarshalInputListCommentFilter,
+		ec.unmarshalInputListCommentInput,
+		ec.unmarshalInputListFoodInput,
+		ec.unmarshalInputListMovieFilter,
+		ec.unmarshalInputListMovieInput,
 		ec.unmarshalInputListRoomFilter,
 		ec.unmarshalInputListRoomInput,
+		ec.unmarshalInputListSeatInput,
+		ec.unmarshalInputListShowTimeFilter,
+		ec.unmarshalInputListShowTimeInput,
 		ec.unmarshalInputListTheaterFilter,
 		ec.unmarshalInputListTheatersInput,
 		ec.unmarshalInputLoginInput,
@@ -573,6 +1279,28 @@ input ChangePasswordInput {
     newPassword:String!
     confirmNewPassword:String!
 }`, BuiltIn: false},
+	{Name: "../schema/comment.graphql", Input: `type Comment {
+    id:ID!
+    rating:Float!
+    description:String!
+    movie:Movie!
+    user:User!
+}
+
+input ListCommentFilter{
+    movieId: String!
+}
+
+input ListCommentInput {
+    filter:ListMovieFilter!
+    pagination:PaginationInput!
+}
+
+type ListCommentOutput {
+    data:[Comment]!
+    pagination:PaginationOutput!
+}
+`, BuiltIn: false},
 	{Name: "../schema/common.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @validation(constraints: String!) on INPUT_FIELD_DEFINITION | ARGUMENT_DEFINITION
 # new directive
@@ -596,24 +1324,106 @@ type PaginationOutput {
     total: Int!
 }
 `, BuiltIn: false},
+	{Name: "../schema/food.graphql", Input: `type Food {
+    id:ID!
+    name:String!
+    price:Float!
+    image:String!
+}
+
+input ListFoodInput{
+    pagination: PaginationInput
+}
+
+type ListFoodOutput {
+    data: [Food]!
+    pagination:PaginationOutput!
+}`, BuiltIn: false},
+	{Name: "../schema/food_order_line.graphql", Input: `type FoodOrderLine {
+    id: ID!
+    food: Food!
+    quantity: Int!
+}
+
+input CreateFoodOrderLineInput {
+    foodID: ID!
+    quantity: Int!
+}`, BuiltIn: false},
+	{Name: "../schema/movie.graphql", Input: `type Movie{
+    id:ID!
+    title:String!
+    genre:String!
+    status:MovieStatus!
+    language:String!
+    director:String!
+    cast:String!
+    poster:String!
+    rated:String!
+    duration:Int!
+    trailer:String!
+    openingDay:Time!
+    story:String!
+}
+
+enum MovieStatus{
+    UPCOMING
+    ONGOING
+    OVER
+}
+
+input ListMovieFilter{
+    status: MovieStatus
+}
+
+input ListMovieInput {
+    filter: ListMovieFilter
+    pagination: PaginationInput
+}
+
+type ListMovieOutput {
+    data:[Movie]
+    pagination:PaginationOutput
+}`, BuiltIn: false},
 	{Name: "../schema/mutation.graphql", Input: `type Mutation {
+    #Auth
     Signup(input: RegisterInput!):String!
     Login(input: LoginInput!):JWT!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
     ChangePassword(input: ChangePasswordInput!):String! @auth
+    #Transaction
+    CreateTransaction(input: CreateTransactionInput!):Transaction! @auth
 }`, BuiltIn: false},
 	{Name: "../schema/query.graphql", Input: `type Query {
+    # Theater
     Theaters(input: ListTheatersInput!): ListTheatersOutput!
+    #Room
     Rooms(input: ListRoomInput!):ListRoomOutput!
+    GetAvailableRooms(input: ListAvailableRoomInput!):ListAvailableRoomOutput!
+    #Food
+    Foods(input: ListFoodInput!):ListFoodOutput!
+    #Movie
+    Movies(input: ListMovieInput!):ListMovieOutput!
+    #Comment
+    Comments(input: ListCommentInput!):ListCommentOutput!
+    #ShowTime
+    ShowTimes(input: ListShowTimeInput!):ListShowTimeOutput!
+    #Seats
+    Seats(input: ListSeatInput!):ListSeatOutput!
+    GetAvailableSeats(input: ListAvailableSeatInput!):ListAvailableSeatOutput!
 }`, BuiltIn: false},
 	{Name: "../schema/room.graphql", Input: `type Room {
     id:ID!
     roomNumber:Int!
     theater:Theater!
+    showTime:[ShowTime]!
+    seat:[Seat]!
 }
 
 input ListRoomFilter {
     theaterID: ID!
+    showTimeID: ID
+    startAt:Time
+    endAt:Time
 }
 
 input ListRoomInput {
@@ -621,15 +1431,85 @@ input ListRoomInput {
     pagination: PaginationInput
 }
 
+input ListAvailableRoomFilter {
+    startAt:Time
+    endAt:Time
+    showTimeID:ID
+}
+
+input ListAvailableRoomInput {
+    filter: ListAvailableRoomFilter
+    pagination: PaginationInput
+}
+
 type ListRoomOutput {
-    data: [Room]
-    pagination: PaginationOutput
+    data: [Room]!
+    pagination: PaginationOutput!
+}
+
+type ListAvailableRoomOutput {
+    data: [Room]!
+    pagination: PaginationOutput!
+}`, BuiltIn: false},
+	{Name: "../schema/seat.graphql", Input: `type Seat {
+    ID: String!
+    SeatNumber:String!
+    Category:SeatCategory!
+}
+
+enum SeatCategory{
+    STANDARD
+    DOUBLE
+}
+
+input ListAvailableSeatFilter{
+    showTimeID: String
+}
+
+input ListSeatInput{
+    pagination:PaginationInput!
+}
+
+input ListAvailableSeatInput{
+    filter:ListAvailableSeatFilter!
+    pagination:PaginationInput!
+}
+
+type ListAvailableSeatOutput{
+    data:[Seat!]!
+    pagination:PaginationOutput!
+}
+
+type ListSeatOutput{
+    data:[Seat!]!
+    pagination:PaginationOutput!
 }`, BuiltIn: false},
 	{Name: "../schema/session.graphql", Input: `type CreateSessionInput {
     id:ID!
     UserID: ID!
     RefreshToken: String!
     ExpiresAt: Time!
+}`, BuiltIn: false},
+	{Name: "../schema/show_time.graphql", Input: `type ShowTime{
+    id:ID!
+    startAt:Time!
+    endAt:Time!
+    movie:Movie!
+    room:Room!
+}
+
+input ListShowTimeFilter{
+    movieId: String
+}
+
+input ListShowTimeInput{
+    filter:ListShowTimeFilter!
+    pagination:PaginationInput!
+}
+
+type ListShowTimeOutput{
+    data:[ShowTime!]!
+    pagination:PaginationOutput!
 }`, BuiltIn: false},
 	{Name: "../schema/theater.graphql", Input: `type Theater {
     id: ID!
@@ -649,10 +1529,36 @@ input ListTheatersInput {
 }
 
 type ListTheatersOutput{
-    data: [Theater]
-    pagination: PaginationOutput
+    data: [Theater]!
+    pagination: PaginationOutput!
 }
 `, BuiltIn: false},
+	{Name: "../schema/ticket.graphql", Input: `type Ticket {
+    ID: String!
+    Seat:Seat!
+    IsBooked:Boolean!
+    ShowTime:ShowTime!
+    Price:Float!
+    Transaction:Transaction!
+}
+
+input CreateTicketInput{
+    seatID: ID!
+    price: Float!
+}`, BuiltIn: false},
+	{Name: "../schema/transaction.graphql", Input: `type Transaction {
+    id: ID!
+    user: User!
+    total: Float!
+    tickets: [Ticket!]!
+    foods: [FoodOrderLine!]!
+}
+
+input CreateTransactionInput{
+    seatIDs: [CreateTicketInput!]!
+    foods: [CreateFoodOrderLineInput!]!
+    showTimeID: ID!
+}`, BuiltIn: false},
 	{Name: "../schema/user.graphql", Input: `type User {
     id: ID!
     displayName: String!
@@ -727,6 +1633,21 @@ func (ec *executionContext) field_Mutation_ChangePassword_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_CreateTransaction_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateTransactionInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateTransactionInput2PopcornMovieᚋmodelᚐCreateTransactionInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_Login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -772,6 +1693,81 @@ func (ec *executionContext) field_Mutation_Signup_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_Comments_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListCommentInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListCommentInput2PopcornMovieᚋmodelᚐListCommentInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Foods_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListFoodInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListFoodInput2PopcornMovieᚋmodelᚐListFoodInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetAvailableRooms_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListAvailableRoomInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListAvailableRoomInput2PopcornMovieᚋmodelᚐListAvailableRoomInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetAvailableSeats_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListAvailableSeatInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListAvailableSeatInput2PopcornMovieᚋmodelᚐListAvailableSeatInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Movies_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListMovieInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListMovieInput2PopcornMovieᚋmodelᚐListMovieInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_Rooms_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -779,6 +1775,36 @@ func (ec *executionContext) field_Query_Rooms_args(ctx context.Context, rawArgs 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNListRoomInput2PopcornMovieᚋmodelᚐListRoomInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_Seats_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListSeatInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListSeatInput2PopcornMovieᚋmodelᚐListSeatInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_ShowTimes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ListShowTimeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNListShowTimeInput2PopcornMovieᚋmodelᚐListShowTimeInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -854,6 +1880,268 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Comment_id(ctx context.Context, field graphql.CollectedField, obj *ent.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Comment().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Comment_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Comment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Comment_rating(ctx context.Context, field graphql.CollectedField, obj *ent.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_rating(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rating, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Comment_rating(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Comment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Comment_description(ctx context.Context, field graphql.CollectedField, obj *ent.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Comment_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Comment",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Comment_movie(ctx context.Context, field graphql.CollectedField, obj *ent.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_movie(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Comment().Movie(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Movie)
+	fc.Result = res
+	return ec.marshalNMovie2ᚖPopcornMovieᚋentᚐMovie(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Comment_movie(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Comment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Movie_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Movie_title(ctx, field)
+			case "genre":
+				return ec.fieldContext_Movie_genre(ctx, field)
+			case "status":
+				return ec.fieldContext_Movie_status(ctx, field)
+			case "language":
+				return ec.fieldContext_Movie_language(ctx, field)
+			case "director":
+				return ec.fieldContext_Movie_director(ctx, field)
+			case "cast":
+				return ec.fieldContext_Movie_cast(ctx, field)
+			case "poster":
+				return ec.fieldContext_Movie_poster(ctx, field)
+			case "rated":
+				return ec.fieldContext_Movie_rated(ctx, field)
+			case "duration":
+				return ec.fieldContext_Movie_duration(ctx, field)
+			case "trailer":
+				return ec.fieldContext_Movie_trailer(ctx, field)
+			case "openingDay":
+				return ec.fieldContext_Movie_openingDay(ctx, field)
+			case "story":
+				return ec.fieldContext_Movie_story(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Movie", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Comment_user(ctx context.Context, field graphql.CollectedField, obj *ent.Comment) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Comment_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Comment().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖPopcornMovieᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Comment_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Comment",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "displayName":
+				return ec.fieldContext_User_displayName(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "password":
+				return ec.fieldContext_User_password(ctx, field)
+			case "isLocked":
+				return ec.fieldContext_User_isLocked(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _CreateSessionInput_id(ctx context.Context, field graphql.CollectedField, obj *model.CreateSessionInput) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateSessionInput_id(ctx, field)
@@ -1204,6 +2492,324 @@ func (ec *executionContext) fieldContext_CreateUserInput_role(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _Food_id(ctx context.Context, field graphql.CollectedField, obj *ent.Food) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Food_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Food().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Food_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Food",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Food_name(ctx context.Context, field graphql.CollectedField, obj *ent.Food) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Food_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Food_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Food",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Food_price(ctx context.Context, field graphql.CollectedField, obj *ent.Food) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Food_price(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Food_price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Food",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Food_image(ctx context.Context, field graphql.CollectedField, obj *ent.Food) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Food_image(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Image, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Food_image(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Food",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FoodOrderLine_id(ctx context.Context, field graphql.CollectedField, obj *ent.FoodOrderLine) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FoodOrderLine_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.FoodOrderLine().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FoodOrderLine_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FoodOrderLine",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FoodOrderLine_food(ctx context.Context, field graphql.CollectedField, obj *ent.FoodOrderLine) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FoodOrderLine_food(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.FoodOrderLine().Food(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Food)
+	fc.Result = res
+	return ec.marshalNFood2ᚖPopcornMovieᚋentᚐFood(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FoodOrderLine_food(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FoodOrderLine",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Food_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Food_name(ctx, field)
+			case "price":
+				return ec.fieldContext_Food_price(ctx, field)
+			case "image":
+				return ec.fieldContext_Food_image(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Food", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FoodOrderLine_quantity(ctx context.Context, field graphql.CollectedField, obj *ent.FoodOrderLine) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FoodOrderLine_quantity(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Quantity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FoodOrderLine_quantity(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FoodOrderLine",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _JWT_accessToken(ctx context.Context, field graphql.CollectedField, obj *model.Jwt) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_JWT_accessToken(ctx, field)
 	if err != nil {
@@ -1292,8 +2898,418 @@ func (ec *executionContext) fieldContext_JWT_refreshToken(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _ListRoomOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListRoomOutput) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ListRoomOutput_data(ctx, field)
+func (ec *executionContext) _ListAvailableRoomOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListAvailableRoomOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListAvailableRoomOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Room)
+	fc.Result = res
+	return ec.marshalNRoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListAvailableRoomOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListAvailableRoomOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Room_id(ctx, field)
+			case "roomNumber":
+				return ec.fieldContext_Room_roomNumber(ctx, field)
+			case "theater":
+				return ec.fieldContext_Room_theater(ctx, field)
+			case "showTime":
+				return ec.fieldContext_Room_showTime(ctx, field)
+			case "seat":
+				return ec.fieldContext_Room_seat(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Room", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListAvailableRoomOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListAvailableRoomOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListAvailableRoomOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListAvailableRoomOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListAvailableRoomOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListAvailableSeatOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListAvailableSeatOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListAvailableSeatOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Seat)
+	fc.Result = res
+	return ec.marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeatᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListAvailableSeatOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListAvailableSeatOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ID":
+				return ec.fieldContext_Seat_ID(ctx, field)
+			case "SeatNumber":
+				return ec.fieldContext_Seat_SeatNumber(ctx, field)
+			case "Category":
+				return ec.fieldContext_Seat_Category(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Seat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListAvailableSeatOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListAvailableSeatOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListAvailableSeatOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListAvailableSeatOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListAvailableSeatOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListCommentOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListCommentOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListCommentOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Comment)
+	fc.Result = res
+	return ec.marshalNComment2ᚕᚖPopcornMovieᚋentᚐComment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListCommentOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListCommentOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Comment_id(ctx, field)
+			case "rating":
+				return ec.fieldContext_Comment_rating(ctx, field)
+			case "description":
+				return ec.fieldContext_Comment_description(ctx, field)
+			case "movie":
+				return ec.fieldContext_Comment_movie(ctx, field)
+			case "user":
+				return ec.fieldContext_Comment_user(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Comment", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListCommentOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListCommentOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListCommentOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListCommentOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListCommentOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListFoodOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListFoodOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListFoodOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Food)
+	fc.Result = res
+	return ec.marshalNFood2ᚕᚖPopcornMovieᚋentᚐFood(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListFoodOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListFoodOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Food_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Food_name(ctx, field)
+			case "price":
+				return ec.fieldContext_Food_price(ctx, field)
+			case "image":
+				return ec.fieldContext_Food_image(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Food", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListFoodOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListFoodOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListFoodOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListFoodOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListFoodOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListMovieOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListMovieOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListMovieOutput_data(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1315,9 +3331,126 @@ func (ec *executionContext) _ListRoomOutput_data(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
+	res := resTmp.([]*ent.Movie)
+	fc.Result = res
+	return ec.marshalOMovie2ᚕᚖPopcornMovieᚋentᚐMovie(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListMovieOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListMovieOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Movie_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Movie_title(ctx, field)
+			case "genre":
+				return ec.fieldContext_Movie_genre(ctx, field)
+			case "status":
+				return ec.fieldContext_Movie_status(ctx, field)
+			case "language":
+				return ec.fieldContext_Movie_language(ctx, field)
+			case "director":
+				return ec.fieldContext_Movie_director(ctx, field)
+			case "cast":
+				return ec.fieldContext_Movie_cast(ctx, field)
+			case "poster":
+				return ec.fieldContext_Movie_poster(ctx, field)
+			case "rated":
+				return ec.fieldContext_Movie_rated(ctx, field)
+			case "duration":
+				return ec.fieldContext_Movie_duration(ctx, field)
+			case "trailer":
+				return ec.fieldContext_Movie_trailer(ctx, field)
+			case "openingDay":
+				return ec.fieldContext_Movie_openingDay(ctx, field)
+			case "story":
+				return ec.fieldContext_Movie_story(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Movie", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListMovieOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListMovieOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListMovieOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalOPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListMovieOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListMovieOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListRoomOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListRoomOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListRoomOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
 	res := resTmp.([]*ent.Room)
 	fc.Result = res
-	return ec.marshalORoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx, field.Selections, res)
+	return ec.marshalNRoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ListRoomOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1334,6 +3467,10 @@ func (ec *executionContext) fieldContext_ListRoomOutput_data(ctx context.Context
 				return ec.fieldContext_Room_roomNumber(ctx, field)
 			case "theater":
 				return ec.fieldContext_Room_theater(ctx, field)
+			case "showTime":
+				return ec.fieldContext_Room_showTime(ctx, field)
+			case "seat":
+				return ec.fieldContext_Room_seat(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Room", field.Name)
 		},
@@ -1362,16 +3499,223 @@ func (ec *executionContext) _ListRoomOutput_pagination(ctx context.Context, fiel
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.PaginationOutput)
 	fc.Result = res
-	return ec.marshalOPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ListRoomOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ListRoomOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListSeatOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListSeatOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListSeatOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Seat)
+	fc.Result = res
+	return ec.marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeatᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListSeatOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListSeatOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ID":
+				return ec.fieldContext_Seat_ID(ctx, field)
+			case "SeatNumber":
+				return ec.fieldContext_Seat_SeatNumber(ctx, field)
+			case "Category":
+				return ec.fieldContext_Seat_Category(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Seat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListSeatOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListSeatOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListSeatOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListSeatOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListSeatOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_PaginationOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListShowTimeOutput_data(ctx context.Context, field graphql.CollectedField, obj *model.ListShowTimeOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListShowTimeOutput_data(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Data, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ShowTime)
+	fc.Result = res
+	return ec.marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTimeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListShowTimeOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListShowTimeOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ShowTime_id(ctx, field)
+			case "startAt":
+				return ec.fieldContext_ShowTime_startAt(ctx, field)
+			case "endAt":
+				return ec.fieldContext_ShowTime_endAt(ctx, field)
+			case "movie":
+				return ec.fieldContext_ShowTime_movie(ctx, field)
+			case "room":
+				return ec.fieldContext_ShowTime_room(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ShowTime", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ListShowTimeOutput_pagination(ctx context.Context, field graphql.CollectedField, obj *model.ListShowTimeOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ListShowTimeOutput_pagination(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Pagination, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PaginationOutput)
+	fc.Result = res
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ListShowTimeOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ListShowTimeOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -1407,11 +3751,14 @@ func (ec *executionContext) _ListTheatersOutput_data(ctx context.Context, field 
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]*ent.Theater)
 	fc.Result = res
-	return ec.marshalOTheater2ᚕᚖPopcornMovieᚋentᚐTheater(ctx, field.Selections, res)
+	return ec.marshalNTheater2ᚕᚖPopcornMovieᚋentᚐTheater(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ListTheatersOutput_data(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1458,11 +3805,14 @@ func (ec *executionContext) _ListTheatersOutput_pagination(ctx context.Context, 
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.PaginationOutput)
 	fc.Result = res
-	return ec.marshalOPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
+	return ec.marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ListTheatersOutput_pagination(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1477,6 +3827,578 @@ func (ec *executionContext) fieldContext_ListTheatersOutput_pagination(ctx conte
 				return ec.fieldContext_PaginationOutput_total(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_id(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Movie().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_title(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_genre(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_genre(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Genre, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_genre(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_status(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Movie().Status(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.MovieStatus)
+	fc.Result = res
+	return ec.marshalNMovieStatus2PopcornMovieᚋmodelᚐMovieStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type MovieStatus does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_language(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_language(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Language, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_language(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_director(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_director(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Director, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_director(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_cast(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_cast(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cast, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_cast(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_poster(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_poster(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Poster, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_poster(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_rated(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_rated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_rated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_duration(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_duration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_trailer(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_trailer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Trailer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_trailer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_openingDay(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_openingDay(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpeningDay, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_openingDay(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Movie_story(ctx context.Context, field graphql.CollectedField, obj *ent.Movie) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Movie_story(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Story, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Movie_story(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Movie",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1754,6 +4676,93 @@ func (ec *executionContext) fieldContext_Mutation_ChangePassword(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_CreateTransaction(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_CreateTransaction(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateTransaction(rctx, fc.Args["input"].(model.CreateTransactionInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.Transaction); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/ent.Transaction`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Transaction)
+	fc.Result = res
+	return ec.marshalNTransaction2ᚖPopcornMovieᚋentᚐTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_CreateTransaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transaction_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Transaction_user(ctx, field)
+			case "total":
+				return ec.fieldContext_Transaction_total(ctx, field)
+			case "tickets":
+				return ec.fieldContext_Transaction_tickets(ctx, field)
+			case "foods":
+				return ec.fieldContext_Transaction_foods(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_CreateTransaction_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PaginationOutput_total(ctx context.Context, field graphql.CollectedField, obj *model.PaginationOutput) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PaginationOutput_total(ctx, field)
 	if err != nil {
@@ -1914,6 +4923,433 @@ func (ec *executionContext) fieldContext_Query_Rooms(ctx context.Context, field 
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_Rooms_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_GetAvailableRooms(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_GetAvailableRooms(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAvailableRooms(rctx, fc.Args["input"].(model.ListAvailableRoomInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListAvailableRoomOutput)
+	fc.Result = res
+	return ec.marshalNListAvailableRoomOutput2ᚖPopcornMovieᚋmodelᚐListAvailableRoomOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_GetAvailableRooms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListAvailableRoomOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListAvailableRoomOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListAvailableRoomOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_GetAvailableRooms_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_Foods(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_Foods(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Foods(rctx, fc.Args["input"].(model.ListFoodInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListFoodOutput)
+	fc.Result = res
+	return ec.marshalNListFoodOutput2ᚖPopcornMovieᚋmodelᚐListFoodOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_Foods(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListFoodOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListFoodOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListFoodOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_Foods_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_Movies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_Movies(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Movies(rctx, fc.Args["input"].(model.ListMovieInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListMovieOutput)
+	fc.Result = res
+	return ec.marshalNListMovieOutput2ᚖPopcornMovieᚋmodelᚐListMovieOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_Movies(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListMovieOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListMovieOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListMovieOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_Movies_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_Comments(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_Comments(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Comments(rctx, fc.Args["input"].(model.ListCommentInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListCommentOutput)
+	fc.Result = res
+	return ec.marshalNListCommentOutput2ᚖPopcornMovieᚋmodelᚐListCommentOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_Comments(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListCommentOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListCommentOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListCommentOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_Comments_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_ShowTimes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_ShowTimes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ShowTimes(rctx, fc.Args["input"].(model.ListShowTimeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListShowTimeOutput)
+	fc.Result = res
+	return ec.marshalNListShowTimeOutput2ᚖPopcornMovieᚋmodelᚐListShowTimeOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_ShowTimes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListShowTimeOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListShowTimeOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListShowTimeOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_ShowTimes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_Seats(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_Seats(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Seats(rctx, fc.Args["input"].(model.ListSeatInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListSeatOutput)
+	fc.Result = res
+	return ec.marshalNListSeatOutput2ᚖPopcornMovieᚋmodelᚐListSeatOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_Seats(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListSeatOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListSeatOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListSeatOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_Seats_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_GetAvailableSeats(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_GetAvailableSeats(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAvailableSeats(rctx, fc.Args["input"].(model.ListAvailableSeatInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.ListAvailableSeatOutput)
+	fc.Result = res
+	return ec.marshalNListAvailableSeatOutput2ᚖPopcornMovieᚋmodelᚐListAvailableSeatOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_GetAvailableSeats(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "data":
+				return ec.fieldContext_ListAvailableSeatOutput_data(ctx, field)
+			case "pagination":
+				return ec.fieldContext_ListAvailableSeatOutput_pagination(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ListAvailableSeatOutput", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_GetAvailableSeats_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2191,6 +5627,506 @@ func (ec *executionContext) fieldContext_Room_theater(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Room_showTime(ctx context.Context, field graphql.CollectedField, obj *ent.Room) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Room_showTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Room().ShowTime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.ShowTime)
+	fc.Result = res
+	return ec.marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Room_showTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Room",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ShowTime_id(ctx, field)
+			case "startAt":
+				return ec.fieldContext_ShowTime_startAt(ctx, field)
+			case "endAt":
+				return ec.fieldContext_ShowTime_endAt(ctx, field)
+			case "movie":
+				return ec.fieldContext_ShowTime_movie(ctx, field)
+			case "room":
+				return ec.fieldContext_ShowTime_room(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ShowTime", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Room_seat(ctx context.Context, field graphql.CollectedField, obj *ent.Room) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Room_seat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Room().Seat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Seat)
+	fc.Result = res
+	return ec.marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Room_seat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Room",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ID":
+				return ec.fieldContext_Seat_ID(ctx, field)
+			case "SeatNumber":
+				return ec.fieldContext_Seat_SeatNumber(ctx, field)
+			case "Category":
+				return ec.fieldContext_Seat_Category(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Seat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Seat_ID(ctx context.Context, field graphql.CollectedField, obj *ent.Seat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Seat_ID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Seat().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Seat_ID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Seat",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Seat_SeatNumber(ctx context.Context, field graphql.CollectedField, obj *ent.Seat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Seat_SeatNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SeatNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Seat_SeatNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Seat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Seat_Category(ctx context.Context, field graphql.CollectedField, obj *ent.Seat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Seat_Category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Seat().Category(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.SeatCategory)
+	fc.Result = res
+	return ec.marshalNSeatCategory2PopcornMovieᚋmodelᚐSeatCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Seat_Category(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Seat",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type SeatCategory does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShowTime_id(ctx context.Context, field graphql.CollectedField, obj *ent.ShowTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ShowTime_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ShowTime().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ShowTime_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShowTime",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShowTime_startAt(ctx context.Context, field graphql.CollectedField, obj *ent.ShowTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ShowTime_startAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StartAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ShowTime_startAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShowTime",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShowTime_endAt(ctx context.Context, field graphql.CollectedField, obj *ent.ShowTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ShowTime_endAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EndAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ShowTime_endAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShowTime",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShowTime_movie(ctx context.Context, field graphql.CollectedField, obj *ent.ShowTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ShowTime_movie(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ShowTime().Movie(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Movie)
+	fc.Result = res
+	return ec.marshalNMovie2ᚖPopcornMovieᚋentᚐMovie(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ShowTime_movie(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShowTime",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Movie_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Movie_title(ctx, field)
+			case "genre":
+				return ec.fieldContext_Movie_genre(ctx, field)
+			case "status":
+				return ec.fieldContext_Movie_status(ctx, field)
+			case "language":
+				return ec.fieldContext_Movie_language(ctx, field)
+			case "director":
+				return ec.fieldContext_Movie_director(ctx, field)
+			case "cast":
+				return ec.fieldContext_Movie_cast(ctx, field)
+			case "poster":
+				return ec.fieldContext_Movie_poster(ctx, field)
+			case "rated":
+				return ec.fieldContext_Movie_rated(ctx, field)
+			case "duration":
+				return ec.fieldContext_Movie_duration(ctx, field)
+			case "trailer":
+				return ec.fieldContext_Movie_trailer(ctx, field)
+			case "openingDay":
+				return ec.fieldContext_Movie_openingDay(ctx, field)
+			case "story":
+				return ec.fieldContext_Movie_story(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Movie", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ShowTime_room(ctx context.Context, field graphql.CollectedField, obj *ent.ShowTime) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ShowTime_room(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.ShowTime().Room(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Room)
+	fc.Result = res
+	return ec.marshalNRoom2ᚖPopcornMovieᚋentᚐRoom(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ShowTime_room(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ShowTime",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Room_id(ctx, field)
+			case "roomNumber":
+				return ec.fieldContext_Room_roomNumber(ctx, field)
+			case "theater":
+				return ec.fieldContext_Room_theater(ctx, field)
+			case "showTime":
+				return ec.fieldContext_Room_showTime(ctx, field)
+			case "seat":
+				return ec.fieldContext_Room_seat(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Room", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Theater_id(ctx context.Context, field graphql.CollectedField, obj *ent.Theater) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Theater_id(ctx, field)
 	if err != nil {
@@ -2362,6 +6298,558 @@ func (ec *executionContext) fieldContext_Theater_phoneNumber(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ticket_ID(ctx context.Context, field graphql.CollectedField, obj *ent.Ticket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ticket_ID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Ticket().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ticket_ID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ticket",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ticket_Seat(ctx context.Context, field graphql.CollectedField, obj *ent.Ticket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ticket_Seat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Ticket().Seat(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Seat)
+	fc.Result = res
+	return ec.marshalNSeat2ᚖPopcornMovieᚋentᚐSeat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ticket_Seat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ticket",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ID":
+				return ec.fieldContext_Seat_ID(ctx, field)
+			case "SeatNumber":
+				return ec.fieldContext_Seat_SeatNumber(ctx, field)
+			case "Category":
+				return ec.fieldContext_Seat_Category(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Seat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ticket_IsBooked(ctx context.Context, field graphql.CollectedField, obj *ent.Ticket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ticket_IsBooked(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsBooked, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ticket_IsBooked(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ticket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ticket_ShowTime(ctx context.Context, field graphql.CollectedField, obj *ent.Ticket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ticket_ShowTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Ticket().ShowTime(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.ShowTime)
+	fc.Result = res
+	return ec.marshalNShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ticket_ShowTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ticket",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ShowTime_id(ctx, field)
+			case "startAt":
+				return ec.fieldContext_ShowTime_startAt(ctx, field)
+			case "endAt":
+				return ec.fieldContext_ShowTime_endAt(ctx, field)
+			case "movie":
+				return ec.fieldContext_ShowTime_movie(ctx, field)
+			case "room":
+				return ec.fieldContext_ShowTime_room(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ShowTime", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ticket_Price(ctx context.Context, field graphql.CollectedField, obj *ent.Ticket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ticket_Price(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ticket_Price(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ticket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Ticket_Transaction(ctx context.Context, field graphql.CollectedField, obj *ent.Ticket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Ticket_Transaction(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Ticket().Transaction(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Transaction)
+	fc.Result = res
+	return ec.marshalNTransaction2ᚖPopcornMovieᚋentᚐTransaction(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Ticket_Transaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Ticket",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Transaction_id(ctx, field)
+			case "user":
+				return ec.fieldContext_Transaction_user(ctx, field)
+			case "total":
+				return ec.fieldContext_Transaction_total(ctx, field)
+			case "tickets":
+				return ec.fieldContext_Transaction_tickets(ctx, field)
+			case "foods":
+				return ec.fieldContext_Transaction_foods(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_id(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Transaction().ID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_user(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_user(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Transaction().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖPopcornMovieᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "displayName":
+				return ec.fieldContext_User_displayName(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "password":
+				return ec.fieldContext_User_password(ctx, field)
+			case "isLocked":
+				return ec.fieldContext_User_isLocked(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_total(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_tickets(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_tickets(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Transaction().Tickets(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Ticket)
+	fc.Result = res
+	return ec.marshalNTicket2ᚕᚖPopcornMovieᚋentᚐTicketᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_tickets(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "ID":
+				return ec.fieldContext_Ticket_ID(ctx, field)
+			case "Seat":
+				return ec.fieldContext_Ticket_Seat(ctx, field)
+			case "IsBooked":
+				return ec.fieldContext_Ticket_IsBooked(ctx, field)
+			case "ShowTime":
+				return ec.fieldContext_Ticket_ShowTime(ctx, field)
+			case "Price":
+				return ec.fieldContext_Ticket_Price(ctx, field)
+			case "Transaction":
+				return ec.fieldContext_Ticket_Transaction(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Ticket", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_foods(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_foods(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Transaction().Foods(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.FoodOrderLine)
+	fc.Result = res
+	return ec.marshalNFoodOrderLine2ᚕᚖPopcornMovieᚋentᚐFoodOrderLineᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_foods(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_FoodOrderLine_id(ctx, field)
+			case "food":
+				return ec.fieldContext_FoodOrderLine_food(ctx, field)
+			case "quantity":
+				return ec.fieldContext_FoodOrderLine_quantity(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FoodOrderLine", field.Name)
 		},
 	}
 	return fc, nil
@@ -4445,6 +8933,400 @@ func (ec *executionContext) unmarshalInputChangePasswordInput(ctx context.Contex
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateFoodOrderLineInput(ctx context.Context, obj interface{}) (model.CreateFoodOrderLineInput, error) {
+	var it model.CreateFoodOrderLineInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"foodID", "quantity"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "foodID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("foodID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FoodID = data
+		case "quantity":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("quantity"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Quantity = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateTicketInput(ctx context.Context, obj interface{}) (model.CreateTicketInput, error) {
+	var it model.CreateTicketInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"seatID", "price"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "seatID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seatID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatID = data
+		case "price":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Price = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateTransactionInput(ctx context.Context, obj interface{}) (model.CreateTransactionInput, error) {
+	var it model.CreateTransactionInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"seatIDs", "foods", "showTimeID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "seatIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seatIDs"))
+			data, err := ec.unmarshalNCreateTicketInput2ᚕᚖPopcornMovieᚋmodelᚐCreateTicketInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatIDs = data
+		case "foods":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("foods"))
+			data, err := ec.unmarshalNCreateFoodOrderLineInput2ᚕᚖPopcornMovieᚋmodelᚐCreateFoodOrderLineInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Foods = data
+		case "showTimeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("showTimeID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShowTimeID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListAvailableRoomFilter(ctx context.Context, obj interface{}) (model.ListAvailableRoomFilter, error) {
+	var it model.ListAvailableRoomFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"startAt", "endAt", "showTimeID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "startAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StartAt = data
+		case "endAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EndAt = data
+		case "showTimeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("showTimeID"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShowTimeID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListAvailableRoomInput(ctx context.Context, obj interface{}) (model.ListAvailableRoomInput, error) {
+	var it model.ListAvailableRoomInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filter", "pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalOListAvailableRoomFilter2ᚖPopcornMovieᚋmodelᚐListAvailableRoomFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = data
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListAvailableSeatFilter(ctx context.Context, obj interface{}) (model.ListAvailableSeatFilter, error) {
+	var it model.ListAvailableSeatFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"showTimeID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "showTimeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("showTimeID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShowTimeID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListAvailableSeatInput(ctx context.Context, obj interface{}) (model.ListAvailableSeatInput, error) {
+	var it model.ListAvailableSeatInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filter", "pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalNListAvailableSeatFilter2ᚖPopcornMovieᚋmodelᚐListAvailableSeatFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = data
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalNPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListCommentFilter(ctx context.Context, obj interface{}) (model.ListCommentFilter, error) {
+	var it model.ListCommentFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"movieId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "movieId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("movieId"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MovieID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListCommentInput(ctx context.Context, obj interface{}) (model.ListCommentInput, error) {
+	var it model.ListCommentInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filter", "pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalNListMovieFilter2ᚖPopcornMovieᚋmodelᚐListMovieFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = data
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalNPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListFoodInput(ctx context.Context, obj interface{}) (model.ListFoodInput, error) {
+	var it model.ListFoodInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListMovieFilter(ctx context.Context, obj interface{}) (model.ListMovieFilter, error) {
+	var it model.ListMovieFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"status"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "status":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOMovieStatus2ᚖPopcornMovieᚋmodelᚐMovieStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListMovieInput(ctx context.Context, obj interface{}) (model.ListMovieInput, error) {
+	var it model.ListMovieInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filter", "pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalOListMovieFilter2ᚖPopcornMovieᚋmodelᚐListMovieFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = data
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputListRoomFilter(ctx context.Context, obj interface{}) (model.ListRoomFilter, error) {
 	var it model.ListRoomFilter
 	asMap := map[string]interface{}{}
@@ -4452,7 +9334,7 @@ func (ec *executionContext) unmarshalInputListRoomFilter(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"theaterID"}
+	fieldsInOrder := [...]string{"theaterID", "showTimeID", "startAt", "endAt"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4466,6 +9348,27 @@ func (ec *executionContext) unmarshalInputListRoomFilter(ctx context.Context, ob
 				return it, err
 			}
 			it.TheaterID = data
+		case "showTimeID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("showTimeID"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShowTimeID = data
+		case "startAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StartAt = data
+		case "endAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EndAt = data
 		}
 	}
 
@@ -4496,6 +9399,94 @@ func (ec *executionContext) unmarshalInputListRoomInput(ctx context.Context, obj
 		case "pagination":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
 			data, err := ec.unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListSeatInput(ctx context.Context, obj interface{}) (model.ListSeatInput, error) {
+	var it model.ListSeatInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalNPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Pagination = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListShowTimeFilter(ctx context.Context, obj interface{}) (model.ListShowTimeFilter, error) {
+	var it model.ListShowTimeFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"movieId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "movieId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("movieId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MovieID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputListShowTimeInput(ctx context.Context, obj interface{}) (model.ListShowTimeInput, error) {
+	var it model.ListShowTimeInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"filter", "pagination"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "filter":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+			data, err := ec.unmarshalNListShowTimeFilter2ᚖPopcornMovieᚋmodelᚐListShowTimeFilter(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Filter = data
+		case "pagination":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
+			data, err := ec.unmarshalNPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4725,6 +9716,158 @@ func (ec *executionContext) unmarshalInputRenewAccessTokenInput(ctx context.Cont
 
 // region    **************************** object.gotpl ****************************
 
+var commentImplementors = []string{"Comment"}
+
+func (ec *executionContext) _Comment(ctx context.Context, sel ast.SelectionSet, obj *ent.Comment) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commentImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Comment")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Comment_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "rating":
+			out.Values[i] = ec._Comment_rating(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "description":
+			out.Values[i] = ec._Comment_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "movie":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Comment_movie(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Comment_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var createSessionInputImplementors = []string{"CreateSessionInput"}
 
 func (ec *executionContext) _CreateSessionInput(ctx context.Context, sel ast.SelectionSet, obj *model.CreateSessionInput) graphql.Marshaler {
@@ -4830,6 +9973,202 @@ func (ec *executionContext) _CreateUserInput(ctx context.Context, sel ast.Select
 	return out
 }
 
+var foodImplementors = []string{"Food"}
+
+func (ec *executionContext) _Food(ctx context.Context, sel ast.SelectionSet, obj *ent.Food) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, foodImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Food")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Food_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "name":
+			out.Values[i] = ec._Food_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "price":
+			out.Values[i] = ec._Food_price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "image":
+			out.Values[i] = ec._Food_image(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var foodOrderLineImplementors = []string{"FoodOrderLine"}
+
+func (ec *executionContext) _FoodOrderLine(ctx context.Context, sel ast.SelectionSet, obj *ent.FoodOrderLine) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, foodOrderLineImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FoodOrderLine")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._FoodOrderLine_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "food":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._FoodOrderLine_food(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "quantity":
+			out.Values[i] = ec._FoodOrderLine_quantity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var jWTImplementors = []string{"JWT"}
 
 func (ec *executionContext) _JWT(ctx context.Context, sel ast.SelectionSet, obj *model.Jwt) graphql.Marshaler {
@@ -4874,6 +10213,220 @@ func (ec *executionContext) _JWT(ctx context.Context, sel ast.SelectionSet, obj 
 	return out
 }
 
+var listAvailableRoomOutputImplementors = []string{"ListAvailableRoomOutput"}
+
+func (ec *executionContext) _ListAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListAvailableRoomOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listAvailableRoomOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListAvailableRoomOutput")
+		case "data":
+			out.Values[i] = ec._ListAvailableRoomOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagination":
+			out.Values[i] = ec._ListAvailableRoomOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var listAvailableSeatOutputImplementors = []string{"ListAvailableSeatOutput"}
+
+func (ec *executionContext) _ListAvailableSeatOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListAvailableSeatOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listAvailableSeatOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListAvailableSeatOutput")
+		case "data":
+			out.Values[i] = ec._ListAvailableSeatOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagination":
+			out.Values[i] = ec._ListAvailableSeatOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var listCommentOutputImplementors = []string{"ListCommentOutput"}
+
+func (ec *executionContext) _ListCommentOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListCommentOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listCommentOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListCommentOutput")
+		case "data":
+			out.Values[i] = ec._ListCommentOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagination":
+			out.Values[i] = ec._ListCommentOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var listFoodOutputImplementors = []string{"ListFoodOutput"}
+
+func (ec *executionContext) _ListFoodOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListFoodOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listFoodOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListFoodOutput")
+		case "data":
+			out.Values[i] = ec._ListFoodOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagination":
+			out.Values[i] = ec._ListFoodOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var listMovieOutputImplementors = []string{"ListMovieOutput"}
+
+func (ec *executionContext) _ListMovieOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListMovieOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listMovieOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListMovieOutput")
+		case "data":
+			out.Values[i] = ec._ListMovieOutput_data(ctx, field, obj)
+		case "pagination":
+			out.Values[i] = ec._ListMovieOutput_pagination(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var listRoomOutputImplementors = []string{"ListRoomOutput"}
 
 func (ec *executionContext) _ListRoomOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListRoomOutput) graphql.Marshaler {
@@ -4887,8 +10440,102 @@ func (ec *executionContext) _ListRoomOutput(ctx context.Context, sel ast.Selecti
 			out.Values[i] = graphql.MarshalString("ListRoomOutput")
 		case "data":
 			out.Values[i] = ec._ListRoomOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "pagination":
 			out.Values[i] = ec._ListRoomOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var listSeatOutputImplementors = []string{"ListSeatOutput"}
+
+func (ec *executionContext) _ListSeatOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListSeatOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listSeatOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListSeatOutput")
+		case "data":
+			out.Values[i] = ec._ListSeatOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagination":
+			out.Values[i] = ec._ListSeatOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var listShowTimeOutputImplementors = []string{"ListShowTimeOutput"}
+
+func (ec *executionContext) _ListShowTimeOutput(ctx context.Context, sel ast.SelectionSet, obj *model.ListShowTimeOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, listShowTimeOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ListShowTimeOutput")
+		case "data":
+			out.Values[i] = ec._ListShowTimeOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "pagination":
+			out.Values[i] = ec._ListShowTimeOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4925,8 +10572,175 @@ func (ec *executionContext) _ListTheatersOutput(ctx context.Context, sel ast.Sel
 			out.Values[i] = graphql.MarshalString("ListTheatersOutput")
 		case "data":
 			out.Values[i] = ec._ListTheatersOutput_data(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "pagination":
 			out.Values[i] = ec._ListTheatersOutput_pagination(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var movieImplementors = []string{"Movie"}
+
+func (ec *executionContext) _Movie(ctx context.Context, sel ast.SelectionSet, obj *ent.Movie) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, movieImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Movie")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Movie_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "title":
+			out.Values[i] = ec._Movie_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "genre":
+			out.Values[i] = ec._Movie_genre(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "status":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Movie_status(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "language":
+			out.Values[i] = ec._Movie_language(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "director":
+			out.Values[i] = ec._Movie_director(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "cast":
+			out.Values[i] = ec._Movie_cast(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "poster":
+			out.Values[i] = ec._Movie_poster(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "rated":
+			out.Values[i] = ec._Movie_rated(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "duration":
+			out.Values[i] = ec._Movie_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "trailer":
+			out.Values[i] = ec._Movie_trailer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "openingDay":
+			out.Values[i] = ec._Movie_openingDay(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "story":
+			out.Values[i] = ec._Movie_story(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4993,6 +10807,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "ChangePassword":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_ChangePassword(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "CreateTransaction":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_CreateTransaction(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5110,6 +10931,160 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_Rooms(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "GetAvailableRooms":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetAvailableRooms(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "Foods":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Foods(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "Movies":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Movies(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "Comments":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Comments(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "ShowTimes":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_ShowTimes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "Seats":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_Seats(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "GetAvailableSeats":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetAvailableSeats(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5241,6 +11216,341 @@ func (ec *executionContext) _Room(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "showTime":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Room_showTime(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "seat":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Room_seat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var seatImplementors = []string{"Seat"}
+
+func (ec *executionContext) _Seat(ctx context.Context, sel ast.SelectionSet, obj *ent.Seat) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, seatImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Seat")
+		case "ID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Seat_ID(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "SeatNumber":
+			out.Values[i] = ec._Seat_SeatNumber(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "Category":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Seat_Category(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var showTimeImplementors = []string{"ShowTime"}
+
+func (ec *executionContext) _ShowTime(ctx context.Context, sel ast.SelectionSet, obj *ent.ShowTime) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, showTimeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ShowTime")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ShowTime_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "startAt":
+			out.Values[i] = ec._ShowTime_startAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "endAt":
+			out.Values[i] = ec._ShowTime_endAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "movie":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ShowTime_movie(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "room":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._ShowTime_room(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5326,6 +11636,377 @@ func (ec *executionContext) _Theater(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var ticketImplementors = []string{"Ticket"}
+
+func (ec *executionContext) _Ticket(ctx context.Context, sel ast.SelectionSet, obj *ent.Ticket) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, ticketImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Ticket")
+		case "ID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ticket_ID(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "Seat":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ticket_Seat(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "IsBooked":
+			out.Values[i] = ec._Ticket_IsBooked(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "ShowTime":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ticket_ShowTime(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "Price":
+			out.Values[i] = ec._Ticket_Price(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "Transaction":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Ticket_Transaction(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var transactionImplementors = []string{"Transaction"}
+
+func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionSet, obj *ent.Transaction) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, transactionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Transaction")
+		case "id":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transaction_id(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "user":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transaction_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "total":
+			out.Values[i] = ec._Transaction_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "tickets":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transaction_tickets(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "foods":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transaction_foods(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5821,6 +12502,214 @@ func (ec *executionContext) unmarshalNChangePasswordInput2PopcornMovieᚋmodel�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNComment2ᚕᚖPopcornMovieᚋentᚐComment(ctx context.Context, sel ast.SelectionSet, v []*ent.Comment) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOComment2ᚖPopcornMovieᚋentᚐComment(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNCreateFoodOrderLineInput2ᚕᚖPopcornMovieᚋmodelᚐCreateFoodOrderLineInputᚄ(ctx context.Context, v interface{}) ([]*model.CreateFoodOrderLineInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.CreateFoodOrderLineInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNCreateFoodOrderLineInput2ᚖPopcornMovieᚋmodelᚐCreateFoodOrderLineInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNCreateFoodOrderLineInput2ᚖPopcornMovieᚋmodelᚐCreateFoodOrderLineInput(ctx context.Context, v interface{}) (*model.CreateFoodOrderLineInput, error) {
+	res, err := ec.unmarshalInputCreateFoodOrderLineInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateTicketInput2ᚕᚖPopcornMovieᚋmodelᚐCreateTicketInputᚄ(ctx context.Context, v interface{}) ([]*model.CreateTicketInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.CreateTicketInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNCreateTicketInput2ᚖPopcornMovieᚋmodelᚐCreateTicketInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNCreateTicketInput2ᚖPopcornMovieᚋmodelᚐCreateTicketInput(ctx context.Context, v interface{}) (*model.CreateTicketInput, error) {
+	res, err := ec.unmarshalInputCreateTicketInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateTransactionInput2PopcornMovieᚋmodelᚐCreateTransactionInput(ctx context.Context, v interface{}) (model.CreateTransactionInput, error) {
+	res, err := ec.unmarshalInputCreateTransactionInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) marshalNFood2PopcornMovieᚋentᚐFood(ctx context.Context, sel ast.SelectionSet, v ent.Food) graphql.Marshaler {
+	return ec._Food(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFood2ᚕᚖPopcornMovieᚋentᚐFood(ctx context.Context, sel ast.SelectionSet, v []*ent.Food) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOFood2ᚖPopcornMovieᚋentᚐFood(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalNFood2ᚖPopcornMovieᚋentᚐFood(ctx context.Context, sel ast.SelectionSet, v *ent.Food) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Food(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNFoodOrderLine2ᚕᚖPopcornMovieᚋentᚐFoodOrderLineᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.FoodOrderLine) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNFoodOrderLine2ᚖPopcornMovieᚋentᚐFoodOrderLine(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNFoodOrderLine2ᚖPopcornMovieᚋentᚐFoodOrderLine(ctx context.Context, sel ast.SelectionSet, v *ent.FoodOrderLine) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FoodOrderLine(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5865,6 +12754,111 @@ func (ec *executionContext) marshalNJWT2ᚖPopcornMovieᚋmodelᚐJwt(ctx contex
 	return ec._JWT(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNListAvailableRoomInput2PopcornMovieᚋmodelᚐListAvailableRoomInput(ctx context.Context, v interface{}) (model.ListAvailableRoomInput, error) {
+	res, err := ec.unmarshalInputListAvailableRoomInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListAvailableRoomOutput2PopcornMovieᚋmodelᚐListAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, v model.ListAvailableRoomOutput) graphql.Marshaler {
+	return ec._ListAvailableRoomOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListAvailableRoomOutput2ᚖPopcornMovieᚋmodelᚐListAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListAvailableRoomOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListAvailableRoomOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNListAvailableSeatFilter2ᚖPopcornMovieᚋmodelᚐListAvailableSeatFilter(ctx context.Context, v interface{}) (*model.ListAvailableSeatFilter, error) {
+	res, err := ec.unmarshalInputListAvailableSeatFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNListAvailableSeatInput2PopcornMovieᚋmodelᚐListAvailableSeatInput(ctx context.Context, v interface{}) (model.ListAvailableSeatInput, error) {
+	res, err := ec.unmarshalInputListAvailableSeatInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListAvailableSeatOutput2PopcornMovieᚋmodelᚐListAvailableSeatOutput(ctx context.Context, sel ast.SelectionSet, v model.ListAvailableSeatOutput) graphql.Marshaler {
+	return ec._ListAvailableSeatOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListAvailableSeatOutput2ᚖPopcornMovieᚋmodelᚐListAvailableSeatOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListAvailableSeatOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListAvailableSeatOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNListCommentInput2PopcornMovieᚋmodelᚐListCommentInput(ctx context.Context, v interface{}) (model.ListCommentInput, error) {
+	res, err := ec.unmarshalInputListCommentInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListCommentOutput2PopcornMovieᚋmodelᚐListCommentOutput(ctx context.Context, sel ast.SelectionSet, v model.ListCommentOutput) graphql.Marshaler {
+	return ec._ListCommentOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListCommentOutput2ᚖPopcornMovieᚋmodelᚐListCommentOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListCommentOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListCommentOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNListFoodInput2PopcornMovieᚋmodelᚐListFoodInput(ctx context.Context, v interface{}) (model.ListFoodInput, error) {
+	res, err := ec.unmarshalInputListFoodInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListFoodOutput2PopcornMovieᚋmodelᚐListFoodOutput(ctx context.Context, sel ast.SelectionSet, v model.ListFoodOutput) graphql.Marshaler {
+	return ec._ListFoodOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListFoodOutput2ᚖPopcornMovieᚋmodelᚐListFoodOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListFoodOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListFoodOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNListMovieFilter2ᚖPopcornMovieᚋmodelᚐListMovieFilter(ctx context.Context, v interface{}) (*model.ListMovieFilter, error) {
+	res, err := ec.unmarshalInputListMovieFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNListMovieInput2PopcornMovieᚋmodelᚐListMovieInput(ctx context.Context, v interface{}) (model.ListMovieInput, error) {
+	res, err := ec.unmarshalInputListMovieInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListMovieOutput2PopcornMovieᚋmodelᚐListMovieOutput(ctx context.Context, sel ast.SelectionSet, v model.ListMovieOutput) graphql.Marshaler {
+	return ec._ListMovieOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListMovieOutput2ᚖPopcornMovieᚋmodelᚐListMovieOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListMovieOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListMovieOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNListRoomInput2PopcornMovieᚋmodelᚐListRoomInput(ctx context.Context, v interface{}) (model.ListRoomInput, error) {
 	res, err := ec.unmarshalInputListRoomInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5882,6 +12876,49 @@ func (ec *executionContext) marshalNListRoomOutput2ᚖPopcornMovieᚋmodelᚐLis
 		return graphql.Null
 	}
 	return ec._ListRoomOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNListSeatInput2PopcornMovieᚋmodelᚐListSeatInput(ctx context.Context, v interface{}) (model.ListSeatInput, error) {
+	res, err := ec.unmarshalInputListSeatInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListSeatOutput2PopcornMovieᚋmodelᚐListSeatOutput(ctx context.Context, sel ast.SelectionSet, v model.ListSeatOutput) graphql.Marshaler {
+	return ec._ListSeatOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListSeatOutput2ᚖPopcornMovieᚋmodelᚐListSeatOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListSeatOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListSeatOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNListShowTimeFilter2ᚖPopcornMovieᚋmodelᚐListShowTimeFilter(ctx context.Context, v interface{}) (*model.ListShowTimeFilter, error) {
+	res, err := ec.unmarshalInputListShowTimeFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNListShowTimeInput2PopcornMovieᚋmodelᚐListShowTimeInput(ctx context.Context, v interface{}) (model.ListShowTimeInput, error) {
+	res, err := ec.unmarshalInputListShowTimeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNListShowTimeOutput2PopcornMovieᚋmodelᚐListShowTimeOutput(ctx context.Context, sel ast.SelectionSet, v model.ListShowTimeOutput) graphql.Marshaler {
+	return ec._ListShowTimeOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNListShowTimeOutput2ᚖPopcornMovieᚋmodelᚐListShowTimeOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListShowTimeOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ListShowTimeOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNListTheatersInput2PopcornMovieᚋmodelᚐListTheatersInput(ctx context.Context, v interface{}) (model.ListTheatersInput, error) {
@@ -5908,6 +12945,45 @@ func (ec *executionContext) unmarshalNLoginInput2PopcornMovieᚋmodelᚐLoginInp
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNMovie2PopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v ent.Movie) graphql.Marshaler {
+	return ec._Movie(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMovie2ᚖPopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v *ent.Movie) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Movie(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMovieStatus2PopcornMovieᚋmodelᚐMovieStatus(ctx context.Context, v interface{}) (model.MovieStatus, error) {
+	var res model.MovieStatus
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMovieStatus2PopcornMovieᚋmodelᚐMovieStatus(ctx context.Context, sel ast.SelectionSet, v model.MovieStatus) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx context.Context, v interface{}) (*model.PaginationInput, error) {
+	res, err := ec.unmarshalInputPaginationInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPaginationOutput2ᚖPopcornMovieᚋmodelᚐPaginationOutput(ctx context.Context, sel ast.SelectionSet, v *model.PaginationOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PaginationOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNRegisterInput2PopcornMovieᚋmodelᚐRegisterInput(ctx context.Context, v interface{}) (model.RegisterInput, error) {
 	res, err := ec.unmarshalInputRegisterInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5926,6 +13002,260 @@ func (ec *executionContext) unmarshalNRole2PopcornMovieᚋmodelᚐRole(ctx conte
 
 func (ec *executionContext) marshalNRole2PopcornMovieᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) marshalNRoom2PopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v ent.Room) graphql.Marshaler {
+	return ec._Room(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNRoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v []*ent.Room) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalORoom2ᚖPopcornMovieᚋentᚐRoom(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalNRoom2ᚖPopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v *ent.Room) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Room(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSeat2PopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v ent.Seat) graphql.Marshaler {
+	return ec._Seat(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v []*ent.Seat) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSeat2ᚖPopcornMovieᚋentᚐSeat(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeatᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Seat) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSeat2ᚖPopcornMovieᚋentᚐSeat(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNSeat2ᚖPopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v *ent.Seat) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Seat(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSeatCategory2PopcornMovieᚋmodelᚐSeatCategory(ctx context.Context, v interface{}) (model.SeatCategory, error) {
+	var res model.SeatCategory
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNSeatCategory2PopcornMovieᚋmodelᚐSeatCategory(ctx context.Context, sel ast.SelectionSet, v model.SeatCategory) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNShowTime2PopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v ent.ShowTime) graphql.Marshaler {
+	return ec._ShowTime(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v []*ent.ShowTime) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTimeᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ShowTime) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v *ent.ShowTime) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ShowTime(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -5947,6 +13277,44 @@ func (ec *executionContext) marshalNTheater2PopcornMovieᚋentᚐTheater(ctx con
 	return ec._Theater(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNTheater2ᚕᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v []*ent.Theater) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTheater2ᚖPopcornMovieᚋentᚐTheater(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalNTheater2ᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v *ent.Theater) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -5955,6 +13323,60 @@ func (ec *executionContext) marshalNTheater2ᚖPopcornMovieᚋentᚐTheater(ctx 
 		return graphql.Null
 	}
 	return ec._Theater(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNTicket2ᚕᚖPopcornMovieᚋentᚐTicketᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Ticket) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTicket2ᚖPopcornMovieᚋentᚐTicket(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTicket2ᚖPopcornMovieᚋentᚐTicket(ctx context.Context, sel ast.SelectionSet, v *ent.Ticket) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Ticket(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
@@ -5970,6 +13392,34 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTransaction2PopcornMovieᚋentᚐTransaction(ctx context.Context, sel ast.SelectionSet, v ent.Transaction) graphql.Marshaler {
+	return ec._Transaction(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTransaction2ᚖPopcornMovieᚋentᚐTransaction(ctx context.Context, sel ast.SelectionSet, v *ent.Transaction) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Transaction(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUser2PopcornMovieᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚖPopcornMovieᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -6251,6 +13701,52 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOComment2ᚖPopcornMovieᚋentᚐComment(ctx context.Context, sel ast.SelectionSet, v *ent.Comment) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Comment(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOFood2ᚖPopcornMovieᚋentᚐFood(ctx context.Context, sel ast.SelectionSet, v *ent.Food) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Food(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOListAvailableRoomFilter2ᚖPopcornMovieᚋmodelᚐListAvailableRoomFilter(ctx context.Context, v interface{}) (*model.ListAvailableRoomFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputListAvailableRoomFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOListMovieFilter2ᚖPopcornMovieᚋmodelᚐListMovieFilter(ctx context.Context, v interface{}) (*model.ListMovieFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputListMovieFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOListRoomFilter2ᚖPopcornMovieᚋmodelᚐListRoomFilter(ctx context.Context, v interface{}) (*model.ListRoomFilter, error) {
 	if v == nil {
 		return nil, nil
@@ -6265,6 +13761,70 @@ func (ec *executionContext) unmarshalOListTheaterFilter2ᚖPopcornMovieᚋmodel�
 	}
 	res, err := ec.unmarshalInputListTheaterFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMovie2ᚕᚖPopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v []*ent.Movie) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMovie2ᚖPopcornMovieᚋentᚐMovie(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMovie2ᚖPopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v *ent.Movie) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Movie(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMovieStatus2ᚖPopcornMovieᚋmodelᚐMovieStatus(ctx context.Context, v interface{}) (*model.MovieStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.MovieStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMovieStatus2ᚖPopcornMovieᚋmodelᚐMovieStatus(ctx context.Context, sel ast.SelectionSet, v *model.MovieStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx context.Context, v interface{}) (*model.PaginationInput, error) {
@@ -6365,52 +13925,25 @@ func (ec *executionContext) marshalORole2ᚖPopcornMovieᚋmodelᚐRole(ctx cont
 	return v
 }
 
-func (ec *executionContext) marshalORoom2ᚕᚖPopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v []*ent.Room) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalORoom2ᚖPopcornMovieᚋentᚐRoom(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalORoom2ᚖPopcornMovieᚋentᚐRoom(ctx context.Context, sel ast.SelectionSet, v *ent.Room) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Room(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSeat2ᚖPopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v *ent.Seat) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Seat(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v *ent.ShowTime) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._ShowTime(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
@@ -6429,52 +13962,27 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTheater2ᚕᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v []*ent.Theater) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOTheater2ᚖPopcornMovieᚋentᚐTheater(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalOTheater2ᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v *ent.Theater) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Theater(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalTime(*v)
+	return res
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
