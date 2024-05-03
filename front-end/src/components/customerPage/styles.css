@@ -1,0 +1,128 @@
+.form-group {
+    margin-bottom: 20px;
+}
+
+.input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    transition: border-color 0.3s ease-in-out;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #007bff;
+    /* Màu sắc khi input được chọn */
+}
+
+.seat-standard {
+    background-color: rgb(199, 199, 199);
+    width: 3rem;
+    margin: 5px;
+}
+
+.seat-couple {
+    width: 6rem;
+    margin: 10px;
+    background-color: #ec307e;
+}
+
+.seat-selecting {
+    background-color: #0c79ed;
+}
+
+.seat-selecting:hover {
+    background-color: #0c79ed;
+}
+
+.seat-booked:disabled {
+    background-color: #198754;
+    opacity: 1;
+    border: 1px;
+}
+
+.seat-vacant {
+    transition: transform 0.2s;
+}
+
+.seat-vacant:hover {
+    background-color: #0c79ed;
+    border-color: transparent;
+}
+
+.seat-note-standard-vacant:disabled {
+    width: 3rem;
+    background-color: rgb(199, 199, 199);
+}
+
+.seat-note-couple-vacant:disabled {
+    background-color: #ec307e;
+    width: 3rem;
+}
+
+.seat-note-standard-booked:disabled {
+    background-color: #198754;
+    width: 3rem;
+}
+
+.seat-note-standard-selecting:disabled {
+    width: 3rem;
+    background-color: #0c79ed;
+}
+
+.seat-note:disabled {
+    opacity: 1;
+    border: 1px;
+}
+
+
+#check_terms_condition {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1.5rem;
+    /* Độ rộng của checkbox */
+    height: 1.5rem;
+    /* Độ cao của checkbox */
+    border: 1px solid #000;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Tùy chỉnh màu khi checkbox được chọn */
+#check_terms_condition:checked {
+    background-color: #007bff;
+}
+
+#check_terms_condition:checked::before {
+    content: '✓';
+    color: #fff;
+    font-size: 1.3rem;
+    align-items: center;
+    margin-left: 3px;
+    line-height: 0;
+}
+
+/* Nút to lên và không xuống dòng */
+label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.radio-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 1px solid #000;
+    border-radius: 100%;
+    cursor: pointer;
+    padding: 3px;
+}
+
+.radio-button:checked {
+    background-color: #007bff;
+    background-clip: content-box;
+}
+
+
