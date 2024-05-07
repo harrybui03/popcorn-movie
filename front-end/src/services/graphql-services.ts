@@ -41,7 +41,7 @@ export const buildQuery = (props: IbuildQuery): IbuildQueryReturn => {
   }
 }
 
-export const graphQLClient = new GraphQLClient('', {
+export const graphQLClient = new GraphQLClient('http://localhost:8000/query', {
   requestMiddleware,
   responseMiddleware,
 })

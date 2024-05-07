@@ -7,7 +7,7 @@ function LoginSignup() {
     const auth = useAuth()
 
     const handleLogout = () => {
-        auth.setAccessToken('');
+        auth.setToken('');
         window.location.href = '/';
     }
 

@@ -1,18 +1,14 @@
 import React from 'react'
-import Header from '../components/defaultPage/Header';
-import Footer from '../components/defaultPage/Footer'
-import useDemoMutation from './useMutation'
-import useDemoQuery from './useQuery'
+import useDemoQuery from './hook/useQuery';
 
-function DemoPage() {
-    const { onSubmit } = useDemoMutation();
+function Demo() {
+    // const { onSubmit } = useDemoMutation();
     const { data } = useDemoQuery();
     return (
         <>
-            <Header></Header>
-            <Footer></Footer>
+            <h1>Huongdz</h1>            
         </>
     )
 }
 
-export default DemoPage
+export default Demo

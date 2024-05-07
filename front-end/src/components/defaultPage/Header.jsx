@@ -1,8 +1,10 @@
 import React from 'react'
 import SearchButton from './SearchButton'
 import LoginButton from './LoginButton'
+import useAuth from '../../hooks/useAuth'
 
 function HomepageHeader() {
+    const {isLogin} = useAuth()
     return (
         <nav className="navbar navbar-expand-lg navbar-light " style={{backgroundColor: '#2b1a1a'}}>
             <div className="container-fluid d-flex justify-content-center">
@@ -18,7 +20,9 @@ function HomepageHeader() {
                     </ul>
                 </div>
                 <SearchButton />
-                <LoginButton />
+                 {
+                    !isLogin && (<LoginButton />)
+                }
             </div>
         </nav>
     )

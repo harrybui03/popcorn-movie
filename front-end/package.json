@@ -20,13 +20,17 @@
     "bootstrap": "^5.3.2",
     "date-fns": "^2.30.0",
     "graphql-request": "^6.1.0",
+    "nodemon": "^3.1.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.9.1",
     "react-dom": "^18.2.0",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.16.0",
     "recharts": "^2.10.3",
-    "styled-components": "^6.1.1"
+    "styled-components": "^6.1.1",
+    "vite-plugin-node-stdlib-browser": "^0.2.1",
+    "vite-plugin-svgr": "^4.2.0",
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",

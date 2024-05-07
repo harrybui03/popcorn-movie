@@ -1,7 +1,7 @@
 import { buildQuery } from "../../../services/graphql-services";
 function useGraphql() {
   const queryKey = "Movie";
-  const getAllJobTitles = buildQuery({
+  const getAllMovies = buildQuery({
     operation: "Movies",
     params:{input:"ListMovieInput!"},
     options: {
@@ -31,21 +31,20 @@ function useGraphql() {
   });
 
 
-  const createJobTitle = buildQuery({
-    operation: "CreateJobTitle",
+  const login = buildQuery({
+    operation: "Login",
     options: {
       type: "mutation",
     },
     node: `
-          data {
-            id
-          }
+      accessToken
+      refreshToken
         `,
     params: {
-      input: "NewJobTitleInput!",
+      input: "LoginInput!",
     },
   });
 
-  return { getAllJobTitles, createJobTitle, queryKey };
+  return { getAllMovies, login, queryKey };
 }
 export default useGraphql;

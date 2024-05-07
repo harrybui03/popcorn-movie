@@ -25,12 +25,12 @@ function App() {
     }
     return [];
   }
-  const { accessToken, setAccessToken } = useAuth();
-  const [roles, setRoles] = useState(getRoles(accessToken));
-  useEffect(() => {
-    // Update roles when accessToken changes
-    setRoles(getRoles(accessToken));
-  }, [accessToken]);
+  const { accessToken, setAccessToken , roles } = useAuth();
+  // const [roles, setRoles] = useState(getRoles(accessToken));
+  // useEffect(() => {
+  //   // Update roles when accessToken changes
+  //   setRoles(getRoles(accessToken));
+  // }, [accessToken]);
 
   const getUserName = (accessToken) => {
     if (accessToken) {
@@ -54,7 +54,7 @@ function App() {
         <Routes>
           <Route
             path='/' element={
-              roles.find(role => role === "ROLE_CUSTOMER") ? (
+              roles.find(role => role === "CUSTOMER") ? (
                 <PrivateRoute>
                   <CustomerPage username={username} email={email} />
                 </PrivateRoute>
@@ -76,7 +76,7 @@ function App() {
             }
           />
           <Route path='/movies/:id' element={
-            roles.find(role => role === "ROLE_CUSTOMER") ? (
+            roles.find(role => role === "CUSTOMER") ? (
               <PrivateRoute>
                 <OrderTicket username={username} email={email} />
               </PrivateRoute>
@@ -85,7 +85,7 @@ function App() {
             )
           } />
           <Route path='/payments/success' element={
-            roles.find(role => role === "ROLE_CUSTOMER") ? (
+            roles.find(role => role === "CUSTOMER") ? (
               <PrivateRoute>
                 <PaymentSuccess username={username} email={email} />
               </PrivateRoute>
@@ -94,7 +94,7 @@ function App() {
             )
           } />
           <Route path='/payments/cancel' element={
-            roles.find(role => role === "ROLE_CUSTOMER") ? (
+            roles.find(role => role === "CUSTOMER") ? (
               <PrivateRoute>
                 <PaymentFail username={username} email={email} />
               </PrivateRoute>
@@ -103,7 +103,7 @@ function App() {
             )
           } />
           <Route path='/history-booking' element={
-            roles.find(role => role === "ROLE_CUSTOMER") ? (
+            roles.find(role => role === "CUSTOMER") ? (
               <PrivateRoute>
                 <HistoryBooking username={username} email={email} />
               </PrivateRoute>

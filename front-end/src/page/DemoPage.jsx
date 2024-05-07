@@ -1,12 +1,11 @@
 import React from 'react'
-import Header from '../components/defaultPage/Header';
-import Footer from '../components/defaultPage/Footer'
+import Demo from '../components/demoPage'
 
 function DemoPage() {
+    console.log(123)
     return (
         <>
-            <Header></Header>
-            <Footer></Footer>
+            <Demo></Demo>
         </>
     )
 }

@@ -92,7 +92,7 @@ const ManageUser = () => {
         password: '',
         confirmPassword: '',
         displayName: '',
-        role: 'ROLE_CUSTOMER'
+        role: 'CUSTOMER'
     });
 
     const handleChange = (e) => {
@@ -147,7 +147,7 @@ const ManageUser = () => {
             password: '',
             confirmPassword: '',
             displayName: '',
-            role: 'ROLE_CUSTOMER'
+            role: 'CUSTOMER'
         });
         setMessageInsertUser({ isShow: false, text: '', success: false });
         getUsers();
@@ -363,7 +363,7 @@ const ManageUser = () => {
                                 className='form-control bg-light'
                                 name="role"
                                 onChange={handleChange} required>
-                                <option value="ROLE_CUSTOMER">CUSTOMER</option>
+                                <option value="CUSTOMER">CUSTOMER</option>
                                 <option value="ROLE_TICKET_MANAGER">MANAGER</option>
                                 <option value="ROLE_STAFF">STAFF</option>
                             </select>

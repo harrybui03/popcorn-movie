@@ -1,9 +1,9 @@
 type Room {
     id:ID!
     roomNumber:Int!
-    theater:Theater!
-    showTime:[ShowTime]!
-    seat:[Seat]!
+    theater:Theater
+    showTime:[ShowTime]
+    seat:[Seat]
 }
 
 input ListRoomFilter {

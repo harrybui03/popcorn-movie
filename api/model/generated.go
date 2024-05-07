@@ -145,7 +145,9 @@ type ListSeatOutput struct {
 }
 
 type ListShowTimeFilter struct {
-	MovieID *string `json:"movieId,omitempty"`
+	MovieID   *string    `json:"movieId,omitempty"`
+	TheaterID *string    `json:"theaterId,omitempty"`
+	Date      *time.Time `json:"date,omitempty"`
 }
 
 type ListShowTimeInput struct {

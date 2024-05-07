@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faFacebookSquare, faGoogle } from "@fortawesome/free-brands-svg-icons";
-import useAuth from '../../hooks/useAuth';
+
+import useLogin from "./hook/useMutation";
 
 function LoginSignup() {
     const [isChecked, setIsChecked] = useState(true);
@@ -17,92 +18,67 @@ function LoginSignup() {
         setLoginErrorMessage("");
         setIsChecked(!isChecked);
     };
-    const auth = useAuth();
+
+    
     const [email, setEmail] = useState('');
     const [pwd, setPwd] = useState('');
-    const handleSignIn = async () => {
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\\/-]).{8,}$/;
-        if (email === '' || pwd === '') {
-            setIsLoginSuccess(false);
-            setLoginErrorMessage("Vui lòng điền đủ thông tin.");
-        } else if (!passwordRegex.test(pwd)) {
-            setIsLoginSuccess(false);
-            setLoginErrorMessage("Mật khẩu ít nhất 8 kí tự (phải bao gồm chữ hoa, chữ thường, chữ số và kí tự đặt biệt)");
-        } else {
-            try {
-                const response = await fetch('http://localhost:8080/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password: pwd }),
-                });
-                const data = await response.json();
-                if (response.status === 200) {
-                    setIsLoginSuccess(true);
-                    setLoginErrorMessage("");
-                    auth.setAccessToken(data.accessToken);
-                    window.location.href = '/';
-                } else {
-                    console.log(data);
-                    setIsLoginSuccess(false);
-                    setLoginErrorMessage("Email hoặc mật khẩu không hợp lệ, vui lòng kiểm tra lại.");
-                }
 
-            } catch (error) {
-                console.error('Error during sign-in:', error);
-            }
-        }
+    const {isSuccess , onLogin } =  useLogin({setLoginErrorMessage ,setIsLoginSuccess })
+
+    function handleSignIn() {
+        onLogin({email , pwd})
+    }
+    
+    function handleSignUp(){
 
     }
+    // const [emailSU, setEmailSU] = useState('');
+    // const [pwdSU, setPwdSU] = useState('');
+    // const [username, setUsername] = useState('');
+    // const [confirmPwd, setConfirmPwd] = useState('');
+    // const handleSignUp = async () => {
+    //     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\\/-]).{8,}$/;
+    //     if (emailSU === '' || pwdSU === '' || confirmPwd === '' || username === '') {
+    //         setIsSignupSuccess(false);
+    //         setSignupErrorMessage("Vui lòng điền đủ thông tin.");
+    //     } else if (pwdSU !== confirmPwd) {
+    //         setIsSignupSuccess(false);
+    //         setSignupErrorMessage("Vui lòng xác nhận lại mật khẩu.");
+    //     } else if (!passwordRegex.test(pwdSU)) {
+    //         console.log(pwdSU, passwordRegex.test(pwdSU));
+    //         setIsSignupSuccess(false);
+    //         setSignupErrorMessage("Mật khẩu ít nhất 8 kí tự (phải bao gồm chữ hoa, chữ thường, chữ số và kí tự đặt biệt)");
+    //     } else {
+    //         try {
+    //             const response = await fetch('http://localhost:8080/auth/signup', {
+    //                 method: 'POST',
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                 },
+    //                 body: JSON.stringify({ email: emailSU, password: pwdSU, displayName: username }),
+    //             });
+    //             const data = await response.json();
+    //             console.log(data);
+    //             if (response.status === 200) {
+    //                 if (data.message === "Email is already in use") {
+    //                     setIsSignupSuccess(false);
+    //                     setSignupErrorMessage("Email đã được đăng ký.");
+    //                 } else {
+    //                     setIsSignupSuccess(true);
+    //                     setSignupErrorMessage("");
+    //                     alert("Đăng ký thành công, vui lòng kiểm tra email để kích hoạt tài khoản");
+    //                 }
+    //             } else {
+    //                 setIsSignupSuccess(false);
+    //                 setSignupErrorMessage("Đăng ký thất bại, vui lòng thử lại.");
+    //             }
 
-    const [emailSU, setEmailSU] = useState('');
-    const [pwdSU, setPwdSU] = useState('');
-    const [username, setUsername] = useState('');
-    const [confirmPwd, setConfirmPwd] = useState('');
-    const handleSignUp = async () => {
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\\/-]).{8,}$/;
-        if (emailSU === '' || pwdSU === '' || confirmPwd === '' || username === '') {
-            setIsSignupSuccess(false);
-            setSignupErrorMessage("Vui lòng điền đủ thông tin.");
-        } else if (pwdSU !== confirmPwd) {
-            setIsSignupSuccess(false);
-            setSignupErrorMessage("Vui lòng xác nhận lại mật khẩu.");
-        } else if (!passwordRegex.test(pwdSU)) {
-            console.log(pwdSU, passwordRegex.test(pwdSU));
-            setIsSignupSuccess(false);
-            setSignupErrorMessage("Mật khẩu ít nhất 8 kí tự (phải bao gồm chữ hoa, chữ thường, chữ số và kí tự đặt biệt)");
-        } else {
-            try {
-                const response = await fetch('http://localhost:8080/auth/signup', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: emailSU, password: pwdSU, displayName: username }),
-                });
-                const data = await response.json();
-                console.log(data);
-                if (response.status === 200) {
-                    if (data.message === "Email is already in use") {
-                        setIsSignupSuccess(false);
-                        setSignupErrorMessage("Email đã được đăng ký.");
-                    } else {
-                        setIsSignupSuccess(true);
-                        setSignupErrorMessage("");
-                        alert("Đăng ký thành công, vui lòng kiểm tra email để kích hoạt tài khoản");
-                    }
-                } else {
-                    setIsSignupSuccess(false);
-                    setSignupErrorMessage("Đăng ký thất bại, vui lòng thử lại.");
-                }
+    //         } catch (error) {
+    //             console.error('Error during sign-in:', error);
+    //         }
+    //     }
 
-            } catch (error) {
-                console.error('Error during sign-in:', error);
-            }
-        }
-
-    }
+    // }
 
 
     return (

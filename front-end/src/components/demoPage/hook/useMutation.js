@@ -1,6 +1,6 @@
-import { useGraphql } from "./graphql/index";
+import { useGraphql } from "../graphql/index";
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchGraphQL } from '../../services/graphql-services'
+import { fetchGraphQL } from '../../../services/graphql-services'
 
 function useDemoMutation() {
   const queryClient = useQueryClient()

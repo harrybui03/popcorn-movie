@@ -11,67 +11,79 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import './styles.css'
 import useAuth from "../../hooks/useAuth";
+import { useGetAllMovies } from '../defaultPage/hook/useQuery';
+import { useGetAllShowTimes, useGetAllThearters } from './hook/useQuery';
 
 function CustomerDashBoard(params) {
   const { id } = useParams();
   const auth = useAuth();
 
+  const dataOnGoing = useGetAllMovies("ONGOING");
+  const dataUpComing = useGetAllMovies("UPCOMING");
+  const dataTheaters = useGetAllThearters()
+  const theater = dataTheaters?.data??[]
+
   const [step, setStep] = useState('choose-time');
   const [prevStep, setPrevStep] = useState(null);
-  const [movie, setMovie] = useState(null);
-  const [theater, setTheater] = useState([]);
+  const [movie, setMovie] = useState({
+    "id": "017feee4-cfbf-4533-8213-1831c250eb27",
+    "title": "WISH",
+    "genre": " Animation",
+    "status": "ONGOING",
+    "language": "English",
+    "director": " Chris Buck, Fawn Veerasunthorn",
+    "cast": "Chris Pine, Evan Peters",
+    "poster": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fbuffer.com%2Flibrary%2Ffree-images%2F&psig=AOvVaw1D8b7OAKrOrmjGNhdizK6g&ust=1715185999152000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCOiMiPP7-4UDFQAAAAAdAAAAABAE",
+    "rated": "5",
+    "duration": 94,
+    "trailer": "https://youtu.be/oyRxxpD3yNw?si=jRSACbctdNf5FrgM",
+    "openingDay": "2023-11-24T00:00:00Z",
+    "story": "Điều ước sẽ đi theo cô gái trẻ Asha, người ước nguyện dưới vì sao và nhận được nhiều hơn mong đợi khi một ngôi sao rắc rối từ trên trời rơi xuống để đồng hành cùng cô. Cô sẽ đối mặt với những kẻ thù ghê gớm nhất vũ trụ và phải hợp sức với Star..."
+  });
   const [date, setDate] = useState([]);
+  const [theaterChosen, setTheaterChosen] = useState(theater[0]?.id);
+  const [dateChosen, setDateChosen] = useState(date[0]);
+  const [theaterChosenName, setTheaterChosenName] = useState(theater[0]);
 
-  const [showtimes, setShowTimes] = useState(null);
+  const showTimesData = useGetAllShowTimes(theaterChosen ,id)
+  // const showtimes = showTimesData.data
 
-  const getMovie = async () => {
-    try {
-      // Địa chỉ API và tham số
-      const apiUrl1 = 'http://localhost:8080/movies?status=Ongoing';
-      const apiUrl2 = 'http://localhost:8080/movies?status=Upcoming';
+  const showtimes = showTimesData?.data?.filter(e => {
+          const dateString = e.startAt;
+          const dateTime = parseISO(dateString);
 
-      // Gọi API bằng phương thức GET
-      const response1 = await fetch(apiUrl1);
-      const response2 = await fetch(apiUrl2);
+          const datePart = format(dateTime, 'dd/MM/yyyy');
+          return datePart === date;
+        });
+        showTimesData?.data?.sort((a, b) => {
+          const timeA = parseISO(a.startAt);
+          const timeB = parseISO(b.endAt);
+          return timeA - timeB;
+        });
 
-      // Kiểm tra trạng thái của response
-      if (!response1.ok || !response2.ok) {
-        throw new Error('Network response was not ok');
-      }
-      else {
-        // Chuyển đổi response thành JSON
-        const result1 = await response1.json();
-        const result2 = await response2.json();
-        const data = result1.concat(result2).filter(e => e.id === parseInt(id));
-        // Cập nhật state với dữ liệu từ API
-        setMovie(data[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  const getTheater = async () => {
-    try {
-      // Địa chỉ API và tham số
-      const apiUrl = 'http://localhost:8080/theaters';
+  // const getTheater = async () => {
+  //   try {
+  //     // Địa chỉ API và tham số
+  //     const apiUrl = 'http://localhost:8080/theaters';
 
-      // Gọi API bằng phương thức GET
-      const response = await fetch(apiUrl);
+  //     // Gọi API bằng phương thức GET
+  //     const response = await fetch(apiUrl);
 
-      // Kiểm tra trạng thái của response
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      else {
-        // Chuyển đổi response thành JSON
-        const result = await response.json();
-        // Cập nhật state với dữ liệu từ API
-        setTheater(result);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+  //     // Kiểm tra trạng thái của response
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     else {
+  //       // Chuyển đổi response thành JSON
+  //       const result = await response.json();
+  //       // Cập nhật state với dữ liệu từ API
+  //       setTheater(result);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
   const getDate = () => {
     const today = new Date();
     const fiveDays = Array.from({ length: 5 }, (_, index) => {
@@ -80,49 +92,37 @@ function CustomerDashBoard(params) {
     });
     setDate(fiveDays);
   };
-  const getShowTime = async (idMovie, idTheater, date) => {
-    try {
-      // Địa chỉ API và tham số
-      const apiUrl = `http://localhost:8080/showtimes?theater=${idTheater}&movie=${idMovie}`;
 
-      // Gọi API bằng phương thức GET
-      const response = await fetch(apiUrl);
+  // const getShowTime = async (idMovie, idTheater, date) => {
+  //   try {
+  //     // Địa chỉ API và tham số
+  //     const apiUrl = `http://localhost:8080/showtimes?theater=${idTheater}&movie=${idMovie}`;
 
-      // Kiểm tra trạng thái của response
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      else {
-        // Chuyển đổi response thành JSON
-        const result = await response.json();
-        const data = result.filter(e => {
-          const dateString = e.startAt;
-          const dateTime = parseISO(dateString);
+  //     // Gọi API bằng phương thức GET
+  //     const response = await fetch(apiUrl);
 
-          const datePart = format(dateTime, 'dd/MM/yyyy');
-          return datePart === date;
-        });
-        data.sort((a, b) => {
-          const timeA = parseISO(a.startAt);
-          const timeB = parseISO(b.startAt);
-          return timeA - timeB;
-        });
-        setShowTimes(data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }
-  const [theaterChosen, setTheaterChosen] = useState(theater[0]?.id);
-  const [dateChosen, setDateChosen] = useState(date[0]);
+  //     // Kiểm tra trạng thái của response
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     else {
+  //       // Chuyển đổi response thành JSON
+  //       const result = await response.json();
+  
+  //       setShowTimes(data);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // }
+  
+  
 
-  const [theaterChosenName, setTheaterChosenName] = useState(theater[0]);
-
-  useEffect(() => {
-    getMovie();
-    getTheater();
-    getDate();
-  }, []);
+  // useEffect(() => {
+  //   getMovie();
+  //   getTheater();
+  //   getDate();
+  // }, []);
 
   useEffect(() => {
     setTheaterChosen(theater[0]?.id);
@@ -134,9 +134,9 @@ function CustomerDashBoard(params) {
   useEffect(() => {
     // console.log(theaterChosen);
     // console.log(dateChosen);
-    if (theaterChosen) {
-      getShowTime(id, theaterChosen, dateChosen);
-    }
+    // if (theaterChosen) {
+    //   getShowTime(id, theaterChosen, dateChosen);
+    // }
   }, [dateChosen, theaterChosen]);
 
   const handleChangeTheater = (event) => {
@@ -150,37 +150,37 @@ function CustomerDashBoard(params) {
   const [showtimeChosen, setShowTimeChosen] = useState(null);
   const [tickets, setTickets] = useState(null);
 
-  const getTickets = async (idShowtime) => {
-    try {
-      // Địa chỉ API và tham số
-      const apiUrl = `http://localhost:8080/tickets?showtime=${idShowtime}`;
+  // const getTickets = async (idShowtime) => {
+  //   try {
+  //     // Địa chỉ API và tham số
+  //     const apiUrl = `http://localhost:8080/tickets?showtime=${idShowtime}`;
 
-      // Gọi API bằng phương thức GET
-      const response = await fetch(apiUrl);
+  //     // Gọi API bằng phương thức GET
+  //     const response = await fetch(apiUrl);
 
-      // Kiểm tra trạng thái của response
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      else {
-        // Chuyển đổi response thành JSON
-        const result = await response.json();
-        result.sort((a, b) => {
-          const aPrefix = a.seat.seatNumber.substring(0, 1);
-          const bPrefix = b.seat.seatNumber.substring(0, 1);
-          if (aPrefix === bPrefix) {
-            const aNumber = parseInt(a.seat.seatNumber.substring(1), 10);
-            const bNumber = parseInt(b.seat.seatNumber.substring(1), 10);
-            return aNumber - bNumber;
-          }
-          return aPrefix.localeCompare(bPrefix);
-        });
-        setTickets(result);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  }
+  //     // Kiểm tra trạng thái của response
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     else {
+  //       // Chuyển đổi response thành JSON
+  //       const result = await response.json();
+  //       result.sort((a, b) => {
+  //         const aPrefix = a.seat.seatNumber.substring(0, 1);
+  //         const bPrefix = b.seat.seatNumber.substring(0, 1);
+  //         if (aPrefix === bPrefix) {
+  //           const aNumber = parseInt(a.seat.seatNumber.substring(1), 10);
+  //           const bNumber = parseInt(b.seat.seatNumber.substring(1), 10);
+  //           return aNumber - bNumber;
+  //         }
+  //         return aPrefix.localeCompare(bPrefix);
+  //       });
+  //       setTickets(result);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // }
 
   const handleChooseSeat = (showtime) => {
     setStep('choose-seat');
@@ -317,25 +317,25 @@ function CustomerDashBoard(params) {
     }
   }
 
-  const postCheckoutInit = async () => {
-    try {
-      const response = await fetch(`http://localhost:8080/checkout/init?fee=${total}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${auth.accessToken}`,
-        }
-      });
+  // const postCheckoutInit = async () => {
+  //   try {
+  //     const response = await fetch(`http://localhost:8080/checkout/init?fee=${total}`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Authorization': `Bearer ${auth.accessToken}`,
+  //       }
+  //     });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  }
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! Status: ${response.status}`);
+  //     }
+  //     const result = await response.json();
+  //     return result;
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     throw error;
+  //   }
+  // }
 
   return (
     <>
@@ -698,30 +698,6 @@ function CustomerDashBoard(params) {
                   <strong>9. Luật áp dụng:</strong>
                   <p>Mọi hoạt động phát sinh từ trang web có thể sẽ được phân tích và đánh giá theo luật pháp Việt Nam và toà án Tp. Hồ Chí Minh. Và bạn phải đồng ý tuân theo các điều khoản riêng của các toà án này.</p>
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               </div>
               <div className='my-5 d-flex justify-content-start align-items-center'>
                 <input className='m-2' id='check_terms_condition' type='checkbox' checked={isCheckedCondition} onChange={handleCheckCondition} />

@@ -4,55 +4,14 @@ import { useNavigate } from "react-router-dom";
 import LoadingSpinner from './Loading'
 import MovieCardCarousel from "./MovieCardCarousel";
 import "./styles.css"
+import { useGetAllMovies } from "./hook/useQuery";
 
 function MovieBanner(username) {
     const navigate = useNavigate();
     const [isOnGoing, setIsOnGoing] = useState(true);
     const [loading, setLoading] = useState(true);
     const isLogin = username.username ? true : false;
-    const [data, setData] = useState(null);
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            // Địa chỉ API và tham số
-            const apiUrl = 'http://localhost:8080/movies?status=Over';
-            // let params;
-            // if (isOnGoing) {
-            //     params = { status: 'Ongoing' };
-            // } else {
-            //     params = { status: 'Upcoming' };
-            // }
-
-            // Chuyển đổi tham số thành chuỗi query
-            // const queryString = Object.keys(params)
-            //     .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-            //     .join('&');
-
-            // Tạo URL với tham số
-            // const urlWithParams = `${apiUrl}?${queryString}`;
-            // Gọi API bằng phương thức GET
-            const response = await fetch(apiUrl);
-
-            // Kiểm tra trạng thái của response
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            else {
-                // Chuyển đổi response thành JSON
-                const result = await response.json();
-                // Cập nhật state với dữ liệu từ API
-                setData(result);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false); // Kết thúc loading sau khi nhận dữ liệu hoặc xảy ra lỗi
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, [isOnGoing]); // Dependency array để đảm bảo useEffect chỉ chạy một lần khi component được render
+    const { data , isLoading} = useGetAllMovies(null);
 
     const [detailMovie, setDetailMovie] = useState(false);
     const [movie, setMovie] = useState(null);
@@ -125,7 +84,7 @@ function MovieBanner(username) {
             <Row className="mx-auto my-auto justify-content-center">
                 {(!detailMovie && data) ? (
                     <Carousel id="recipeCarousel" className="slide me-auto ms-auto" interval={3000} slide={true} role="listbox">
-                        {loading &&
+                        {isLoading &&
                             <div className='d-flex justify-content-center my-5'>
                                 <LoadingSpinner />
                             </div>}

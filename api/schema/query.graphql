@@ -8,6 +8,7 @@ type Query {
     Foods(input: ListFoodInput!):ListFoodOutput!
     #Movie
     Movies(input: ListMovieInput!):ListMovieOutput!
+    GetMovieByID(input: ID!):Movie!
     #Comment
     Comments(input: ListCommentInput!):ListCommentOutput!
     #ShowTime

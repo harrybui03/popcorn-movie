@@ -180,6 +180,7 @@ type ComplexityRoot struct {
 		Foods             func(childComplexity int, input model.ListFoodInput) int
 		GetAvailableRooms func(childComplexity int, input model.ListAvailableRoomInput) int
 		GetAvailableSeats func(childComplexity int, input model.ListAvailableSeatInput) int
+		GetMovieByID      func(childComplexity int, input string) int
 		Movies            func(childComplexity int, input model.ListMovieInput) int
 		Rooms             func(childComplexity int, input model.ListRoomInput) int
 		Seats             func(childComplexity int, input model.ListSeatInput) int
@@ -274,6 +275,7 @@ type QueryResolver interface {
 	GetAvailableRooms(ctx context.Context, input model.ListAvailableRoomInput) (*model.ListAvailableRoomOutput, error)
 	Foods(ctx context.Context, input model.ListFoodInput) (*model.ListFoodOutput, error)
 	Movies(ctx context.Context, input model.ListMovieInput) (*model.ListMovieOutput, error)
+	GetMovieByID(ctx context.Context, input string) (*ent.Movie, error)
 	Comments(ctx context.Context, input model.ListCommentInput) (*model.ListCommentOutput, error)
 	ShowTimes(ctx context.Context, input model.ListShowTimeInput) (*model.ListShowTimeOutput, error)
 	Seats(ctx context.Context, input model.ListSeatInput) (*model.ListSeatOutput, error)
@@ -825,6 +827,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetAvailableSeats(childComplexity, args["input"].(model.ListAvailableSeatInput)), true
+
+	case "Query.GetMovieByID":
+		if e.complexity.Query.GetMovieByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_GetMovieByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetMovieByID(childComplexity, args["input"].(string)), true
 
 	case "Query.Movies":
 		if e.complexity.Query.Movies == nil {
@@ -1403,6 +1417,7 @@ type ListMovieOutput {
     Foods(input: ListFoodInput!):ListFoodOutput!
     #Movie
     Movies(input: ListMovieInput!):ListMovieOutput!
+    GetMovieByID(input: ID!):Movie!
     #Comment
     Comments(input: ListCommentInput!):ListCommentOutput!
     #ShowTime
@@ -1414,9 +1429,9 @@ type ListMovieOutput {
 	{Name: "../schema/room.graphql", Input: `type Room {
     id:ID!
     roomNumber:Int!
-    theater:Theater!
-    showTime:[ShowTime]!
-    seat:[Seat]!
+    theater:Theater
+    showTime:[ShowTime]
+    seat:[Seat]
 }
 
 input ListRoomFilter {
@@ -1500,6 +1515,8 @@ type ListSeatOutput{
 
 input ListShowTimeFilter{
     movieId: String
+    theaterId: String
+    date: Time
 }
 
 input ListShowTimeInput{
@@ -1745,6 +1762,21 @@ func (ec *executionContext) field_Query_GetAvailableSeats_args(ctx context.Conte
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNListAvailableSeatInput2PopcornMovieᚋmodelᚐListAvailableSeatInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_GetMovieByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5112,6 +5144,89 @@ func (ec *executionContext) fieldContext_Query_Movies(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_GetMovieByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_GetMovieByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetMovieByID(rctx, fc.Args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Movie)
+	fc.Result = res
+	return ec.marshalNMovie2ᚖPopcornMovieᚋentᚐMovie(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_GetMovieByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Movie_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Movie_title(ctx, field)
+			case "genre":
+				return ec.fieldContext_Movie_genre(ctx, field)
+			case "status":
+				return ec.fieldContext_Movie_status(ctx, field)
+			case "language":
+				return ec.fieldContext_Movie_language(ctx, field)
+			case "director":
+				return ec.fieldContext_Movie_director(ctx, field)
+			case "cast":
+				return ec.fieldContext_Movie_cast(ctx, field)
+			case "poster":
+				return ec.fieldContext_Movie_poster(ctx, field)
+			case "rated":
+				return ec.fieldContext_Movie_rated(ctx, field)
+			case "duration":
+				return ec.fieldContext_Movie_duration(ctx, field)
+			case "trailer":
+				return ec.fieldContext_Movie_trailer(ctx, field)
+			case "openingDay":
+				return ec.fieldContext_Movie_openingDay(ctx, field)
+			case "story":
+				return ec.fieldContext_Movie_story(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Movie", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_GetMovieByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_Comments(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_Comments(ctx, field)
 	if err != nil {
@@ -5594,14 +5709,11 @@ func (ec *executionContext) _Room_theater(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.Theater)
 	fc.Result = res
-	return ec.marshalNTheater2ᚖPopcornMovieᚋentᚐTheater(ctx, field.Selections, res)
+	return ec.marshalOTheater2ᚖPopcornMovieᚋentᚐTheater(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Room_theater(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5648,14 +5760,11 @@ func (ec *executionContext) _Room_showTime(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*ent.ShowTime)
 	fc.Result = res
-	return ec.marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTime(ctx, field.Selections, res)
+	return ec.marshalOShowTime2ᚕᚖPopcornMovieᚋentᚐShowTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Room_showTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5704,14 +5813,11 @@ func (ec *executionContext) _Room_seat(ctx context.Context, field graphql.Collec
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*ent.Seat)
 	fc.Result = res
-	return ec.marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeat(ctx, field.Selections, res)
+	return ec.marshalOSeat2ᚕᚖPopcornMovieᚋentᚐSeat(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Room_seat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9443,7 +9549,7 @@ func (ec *executionContext) unmarshalInputListShowTimeFilter(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"movieId"}
+	fieldsInOrder := [...]string{"movieId", "theaterId", "date"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9457,6 +9563,20 @@ func (ec *executionContext) unmarshalInputListShowTimeFilter(ctx context.Context
 				return it, err
 			}
 			it.MovieID = data
+		case "theaterId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("theaterId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TheaterID = data
+		case "date":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Date = data
 		}
 	}
 
@@ -11009,6 +11129,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "GetMovieByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_GetMovieByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "Comments":
 			field := field
 
@@ -11190,9 +11332,6 @@ func (ec *executionContext) _Room(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Room_theater(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -11226,9 +11365,6 @@ func (ec *executionContext) _Room(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Room_showTime(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -11262,9 +11398,6 @@ func (ec *executionContext) _Room(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Room_seat(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -13060,44 +13193,6 @@ func (ec *executionContext) marshalNSeat2PopcornMovieᚋentᚐSeat(ctx context.C
 	return ec._Seat(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v []*ent.Seat) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOSeat2ᚖPopcornMovieᚋentᚐSeat(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
 func (ec *executionContext) marshalNSeat2ᚕᚖPopcornMovieᚋentᚐSeatᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Seat) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13164,44 +13259,6 @@ func (ec *executionContext) marshalNSeatCategory2PopcornMovieᚋmodelᚐSeatCate
 
 func (ec *executionContext) marshalNShowTime2PopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v ent.ShowTime) graphql.Marshaler {
 	return ec._ShowTime(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v []*ent.ShowTime) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
 }
 
 func (ec *executionContext) marshalNShowTime2ᚕᚖPopcornMovieᚋentᚐShowTimeᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.ShowTime) graphql.Marshaler {
@@ -13273,10 +13330,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTheater2PopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v ent.Theater) graphql.Marshaler {
-	return ec._Theater(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNTheater2ᚕᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v []*ent.Theater) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13313,16 +13366,6 @@ func (ec *executionContext) marshalNTheater2ᚕᚖPopcornMovieᚋentᚐTheater(c
 	wg.Wait()
 
 	return ret
-}
-
-func (ec *executionContext) marshalNTheater2ᚖPopcornMovieᚋentᚐTheater(ctx context.Context, sel ast.SelectionSet, v *ent.Theater) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Theater(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNTicket2ᚕᚖPopcornMovieᚋentᚐTicketᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Ticket) graphql.Marshaler {
@@ -13932,11 +13975,93 @@ func (ec *executionContext) marshalORoom2ᚖPopcornMovieᚋentᚐRoom(ctx contex
 	return ec._Room(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOSeat2ᚕᚖPopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v []*ent.Seat) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSeat2ᚖPopcornMovieᚋentᚐSeat(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalOSeat2ᚖPopcornMovieᚋentᚐSeat(ctx context.Context, sel ast.SelectionSet, v *ent.Seat) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Seat(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOShowTime2ᚕᚖPopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v []*ent.ShowTime) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalOShowTime2ᚖPopcornMovieᚋentᚐShowTime(ctx context.Context, sel ast.SelectionSet, v *ent.ShowTime) graphql.Marshaler {

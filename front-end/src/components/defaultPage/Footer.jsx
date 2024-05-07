@@ -35,13 +35,13 @@ function Footer() {
                                 <h6 className="text-uppercase fw-bold">Chi Nhánh</h6>
                                 <hr className="mb-4 mt-0 d-inline-block mx-auto footer-branch"/>
                                 <p>
-                                    <a href="#!" className="text-dark">Linh Trung, Thủ Đức</a>
+                                    <a href="#!" className="text-dark">02 Phạm Ngọc Thạch, Trung Tự, Q. Đống Đa</a>
                                 </p>
                                 <p>
-                                    <a href="#!" className="text-dark">Dĩ An, Bình Dương</a>
+                                    <a href="#!" className="text-dark">P.Dịch Vọng, Quận Cầu Giấy</a>
                                 </p>
                                 <p>
-                                    <a href="#!" className="text-dark">Thành Phố Thủ Đức</a>
+                                    <a href="#!" className="text-dark">Phường Mỹ Đình 1, Quận Nam Từ Liêm</a>
                                 </p>
 
                             </div>

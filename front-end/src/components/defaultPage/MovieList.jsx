@@ -1,70 +1,25 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLessThan, faGreaterThan } from "@fortawesome/free-solid-svg-icons";
 import React, { useEffect, useState, useRef } from "react";
 import LoadingSpinner from './Loading'
 import MovieCard from './MovieCard';
 import { useNavigate } from 'react-router-dom';
+import { useGetAllMovies } from "./hook/useQuery";
 
 function MovieList(username) {
     const navigate = useNavigate();
     const [isOnGoing, setIsOnGoing] = useState(true);
-    const [loading, setLoading] = useState(true);
     const handleCheckboxChange = (check) => {
         setIsOnGoing(check);
     };
     const isLogin = username.username ? true : false;
-    const [data, setData] = useState(null);
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            // Địa chỉ API và tham số
-            const apiUrl = 'http://localhost:8080/movies';
-            let params;
-            if (isOnGoing) {
-                params = { status: 'Ongoing' };
-            } else {
-                params = { status: 'Upcoming' };
-            }
 
-            // Chuyển đổi tham số thành chuỗi query
-            const queryString = Object.keys(params)
-                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-                .join('&');
-
-            // Tạo URL với tham số
-            const urlWithParams = `${apiUrl}?${queryString}`;
-            // Gọi API bằng phương thức GET
-            const response = await fetch(urlWithParams);
-
-            // Kiểm tra trạng thái của response
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            else {
-                // Chuyển đổi response thành JSON
-                const result = await response.json();
-
-                // Cập nhật state với dữ liệu từ API
-                setData(result);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false); // Kết thúc loading sau khi nhận dữ liệu hoặc xảy ra lỗi
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, [isOnGoing]); // Dependency array để đảm bảo useEffect chỉ chạy một lần khi component được render
-
+    const status =  isOnGoing ? "ONGOING" : "UPCOMING"
+    const { data , isLoading} = useGetAllMovies(status);
+    
     const [detailMovie, setDetailMovie] = useState(false);
     const [movie, setMovie] = useState(null);
     const handleCardClick = (id) => {
-        setLoading(true);
         setDetailMovie(true);
         setMovie(data.filter(e => e.id === id)[0]);
-        setLoading(false);
     };
     useEffect(() => {
         // console.log(movie);
@@ -75,7 +30,6 @@ function MovieList(username) {
             navigate(`/movies/${movie.id}`);
         } else {
             $('#requireLogin').modal('show');
-            console.log('456');
         }
     };
 
@@ -98,7 +52,7 @@ function MovieList(username) {
                 </div>
             </div>
 
-            {loading &&
+            {isLoading &&
                 <div className='d-flex justify-content-center my-5'>
                     <LoadingSpinner />
                 </div>}
