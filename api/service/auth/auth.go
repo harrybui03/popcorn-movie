@@ -57,12 +57,13 @@ func (i impl) Register(ctx context.Context, registerInput model.RegisterInput) (
 		i.logger.Error(err.Error())
 		return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
 	}
-
+	role := model.RoleCustomer
 	// Create User
 	userRecord, err := i.repository.User().Create(ctx, model.CreateUserInput{
 		Email:       registerInput.Email,
 		Password:    hashPassword,
 		DisplayName: registerInput.DisplayName,
+		Role:        &role,
 	})
 	if err != nil {
 		i.logger.Error(err.Error())

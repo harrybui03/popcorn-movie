@@ -16,4 +16,11 @@ type Query {
     #Seats
     Seats(input: ListSeatInput!):ListSeatOutput!
     GetAvailableSeats(input: ListAvailableSeatInput!):ListAvailableSeatOutput!
+    #Users
+    Users(input: ListUserInput!):ListUserOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
+    #Transaction
+    Transactions(input: ListTransactionInput!):ListTransactionOutput!
+    GetRevenue(input: RevenueInput!):RevenueOutput!
+    #Ticket
+    Tickets(input: ListTicketInput!):ListTicketOutput!
 }

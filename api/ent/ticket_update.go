@@ -81,6 +81,12 @@ func (tu *TicketUpdate) SetNillableTransactionID(u *uuid.UUID) *TicketUpdate {
 	return tu
 }
 
+// ClearTransactionID clears the value of the "transaction_id" field.
+func (tu *TicketUpdate) ClearTransactionID() *TicketUpdate {
+	tu.mutation.ClearTransactionID()
+	return tu
+}
+
 // SetSeatID sets the "seat_id" field.
 func (tu *TicketUpdate) SetSeatID(u uuid.UUID) *TicketUpdate {
 	tu.mutation.SetSeatID(u)
@@ -195,9 +201,6 @@ func (tu *TicketUpdate) check() error {
 		if err := ticket.PriceValidator(v); err != nil {
 			return &ValidationError{Name: "price", err: fmt.Errorf(`ent: validator failed for field "Ticket.price": %w`, err)}
 		}
-	}
-	if _, ok := tu.mutation.TransactionID(); tu.mutation.TransactionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Ticket.transaction"`)
 	}
 	if _, ok := tu.mutation.SeatID(); tu.mutation.SeatCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Ticket.seat"`)
@@ -388,6 +391,12 @@ func (tuo *TicketUpdateOne) SetNillableTransactionID(u *uuid.UUID) *TicketUpdate
 	return tuo
 }
 
+// ClearTransactionID clears the value of the "transaction_id" field.
+func (tuo *TicketUpdateOne) ClearTransactionID() *TicketUpdateOne {
+	tuo.mutation.ClearTransactionID()
+	return tuo
+}
+
 // SetSeatID sets the "seat_id" field.
 func (tuo *TicketUpdateOne) SetSeatID(u uuid.UUID) *TicketUpdateOne {
 	tuo.mutation.SetSeatID(u)
@@ -515,9 +524,6 @@ func (tuo *TicketUpdateOne) check() error {
 		if err := ticket.PriceValidator(v); err != nil {
 			return &ValidationError{Name: "price", err: fmt.Errorf(`ent: validator failed for field "Ticket.price": %w`, err)}
 		}
-	}
-	if _, ok := tuo.mutation.TransactionID(); tuo.mutation.TransactionCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Ticket.transaction"`)
 	}
 	if _, ok := tuo.mutation.SeatID(); tuo.mutation.SeatCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Ticket.seat"`)

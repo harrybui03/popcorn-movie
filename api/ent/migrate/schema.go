@@ -219,7 +219,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "seat_id", Type: field.TypeUUID},
 		{Name: "show_time_id", Type: field.TypeUUID},
-		{Name: "transaction_id", Type: field.TypeUUID},
+		{Name: "transaction_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// TicketsTable holds the schema information for the "tickets" table.
 	TicketsTable = &schema.Table{
@@ -243,7 +243,7 @@ var (
 				Symbol:     "tickets_transactions_tickets",
 				Columns:    []*schema.Column{TicketsColumns[7]},
 				RefColumns: []*schema.Column{TransactionsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -276,7 +276,7 @@ var (
 		{Name: "email", Type: field.TypeString, Size: 255},
 		{Name: "password", Type: field.TypeString, Size: 255},
 		{Name: "is_locked", Type: field.TypeBool, Default: false},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"CUSTOMER", "RECEPTIONIST", "TICKET_MANAGER", "ADMIN"}, Default: "CUSTOMER"},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"CUSTOMER", "STAFF", "TICKET_MANAGER", "ADMIN"}, Default: "CUSTOMER"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

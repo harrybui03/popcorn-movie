@@ -12,6 +12,7 @@ import '../components/adminPage/styles.css'
 
 function AdminDashBoard(params) {
   const { currentChosen } = useParams();
+  console.log(currentChosen)
 
   const [isCollapse, setIsCollapse] = useState(false);
   const updateData = () => {

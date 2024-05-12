@@ -13,7 +13,12 @@ input ListAvailableSeatFilter{
     showTimeID: String
 }
 
+input ListSeatFilter{
+    roomID: String
+}
+
 input ListSeatInput{
+    filter:ListSeatFilter!
     pagination:PaginationInput!
 }
 

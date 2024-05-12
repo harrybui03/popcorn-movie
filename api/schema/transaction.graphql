@@ -11,3 +11,33 @@ input CreateTransactionInput{
     foods: [CreateFoodOrderLineInput!]!
     showTimeID: ID!
 }
+
+input ListTransactionFilter{
+    userID: ID!
+}
+
+input ListTransactionInput{
+    pagination:PaginationInput!
+    filter:ListTransactionFilter!
+}
+
+type ListTransactionOutput{
+    data:[Transaction!]!
+    pagination:PaginationOutput!
+}
+
+enum RevenueType{
+    DAILY
+    WEEKLY
+    MONTHLY
+    YEARLY
+}
+
+input RevenueInput{
+    date: Time!
+    type: RevenueType!
+}
+
+type RevenueOutput {
+    revenue: Float!
+}

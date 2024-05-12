@@ -8,10 +8,11 @@ export const AuthProvider = ({children}) => {
     
     let decodedJwt = token ? jwtDecode(token) : null;
     const roles = [decodedJwt?.Role]
+    const id = decodedJwt?.ID
     const isLogin = !!token
   return (
     <>
-        <AuthContext.Provider value={{token, setToken , roles , isLogin}}>
+        <AuthContext.Provider value={{token, setToken , roles , isLogin , id}}>
             {children}
         </AuthContext.Provider>
     </>

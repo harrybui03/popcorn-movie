@@ -25,7 +25,7 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 		Long:  "run api server with graphql",
 		Run: func(cmd *cobra.Command, args []string) {
 			// connect db to postgres database
-			db, err := ent.Open("postgres", configs.Postgres.ConnectionString)
+			db, err := ent.Open("postgres", configs.Postgres.ConnectionString, ent.Debug())
 			if err != nil {
 				logger.Error("Getting error connect to postgresql database", zap.Error(err))
 				os.Exit(1)

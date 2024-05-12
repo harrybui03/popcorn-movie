@@ -4,6 +4,8 @@ import (
 	"PopcornMovie/cmd/middleware"
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
+	"PopcornMovie/ent/transaction"
+	"PopcornMovie/ent/user"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
 	"PopcornMovie/repository"
@@ -14,12 +16,44 @@ import (
 
 type Service interface {
 	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*ent.Transaction, error)
+	GetAllTransactions(ctx context.Context, input model.ListTransactionInput) ([]*ent.Transaction, int, error)
 }
 
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
 	appConfig  config.AppConfig
+}
+
+func (i impl) GetAllTransactions(ctx context.Context, input model.ListTransactionInput) ([]*ent.Transaction, int, error) {
+	query := i.repository.Transaction().TransactionQuery().WithUser()
+	if input.Filter != nil {
+		userId, err := uuid.Parse(input.Filter.UserID)
+		if err != nil {
+			i.logger.Error(err.Error())
+			return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeBadRequest)
+		}
+		query.Where(transaction.HasUserWith(user.ID(userId)))
+	}
+
+	if input.Pagination != nil {
+		offset := utils.CalculateOffset(input.Pagination.Page, input.Pagination.Limit)
+		query.Limit(input.Pagination.Limit).Offset(offset)
+	}
+
+	count, err := i.repository.Transaction().CountTransactions(ctx, query)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	transactions, err := i.repository.Transaction().GetAllTransactions(ctx, query)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	return transactions, count, nil
 }
 
 func (i impl) CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*ent.Transaction, error) {

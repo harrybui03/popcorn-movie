@@ -161,6 +161,16 @@ func TransactionIDNotIn(vs ...uuid.UUID) predicate.Ticket {
 	return predicate.Ticket(sql.FieldNotIn(FieldTransactionID, vs...))
 }
 
+// TransactionIDIsNil applies the IsNil predicate on the "transaction_id" field.
+func TransactionIDIsNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldIsNull(FieldTransactionID))
+}
+
+// TransactionIDNotNil applies the NotNil predicate on the "transaction_id" field.
+func TransactionIDNotNil() predicate.Ticket {
+	return predicate.Ticket(sql.FieldNotNull(FieldTransactionID))
+}
+
 // SeatIDEQ applies the EQ predicate on the "seat_id" field.
 func SeatIDEQ(v uuid.UUID) predicate.Ticket {
 	return predicate.Ticket(sql.FieldEQ(FieldSeatID, v))

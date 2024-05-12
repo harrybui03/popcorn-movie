@@ -13,22 +13,22 @@ import (
 
 // ID is the resolver for the ID field.
 func (r *ticketResolver) ID(ctx context.Context, obj *ent.Ticket) (string, error) {
-	panic(fmt.Errorf("not implemented: ID - ID"))
+	return obj.ID.String(), nil
 }
 
 // Seat is the resolver for the Seat field.
 func (r *ticketResolver) Seat(ctx context.Context, obj *ent.Ticket) (*ent.Seat, error) {
-	panic(fmt.Errorf("not implemented: Seat - Seat"))
+	return obj.Edges.Seat, nil
 }
 
 // ShowTime is the resolver for the ShowTime field.
 func (r *ticketResolver) ShowTime(ctx context.Context, obj *ent.Ticket) (*ent.ShowTime, error) {
-	panic(fmt.Errorf("not implemented: ShowTime - ShowTime"))
+	return obj.Edges.ShowTime, nil
 }
 
 // Transaction is the resolver for the Transaction field.
 func (r *ticketResolver) Transaction(ctx context.Context, obj *ent.Ticket) (*ent.Transaction, error) {
-	panic(fmt.Errorf("not implemented: Transaction - Transaction"))
+	return obj.Edges.Transaction, nil
 }
 
 // Ticket returns graphql1.TicketResolver implementation.

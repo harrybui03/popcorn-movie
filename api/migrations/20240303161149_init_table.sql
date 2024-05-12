@@ -1,6 +1,6 @@
 CREATE TYPE "role" AS ENUM (
   'CUSTOMER',
-  'RECEPTIONIST',
+  'STAFF',
   'TICKET_MANAGER',
   'ADMIN'
 );
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS "tickets"
 ) PRIMARY KEY,
     "price" float not null,
     "is_booked" bool not null,
-    "transaction_id" uuid not null,
+    "transaction_id" uuid,
     "seat_id" uuid not null,
     "show_time_id" uuid not null,
     created_at timestamp without time zone default now

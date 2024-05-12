@@ -25,7 +25,6 @@ type Resolver struct {
 // NewExecutableSchema creates an ExecutableSchema instance.
 func NewExecutableSchema(client *ent.Client, logger *zap.Logger, appConfig config.AppConfig) graphql.ExecutableSchema {
 	service := service.New(client, logger, appConfig)
-
 	config := generated.Config{
 		Resolvers: &Resolver{service: service, logger: logger},
 	}

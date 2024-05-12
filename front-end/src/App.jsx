@@ -58,15 +58,15 @@ function App() {
                 <PrivateRoute>
                   <CustomerPage username={username} email={email} />
                 </PrivateRoute>
-              ) : roles.find(role => role === "ROLE_STAFF") ? (
+              ) : roles.find(role => role === "STAFF") ? (
                 <PrivateRoute>
                   <ReceptionistPage username={username} email={email} />
                 </PrivateRoute>
-              ) : roles.find(role => role === "ROLE_ADMIN") ? (
+              ) : roles.find(role => role === "ADMIN") ? (
                 <PrivateRoute>
                   <AdminPage username={username} email={email} />
                 </PrivateRoute>
-              ) : roles.find(role => role === "ROLE_TICKET_MANAGER") ? (
+              ) : roles.find(role => role === "TICKET_MANAGER") ? (
                 <PrivateRoute>
                   <TicketManagerPage username={username} email={email} />
                 </PrivateRoute>
@@ -116,7 +116,7 @@ function App() {
           } />
           <Route
             path='/manage/:currentChosen' element={
-              roles.find(role => role === "ROLE_TICKET_MANAGER") ? (
+              roles.find(role => role === "TICKET_MANAGER") ? (
                 <PrivateRoute>
                   <TicketManagerPage username={username} email={email} />
                 </PrivateRoute>
@@ -127,7 +127,7 @@ function App() {
           />
           <Route
             path='/admin/:currentChosen' element={
-              roles.find(role => role === "ROLE_ADMIN") ? (
+              roles.find(role => role === "ADMIN") ? (
                 <PrivateRoute>
                   <AdminPage username={username} email={email} />
                 </PrivateRoute>

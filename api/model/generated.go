@@ -21,11 +21,33 @@ type CreateFoodOrderLineInput struct {
 	Quantity int    `json:"quantity"`
 }
 
+type CreateMovieInput struct {
+	Title      string      `json:"title"`
+	Genre      string      `json:"genre"`
+	Status     MovieStatus `json:"status"`
+	Language   string      `json:"language"`
+	Director   string      `json:"director"`
+	Cast       string      `json:"cast"`
+	Poster     string      `json:"poster"`
+	Rated      string      `json:"rated"`
+	Duration   int         `json:"duration"`
+	Trailer    string      `json:"trailer"`
+	OpeningDay time.Time   `json:"openingDay"`
+	Story      string      `json:"story"`
+}
+
 type CreateSessionInput struct {
 	ID           string    `json:"id"`
 	UserID       string    `json:"UserID"`
 	RefreshToken string    `json:"RefreshToken"`
 	ExpiresAt    time.Time `json:"ExpiresAt"`
+}
+
+type CreateShowTimeInput struct {
+	StartAt time.Time `json:"startAt"`
+	EndAt   time.Time `json:"endAt"`
+	MovieID string    `json:"movieId"`
+	RoomID  string    `json:"roomId"`
 }
 
 type CreateTicketInput struct {
@@ -44,6 +66,11 @@ type CreateUserInput struct {
 	Email       string `json:"email"`
 	Password    string `json:"password"`
 	Role        *Role  `json:"role,omitempty"`
+}
+
+type GenerateTicketInput struct {
+	ShowTimeID string  `json:"showTimeID"`
+	Price      float64 `json:"price"`
 }
 
 type Jwt struct {
@@ -135,7 +162,12 @@ type ListRoomOutput struct {
 	Pagination *PaginationOutput `json:"pagination"`
 }
 
+type ListSeatFilter struct {
+	RoomID *string `json:"roomID,omitempty"`
+}
+
 type ListSeatInput struct {
+	Filter     *ListSeatFilter  `json:"filter"`
 	Pagination *PaginationInput `json:"pagination"`
 }
 
@@ -175,6 +207,43 @@ type ListTheatersOutput struct {
 	Pagination *PaginationOutput `json:"pagination"`
 }
 
+type ListTicketFilter struct {
+	ShowTimeID string `json:"showTimeID"`
+}
+
+type ListTicketInput struct {
+	Filter     *ListTicketFilter `json:"filter"`
+	Pagination *PaginationInput  `json:"pagination"`
+}
+
+type ListTicketOutput struct {
+	Data       []*ent.Ticket     `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
+type ListTransactionFilter struct {
+	UserID string `json:"userID"`
+}
+
+type ListTransactionInput struct {
+	Pagination *PaginationInput       `json:"pagination"`
+	Filter     *ListTransactionFilter `json:"filter"`
+}
+
+type ListTransactionOutput struct {
+	Data       []*ent.Transaction `json:"data"`
+	Pagination *PaginationOutput  `json:"pagination"`
+}
+
+type ListUserInput struct {
+	Pagination *PaginationInput `json:"pagination"`
+}
+
+type ListUserOutput struct {
+	Data       []*ent.User       `json:"data"`
+	Pagination *PaginationOutput `json:"pagination"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -204,6 +273,47 @@ type RegisterInput struct {
 
 type RenewAccessTokenInput struct {
 	RefreshToken string `json:"refreshToken"`
+}
+
+type RevenueInput struct {
+	Date time.Time   `json:"date"`
+	Type RevenueType `json:"type"`
+}
+
+type RevenueOutput struct {
+	Revenue float64 `json:"revenue"`
+}
+
+type UpdateMovieInput struct {
+	ID         string       `json:"id"`
+	Title      *string      `json:"title,omitempty"`
+	Genre      *string      `json:"genre,omitempty"`
+	Status     *MovieStatus `json:"status,omitempty"`
+	Language   *string      `json:"language,omitempty"`
+	Director   *string      `json:"director,omitempty"`
+	Cast       *string      `json:"cast,omitempty"`
+	Poster     *string      `json:"poster,omitempty"`
+	Rated      *string      `json:"rated,omitempty"`
+	Duration   *int         `json:"duration,omitempty"`
+	Trailer    *string      `json:"trailer,omitempty"`
+	OpeningDay *time.Time   `json:"openingDay,omitempty"`
+	Story      *string      `json:"story,omitempty"`
+}
+
+type UpdateShowTimeInput struct {
+	ID      string     `json:"id"`
+	StartAt *time.Time `json:"startAt,omitempty"`
+	EndAt   *time.Time `json:"endAt,omitempty"`
+	MovieID *string    `json:"movieId,omitempty"`
+	RoomID  *string    `json:"roomId,omitempty"`
+}
+
+type UpdateUserInput struct {
+	ID          string  `json:"id"`
+	DisplayName *string `json:"displayName,omitempty"`
+	Email       *string `json:"email,omitempty"`
+	IsLocked    *bool   `json:"isLocked,omitempty"`
+	Role        *Role   `json:"role,omitempty"`
 }
 
 type MovieStatus string
@@ -290,25 +400,70 @@ func (e OrderDirection) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type RevenueType string
+
+const (
+	RevenueTypeDaily   RevenueType = "DAILY"
+	RevenueTypeWeekly  RevenueType = "WEEKLY"
+	RevenueTypeMonthly RevenueType = "MONTHLY"
+	RevenueTypeYearly  RevenueType = "YEARLY"
+)
+
+var AllRevenueType = []RevenueType{
+	RevenueTypeDaily,
+	RevenueTypeWeekly,
+	RevenueTypeMonthly,
+	RevenueTypeYearly,
+}
+
+func (e RevenueType) IsValid() bool {
+	switch e {
+	case RevenueTypeDaily, RevenueTypeWeekly, RevenueTypeMonthly, RevenueTypeYearly:
+		return true
+	}
+	return false
+}
+
+func (e RevenueType) String() string {
+	return string(e)
+}
+
+func (e *RevenueType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = RevenueType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid RevenueType", str)
+	}
+	return nil
+}
+
+func (e RevenueType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type Role string
 
 const (
 	RoleCustomer      Role = "CUSTOMER"
-	RoleReceptionist  Role = "RECEPTIONIST"
+	RoleStaff         Role = "STAFF"
 	RoleTicketManager Role = "TICKET_MANAGER"
 	RoleAdmin         Role = "ADMIN"
 )
 
 var AllRole = []Role{
 	RoleCustomer,
-	RoleReceptionist,
+	RoleStaff,
 	RoleTicketManager,
 	RoleAdmin,
 }
 
 func (e Role) IsValid() bool {
 	switch e {
-	case RoleCustomer, RoleReceptionist, RoleTicketManager, RoleAdmin:
+	case RoleCustomer, RoleStaff, RoleTicketManager, RoleAdmin:
 		return true
 	}
 	return false

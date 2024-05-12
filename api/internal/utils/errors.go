@@ -27,6 +27,7 @@ const (
 	ErrorIncorrect              ErrorMessage = "%s is incorrect"
 	ErrorUnauthorizedRequest    ErrorMessage = "Unauthorized Request"
 	ErrorExpired                ErrorMessage = "%s is expired"
+	ErrorNotFound               ErrorMessage = "%s not found"
 )
 
 var (

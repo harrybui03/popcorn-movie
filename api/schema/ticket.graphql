@@ -11,3 +11,22 @@ input CreateTicketInput{
     seatID: ID!
     price: Float!
 }
+
+input ListTicketInput{
+    filter: ListTicketFilter!
+    pagination:PaginationInput!
+}
+
+input ListTicketFilter{
+    showTimeID: String!
+}
+
+type ListTicketOutput{
+    data:[Ticket!]!
+    pagination:PaginationOutput!
+}
+
+input GenerateTicketInput{
+    showTimeID: String!
+    price: Float!
+}

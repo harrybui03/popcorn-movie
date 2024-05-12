@@ -20,6 +20,8 @@ const MovieCardCarousel = ({ isLogin, index, movie, onClick }) => {
             <Card.Img src={movie.poster} className="img-fluid h-100 w-100" alt={`${movie.id} Poster`} />
             {/* <Card.ImgOverlay>Slide {index}</Card.ImgOverlay> */}
         </Card>
+
+
         /* {!isLogin && (<div className="modal fade" id={`MovieCard-modal`} aria-labelledby="exampleModalLabel" onClick={(e) => {e.stopPropagation()}}>
             <div className="modal-dialog">
                 <div className="modal-content">

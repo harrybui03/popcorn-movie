@@ -7,16 +7,33 @@ type User {
     role:Role!
 }
 
-type CreateUserInput {
+input CreateUserInput {
     displayName: String!
     email: String!
     password: String!
     role:Role
 }
 
+input UpdateUserInput {
+    id: ID!
+    displayName: String
+    email: String
+    isLocked: Boolean
+    role:Role
+}
+
+input ListUserInput {
+    pagination:PaginationInput!
+}
+
+type ListUserOutput {
+    data:[User!]!
+    pagination:PaginationOutput!
+}
+
 enum Role {
     CUSTOMER
-    RECEPTIONIST
+    STAFF
     TICKET_MANAGER
     ADMIN
 }

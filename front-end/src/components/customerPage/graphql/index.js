@@ -46,9 +46,69 @@ function useGraphql() {
         total
       }
         `,
+  });
+
+  const getAllTickets = buildQuery({
+    operation: "Tickets",
+    params:{input:"ListTicketInput!"},
+    options: {
+      type: "query",
+    },
+    node: `
+    data{
+      ID
+      IsBooked
+      Price
+      Seat{
+        ID
+        SeatNumber
+        Category
+      }
+    }
+    pagination{
+      total
+    }
+        `,
   }); 
 
-  return {getAllTheaters , getAllShowTimes , queryKey}
+  const getAllTransactions = buildQuery({
+    operation: "Transactions",
+    params:{input:"ListTransactionInput!"},
+    options: {
+      type: "query",
+    },
+    node: `
+    data{
+      id
+      total      
+    }
+    pagination{
+      total
+    }
+        `,
+  }); 
+
+  const getAllSeats = buildQuery({
+    operation:"Seats",
+    params:{input: "ListSeatInput!"},
+    options: {
+      type: "query",
+    },
+    node:`
+    data{
+      ID
+      SeatNumber
+      Category
+    }
+    pagination{
+      total
+    }
+    `
+  })
+
+
+
+  return {getAllTheaters , getAllShowTimes,getAllTickets , getAllTransactions , getAllSeats , queryKey}
 
 }
 export default useGraphql;

@@ -11,6 +11,7 @@ import (
 	"PopcornMovie/service/seat"
 	"PopcornMovie/service/show_time"
 	"PopcornMovie/service/theater"
+	"PopcornMovie/service/ticket"
 	"PopcornMovie/service/transaction"
 	"PopcornMovie/service/user"
 	"go.uber.org/zap"
@@ -26,6 +27,7 @@ type Registry interface {
 	ShowTime() show_time.Service
 	Seat() seat.Service
 	Transaction() transaction.Service
+	Ticket() ticket.Service
 }
 
 type impl struct {
@@ -38,6 +40,11 @@ type impl struct {
 	showTime    show_time.Service
 	seat        seat.Service
 	transaction transaction.Service
+	ticket      ticket.Service
+}
+
+func (i impl) Ticket() ticket.Service {
+	return i.ticket
 }
 
 func (i impl) Transaction() transaction.Service {
@@ -88,5 +95,6 @@ func New(entClient *ent.Client, logger *zap.Logger, appConfig config.AppConfig) 
 		showTime:    show_time.New(repositoryRegistry, logger, appConfig),
 		seat:        seat.New(repositoryRegistry, logger, appConfig),
 		transaction: transaction.New(repositoryRegistry, logger, appConfig),
+		ticket:      ticket.New(repositoryRegistry, logger, appConfig),
 	}
 }

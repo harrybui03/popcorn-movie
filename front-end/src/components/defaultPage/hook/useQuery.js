@@ -30,4 +30,23 @@ function useGetAllMovies(status) {
   };
 }
 
-export {useGetAllMovies};
+function useGetMovieByID(id) {
+  const {getMovieByID , queryKey} = useGraphql()
+  const {isLoading,error, data, refetch} = useQuery({
+    gcTime: 0,
+    queryKey: [queryKey , id],
+    queryFn: async () => fetchGraphQL(getMovieByID.query , {
+      input: id
+    })
+  })
+
+
+  return {
+    isLoading,
+    error,
+    data,
+    refetch,
+  }
+}
+
+export {useGetAllMovies , useGetMovieByID};

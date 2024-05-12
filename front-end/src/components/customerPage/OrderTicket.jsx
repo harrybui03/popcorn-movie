@@ -11,55 +11,52 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import './styles.css'
 import useAuth from "../../hooks/useAuth";
-import { useGetAllMovies } from '../defaultPage/hook/useQuery';
-import { useGetAllShowTimes, useGetAllThearters } from './hook/useQuery';
+import {  useGetMovieByID } from '../defaultPage/hook/useQuery';
+import { useGetAllSeats, useGetAllShowTimes, useGetAllThearters, useGetAllTickets  } from './hook/useQuery';
 
 function CustomerDashBoard(params) {
   const { id } = useParams();
   const auth = useAuth();
 
-  const dataOnGoing = useGetAllMovies("ONGOING");
-  const dataUpComing = useGetAllMovies("UPCOMING");
   const dataTheaters = useGetAllThearters()
   const theater = dataTheaters?.data??[]
-
+  const [date, setDate] = useState([]);
+  const [dateChosen, setDateChosen] = useState(date[0]);
+  const [theaterChosen, setTheaterChosen] = useState(theater[0]?.id);
+  const [showtimeChosen, setShowTimeChosen] = useState(null);
+  const [seats , setSeats] = useState([])
+  const showTimesData = useGetAllShowTimes(theaterChosen ,id)
+  const movieData = useGetMovieByID(id)
+  const movie = movieData?.data?.GetMovieByID
+  const ticketsData = useGetAllTickets(showtimeChosen?.id)
+  const seatsData = useGetAllSeats(showtimeChosen?.roomID)
   const [step, setStep] = useState('choose-time');
   const [prevStep, setPrevStep] = useState(null);
-  const [movie, setMovie] = useState({
-    "id": "017feee4-cfbf-4533-8213-1831c250eb27",
-    "title": "WISH",
-    "genre": " Animation",
-    "status": "ONGOING",
-    "language": "English",
-    "director": " Chris Buck, Fawn Veerasunthorn",
-    "cast": "Chris Pine, Evan Peters",
-    "poster": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fbuffer.com%2Flibrary%2Ffree-images%2F&psig=AOvVaw1D8b7OAKrOrmjGNhdizK6g&ust=1715185999152000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCOiMiPP7-4UDFQAAAAAdAAAAABAE",
-    "rated": "5",
-    "duration": 94,
-    "trailer": "https://youtu.be/oyRxxpD3yNw?si=jRSACbctdNf5FrgM",
-    "openingDay": "2023-11-24T00:00:00Z",
-    "story": "Điều ước sẽ đi theo cô gái trẻ Asha, người ước nguyện dưới vì sao và nhận được nhiều hơn mong đợi khi một ngôi sao rắc rối từ trên trời rơi xuống để đồng hành cùng cô. Cô sẽ đối mặt với những kẻ thù ghê gớm nhất vũ trụ và phải hợp sức với Star..."
-  });
-  const [date, setDate] = useState([]);
-  const [theaterChosen, setTheaterChosen] = useState(theater[0]?.id);
-  const [dateChosen, setDateChosen] = useState(date[0]);
   const [theaterChosenName, setTheaterChosenName] = useState(theater[0]);
+  const [total, setTotal] = useState(0);
+  const [seatNumbers, setSeatNumbers] = useState('');
 
-  const showTimesData = useGetAllShowTimes(theaterChosen ,id)
+  const [foods, setFoods] = useState([]);
+  const [feeFoods, setfeeFoods] = useState(0);
+
   // const showtimes = showTimesData.data
 
-  const showtimes = showTimesData?.data?.filter(e => {
-          const dateString = e.startAt;
-          const dateTime = parseISO(dateString);
+  const showtimes = showTimesData?.data 
+  const tickets = ticketsData?.data
+  // const seats = seatsData?.data
+  
+  // ?.filter(e => {
+  //   const dateString = e.startAt;
+  //   const dateTime = parseISO(dateString);
 
-          const datePart = format(dateTime, 'dd/MM/yyyy');
-          return datePart === date;
-        });
-        showTimesData?.data?.sort((a, b) => {
-          const timeA = parseISO(a.startAt);
-          const timeB = parseISO(b.endAt);
-          return timeA - timeB;
-        });
+  //   const datePart = format(dateTime, 'dd/MM/yyyy');
+  //   return datePart === date;
+  // });
+  // showTimesData?.data?.sort((a, b) => {
+  //   const timeA = parseISO(a.startAt);
+  //   const timeB = parseISO(b.endAt);
+  //   return timeA - timeB;
+  // });
 
   // const getTheater = async () => {
   //   try {
@@ -90,8 +87,10 @@ function CustomerDashBoard(params) {
       const currentDate = addDays(today, index);
       return format(currentDate, 'dd/MM/yyyy');
     });
-    setDate(fiveDays);
+    return fiveDays
   };
+
+
 
   // const getShowTime = async (idMovie, idTheater, date) => {
   //   try {
@@ -119,8 +118,6 @@ function CustomerDashBoard(params) {
   
 
   // useEffect(() => {
-  //   getMovie();
-  //   getTheater();
   //   getDate();
   // }, []);
 
@@ -147,8 +144,7 @@ function CustomerDashBoard(params) {
     setDateChosen(event.target.value);
   };
 
-  const [showtimeChosen, setShowTimeChosen] = useState(null);
-  const [tickets, setTickets] = useState(null);
+
 
   // const getTickets = async (idShowtime) => {
   //   try {
@@ -187,11 +183,11 @@ function CustomerDashBoard(params) {
     setShowTimeChosen(showtime);
   }
 
-  useEffect(() => {
-    if (showtimeChosen !== null) {
-      getTickets(showtimeChosen?.id);
-    }
-  }, [showtimeChosen]);
+  // useEffect(() => {
+  //   if (showtimeChosen !== null) {
+  //     getTickets(showtimeChosen?.id);
+  //   }
+  // }, [showtimeChosen]);
 
   const handleDisabledTime = (time) => {
     const currentTime = new Date();
@@ -238,12 +234,7 @@ function CustomerDashBoard(params) {
     }
   }, [step]);
 
-  const [seats, setSeats] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [seatNumbers, setSeatNumbers] = useState('');
 
-  const [foods, setFoods] = useState([]);
-  const [feeFoods, setfeeFoods] = useState(0);
 
   const handleSelectSeats = (ticket) => {
     const seatIndex = seats.indexOf(ticket);
@@ -259,12 +250,11 @@ function CustomerDashBoard(params) {
   }
 
   useEffect(() => {
-    console.log(seats);
     let sum = 0;
     let str = '';
     seats.forEach(e => {
-      sum += e.price;
-      str += e.seat.seatNumber + ', ';
+      sum += e.Price;
+      str += e.Seat.SeatNumber + ', ';
     })
     setSeatNumbers(str.substring(0, str.length - 2));
     setTotal(sum);
@@ -379,7 +369,7 @@ function CustomerDashBoard(params) {
                 ) : (
                   < div className='flex-wrap d-flex justify-content-start'>
                     {showtimes.map((item) => (
-                      <button onClick={() => handleChooseSeat(item)} key={item.id} className='btn btn-success col-2 text-light m-2' disabled={handleDisabledTime(item.startAt)}>{format(parseISO(item.startAt), 'HH:mm:ss').substring(0, 5)}</button>
+                      <button onClick={() => handleChooseSeat(item)} key={item.id} className='btn btn-success col-2 text-light m-2' disabled={handleDisabledTime(item.startAt)}>{format(parseISO(item.startAt), 'HH:mm')}</button>
                     ))}
                   </div>
                 )}
@@ -443,16 +433,16 @@ function CustomerDashBoard(params) {
                   <button
                     className={`btn seat 
                       ${item.booked ? 'seat-booked' : seats.indexOf(item) === -1 ? 'seat-vacant' : 'seat-selecting'}
-                      ${item.seat.category === 'Couple' ? 'seat-couple' : 'seat-standard'}
+                      ${item.Seat.Category === 'COUPLE' ? 'seat-couple' : 'seat-standard'}
                       
                       `}
                     disabled={item.booked}
                     onClick={() => handleSelectSeats(item)}
                   >
-                    {item.seat.seatNumber}
+                    {item.Seat.SeatNumber}
                   </button>
-                  {((item.seat.category !== 'Couple' && index % 10 === 4) || (item.seat.category === 'Couple' && (index % 10 === 2 || index % 10 === 7))) && <div style={{ width: '8rem', display: 'inline-block' }}></div>}
-                  {(index % 10 === 9 || (item.seat.category === 'Couple' && index % 10 === 4)) && <br />}
+                  {((item.Seat.Category !== 'COUPLE' && index % 10 === 4) || (item.Seat.Category === 'COUPLE' && (index % 10 === 2 || index % 10 === 7))) && <div style={{ width: '8rem', display: 'inline-block' }}></div>}
+                  {(index % 10 === 9 || (item.Seat.category === 'COUPLE' && index % 10 === 4)) && <br />}
                 </React.Fragment>
               ))
             ) : (
@@ -530,6 +520,9 @@ function CustomerDashBoard(params) {
           </h5>
           <div>Choose food</div>
           <div className='container'>
+              <h1>Huongdz</h1>
+          </div>
+          <div className='container'>
             <button onClick={handleBack} className='btn btn-lg text-light fw-bold m-2' style={{ background: 'orange' }}>Quay lại</button>
             <button onClick={handlePayment} className='btn btn-lg text-light fw-bold m-2' disabled={seats.length <= 0} style={{ background: 'orange' }}>Thanh toán</button>
           </div>
@@ -603,7 +596,7 @@ function CustomerDashBoard(params) {
                   {seats.length > 0 ? (
                     seats.map((item) => (
                       <div key={item.id} className='d-flex justify-content-between' style={{ backgroundColor: '#e3e3e3', margin: '1px' }}>
-                        <div className='p-3 fs-5'>{item.seat.seatNumber}</div>
+                        <div className='p-3 fs-5'>{item.Seat.SeatNumber}</div>
                         <div className='p-3 fs-5'>{item.price} <u>đ</u></div>
                       </div>
                     ))
@@ -632,20 +625,9 @@ function CustomerDashBoard(params) {
                   )}
                 </div>
               </div>
-              <div className='d-flex justify-content-between p-3' >
-                <div className='fw-bold fs-3'>Tổng số tiền</div>
-                <div className='fw-bold fs-3'>{total} <u>đ</u></div>
-              </div>
-              <div className='d-flex flex-column justify-content-start align-items-start p-4'>
-                <div className='fs-5'>Quý khách vui lòng nhập mã giảm giá (nếu có)</div>
-                <div>
-                  <input type='text' placeholder='Nhập mã giảm giá' className='bg-light text-black p-2 m-2' style={{ width: '10rem' }} />
-                  <button className='btn btn-primary'>Gửi</button>
-                </div>
-              </div>
+              
+             
               <div className='d-flex justify-content-between p-4'>
-                <div className='fw-bold fs-3'>Số tiền giảm</div>
-                <div className='fw-bold fs-3'>0 <u>đ</u></div>
               </div>
               <hr />
               <div className='d-flex justify-content-between p-4'>

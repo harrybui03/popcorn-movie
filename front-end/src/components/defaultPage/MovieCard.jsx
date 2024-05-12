@@ -10,7 +10,6 @@ const MovieCard = ({ index, movie, onClick }) => {
     const styles = ['rgb(219, 137, 45)', 'rgb(81, 156, 247)', 'rgb(201, 102, 247)', 'rgb(242, 118, 143)'];
     const handleOrderClick = () => {
         if (isLogin) {
-            console.log(isLogin)
             navigate(`/movies/${movie.id}`);
         } else {
             $('#requireLogin').modal('show');

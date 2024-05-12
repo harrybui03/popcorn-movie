@@ -16,10 +16,28 @@ type Repository interface {
 	FindUserByEmail(ctx context.Context, email string) (*ent.User, error)
 
 	FindUserByID(ctx context.Context, id uuid.UUID) (*ent.User, error)
+
+	UserQuery(ctx context.Context) (*ent.UserQuery, error)
+
+	GetAllUsers(ctx context.Context, query *ent.UserQuery) ([]*ent.User, error)
+
+	CountUsers(ctx context.Context, query *ent.UserQuery) (int, error)
 }
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) CountUsers(ctx context.Context, query *ent.UserQuery) (int, error) {
+	return query.Count(ctx)
+}
+
+func (i impl) UserQuery(ctx context.Context) (*ent.UserQuery, error) {
+	return i.client.User.Query(), nil
+}
+
+func (i impl) GetAllUsers(ctx context.Context, query *ent.UserQuery) ([]*ent.User, error) {
+	return query.All(ctx)
 }
 
 func (i impl) Create(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
@@ -28,6 +46,7 @@ func (i impl) Create(ctx context.Context, input model.CreateUserInput) (*ent.Use
 		SetDisplayname(input.DisplayName).
 		SetEmail(input.Email).
 		SetPassword(input.Password).
+		SetRole(user.Role(*input.Role)).
 		Save(ctx)
 
 	if err != nil {

@@ -35,7 +35,8 @@ function useGetAllThearters() {
       queryFn: async () => fetchGraphQL(getAllShowTimes.query, {
         input:{
             filter:{
-                movieId:movieId
+                movieId:movieId,
+                theaterId:theaterId,
             } , 
               pagination:{
                 page:1,
@@ -55,5 +56,94 @@ function useGetAllThearters() {
     };
   }
 
+  function useGetAllTickets(showTimeId ) {
+    const { getAllTickets, queryKey } = useGraphql();
+    const { isLoading, error, data, refetch } = useQuery({
+      gcTime: 0,
+      enabled:!!showTimeId,
+      queryKey: [queryKey , showTimeId],
+      queryFn: async () => fetchGraphQL(getAllTickets.query, {
+        input:{
+            filter:{
+              showTimeID:showTimeId
+            } , 
+              pagination:{
+                page:1,
+                limit:100
+              }
+        }
+      }),
+    });
+    const ticketsData = data?.[getAllTickets.operation]?.data
+    const pagination = data?.[getAllTickets.operation]?.pagination
+    return {
+      isLoading,
+      error,
+      data: ticketsData,
+      pagination,
+      refetch,
+    };
+  }
+
+  function useGetAllTransactions(userID) {
+    const { getAllTransactions, queryKey } = useGraphql();
+    const { isLoading, error, data, refetch } = useQuery({
+      gcTime: 0,
+      enabled:!!userID,
+      queryKey: [queryKey , userID],
+      queryFn: async () => fetchGraphQL(getAllTransactions.query, {
+        input:{
+            filter:{
+              userID:userID
+            } , 
+              pagination:{
+                page:0,
+                limit:10
+              }
+        }
+      }),
+    });
+    const transactionData = data?.[getAllTransactions.operation]?.data
+    const pagination = data?.[getAllTransactions.operation]?.pagination
+    return {
+      isLoading,
+      error,
+      data: transactionData,
+      pagination,
+      refetch,
+    };
+  }
+
+  function useGetAllSeats(roomID) {
+    const {getAllSeats , queryKey} = useGraphql()
+    const { isLoading, error, data, refetch } = useQuery({
+      gcTime: 0,
+      enabled:!!roomID,
+      queryKey: [queryKey , roomID],
+      queryFn: async () => fetchGraphQL(getAllSeats.query, {
+        input:{
+            filter:{
+              roomID:roomID
+            } , 
+              pagination:{
+                page:0,
+                limit:10
+              }
+        }
+      }),
+    }); 
+
+    const seatData = data?.[getAllSeats.operation]?.data
+    const pagination = data?.[getAllSeats.operation]?.pagination
+    return {
+      isLoading,
+      error,
+      data: seatData,
+      pagination,
+      refetch,
+    };
+  }
+
   
-  export {useGetAllThearters , useGetAllShowTimes};
+  
+  export {useGetAllThearters , useGetAllShowTimes , useGetAllTickets,useGetAllSeats , useGetAllTransactions};

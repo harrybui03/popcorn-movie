@@ -64,6 +64,10 @@ function MovieBanner(username) {
                         movie={item}
                         onClick={() => handleCardClick(item.id)}
                     />
+
+                    
+
+
                 </Col>
             ));
 

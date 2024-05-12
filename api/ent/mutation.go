@@ -7006,9 +7006,22 @@ func (m *TicketMutation) OldTransactionID(ctx context.Context) (v uuid.UUID, err
 	return oldValue.TransactionID, nil
 }
 
+// ClearTransactionID clears the value of the "transaction_id" field.
+func (m *TicketMutation) ClearTransactionID() {
+	m.transaction = nil
+	m.clearedFields[ticket.FieldTransactionID] = struct{}{}
+}
+
+// TransactionIDCleared returns if the "transaction_id" field was cleared in this mutation.
+func (m *TicketMutation) TransactionIDCleared() bool {
+	_, ok := m.clearedFields[ticket.FieldTransactionID]
+	return ok
+}
+
 // ResetTransactionID resets all changes to the "transaction_id" field.
 func (m *TicketMutation) ResetTransactionID() {
 	m.transaction = nil
+	delete(m.clearedFields, ticket.FieldTransactionID)
 }
 
 // SetSeatID sets the "seat_id" field.
@@ -7163,7 +7176,7 @@ func (m *TicketMutation) ClearTransaction() {
 
 // TransactionCleared reports if the "transaction" edge to the Transaction entity was cleared.
 func (m *TicketMutation) TransactionCleared() bool {
-	return m.clearedtransaction
+	return m.TransactionIDCleared() || m.clearedtransaction
 }
 
 // TransactionIDs returns the "transaction" edge IDs in the mutation.
@@ -7439,7 +7452,11 @@ func (m *TicketMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TicketMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(ticket.FieldTransactionID) {
+		fields = append(fields, ticket.FieldTransactionID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -7452,6 +7469,11 @@ func (m *TicketMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TicketMutation) ClearField(name string) error {
+	switch name {
+	case ticket.FieldTransactionID:
+		m.ClearTransactionID()
+		return nil
+	}
 	return fmt.Errorf("unknown Ticket nullable field %s", name)
 }
 

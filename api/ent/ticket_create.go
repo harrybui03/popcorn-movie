@@ -50,6 +50,14 @@ func (tc *TicketCreate) SetTransactionID(u uuid.UUID) *TicketCreate {
 	return tc
 }
 
+// SetNillableTransactionID sets the "transaction_id" field if the given value is not nil.
+func (tc *TicketCreate) SetNillableTransactionID(u *uuid.UUID) *TicketCreate {
+	if u != nil {
+		tc.SetTransactionID(*u)
+	}
+	return tc
+}
+
 // SetSeatID sets the "seat_id" field.
 func (tc *TicketCreate) SetSeatID(u uuid.UUID) *TicketCreate {
 	tc.mutation.SetSeatID(u)
@@ -173,9 +181,6 @@ func (tc *TicketCreate) check() error {
 			return &ValidationError{Name: "price", err: fmt.Errorf(`ent: validator failed for field "Ticket.price": %w`, err)}
 		}
 	}
-	if _, ok := tc.mutation.TransactionID(); !ok {
-		return &ValidationError{Name: "transaction_id", err: errors.New(`ent: missing required field "Ticket.transaction_id"`)}
-	}
 	if _, ok := tc.mutation.SeatID(); !ok {
 		return &ValidationError{Name: "seat_id", err: errors.New(`ent: missing required field "Ticket.seat_id"`)}
 	}
@@ -187,9 +192,6 @@ func (tc *TicketCreate) check() error {
 	}
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Ticket.updated_at"`)}
-	}
-	if _, ok := tc.mutation.TransactionID(); !ok {
-		return &ValidationError{Name: "transaction", err: errors.New(`ent: missing required edge "Ticket.transaction"`)}
 	}
 	if _, ok := tc.mutation.SeatID(); !ok {
 		return &ValidationError{Name: "seat", err: errors.New(`ent: missing required edge "Ticket.seat"`)}

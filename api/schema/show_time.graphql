@@ -21,3 +21,18 @@ type ListShowTimeOutput{
     data:[ShowTime!]!
     pagination:PaginationOutput!
 }
+
+input CreateShowTimeInput{
+    startAt:Time!
+    endAt:Time!
+    movieId:String!
+    roomId:String!
+}
+
+input UpdateShowTimeInput{
+    id:ID!
+    startAt:Time
+    endAt:Time
+    movieId:String
+    roomId:String
+}

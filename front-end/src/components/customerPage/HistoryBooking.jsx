@@ -5,41 +5,45 @@ import LogOut from './LogOut'
 import ChangePW from './ChangePW'
 import LoadingSpinner from "../defaultPage/Loading";
 import useAuth from "../../hooks/useAuth";
+import { useGetAllTransactions } from "./hook/useQuery";
 
 
 function HistoryBooking(params) {
     const auth = useAuth();
-    const [history, setHistory] = useState(null);
 
-    const getHistory = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/transactions/history`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${auth.accessToken}`,
-                },
-            });
+    const historyData = useGetAllTransactions(auth.id)
+    const history = historyData?.data
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const data = await response.json();
-            data.sort((a, b) => {
-                const date1 = new Date(a.createdAt);
-                const date2 = new Date(b.createdAt);
-                return date2 - date1;
-            })
 
-            setHistory(data);
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    }
+    // const getHistory = async () => {
+    //     try {
+    //         const response = await fetch(`http://localhost:8080/transactions/history`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Authorization': `Bearer ${auth.accessToken}`,
+    //             },
+    //         });
 
-    useEffect(() => {
-        getHistory();
-    }, []);
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! Status: ${response.status}`);
+    //         }
+    //         const data = await response.json();
+    //         data.sort((a, b) => {
+    //             const date1 = new Date(a.createdAt);
+    //             const date2 = new Date(b.createdAt);
+    //             return date2 - date1;
+    //         })
+
+    //         setHistory(data);
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         throw error;
+    //     }
+    // }
+
+    // useEffect(() => {
+    //     getHistory();
+    // }, []);
 
     const convertTimeStringToDate = (dateTimeString) => {
         return dateTimeString.replace('T', ' ');

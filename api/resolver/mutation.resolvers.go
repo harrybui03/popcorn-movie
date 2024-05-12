@@ -9,6 +9,7 @@ import (
 	graphql1 "PopcornMovie/graphql"
 	"PopcornMovie/model"
 	"context"
+	"fmt"
 )
 
 // Signup is the resolver for the Signup field.
@@ -51,6 +52,26 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, input model.Chang
 	return changePasswordStr, err
 }
 
+// CreateUser is the resolver for the CreateUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*ent.User, error) {
+	user, err := r.service.User().CreateUser(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// UpdateUser is the resolver for the UpdateUser field.
+func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*ent.User, error) {
+	user, err := r.service.User().UpdateUser(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // CreateTransaction is the resolver for the CreateTransaction field.
 func (r *mutationResolver) CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*ent.Transaction, error) {
 	transaction, err := r.service.Transaction().CreateTransaction(ctx, input)
@@ -59,6 +80,46 @@ func (r *mutationResolver) CreateTransaction(ctx context.Context, input model.Cr
 	}
 
 	return transaction, nil
+}
+
+// CreateMovie is the resolver for the CreateMovie field.
+func (r *mutationResolver) CreateMovie(ctx context.Context, input model.CreateMovieInput) (*ent.Movie, error) {
+	panic(fmt.Errorf("not implemented: CreateMovie - CreateMovie"))
+}
+
+// UpdateMovie is the resolver for the UpdateMovie field.
+func (r *mutationResolver) UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*ent.Movie, error) {
+	panic(fmt.Errorf("not implemented: UpdateMovie - UpdateMovie"))
+}
+
+// DeleteMovie is the resolver for the DeleteMovie field.
+func (r *mutationResolver) DeleteMovie(ctx context.Context, input string) (string, error) {
+	panic(fmt.Errorf("not implemented: DeleteMovie - DeleteMovie"))
+}
+
+// CreateShowTime is the resolver for the CreateShowTime field.
+func (r *mutationResolver) CreateShowTime(ctx context.Context, input model.CreateShowTimeInput) (*ent.ShowTime, error) {
+	panic(fmt.Errorf("not implemented: CreateShowTime - CreateShowTime"))
+}
+
+// UpdateShowTime is the resolver for the UpdateShowTime field.
+func (r *mutationResolver) UpdateShowTime(ctx context.Context, input model.UpdateShowTimeInput) (*ent.ShowTime, error) {
+	panic(fmt.Errorf("not implemented: UpdateShowTime - UpdateShowTime"))
+}
+
+// DeleteShowTime is the resolver for the DeleteShowTime field.
+func (r *mutationResolver) DeleteShowTime(ctx context.Context, input string) (string, error) {
+	panic(fmt.Errorf("not implemented: DeleteShowTime - DeleteShowTime"))
+}
+
+// GenerateTicket is the resolver for the GenerateTicket field.
+func (r *mutationResolver) GenerateTicket(ctx context.Context, input model.GenerateTicketInput) ([]*ent.Ticket, error) {
+	tickets, err := r.service.Ticket().GenerateTickets(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return tickets, nil
 }
 
 // Mutation returns graphql1.MutationResolver implementation.

@@ -30,6 +30,29 @@ function useGraphql() {
         `,
   });
 
+  const getMovieByID = buildQuery({
+    operation: "GetMovieByID",
+    params:{input:"ID!"},
+    options: {
+      type: "query",
+    },
+    node:`
+    id
+    title
+    genre
+    status
+    language
+    director
+    cast
+    poster
+    rated
+    duration
+    trailer
+    openingDay
+    story
+    `
+  })
+
 
   const login = buildQuery({
     operation: "Login",
@@ -45,6 +68,6 @@ function useGraphql() {
     },
   });
 
-  return { getAllMovies, login, queryKey };
+  return { getAllMovies, login, queryKey , getMovieByID };
 }
 export default useGraphql;

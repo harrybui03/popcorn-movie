@@ -21,7 +21,7 @@ func (User) Fields() []ent.Field {
 		field.String("email").MaxLen(255),
 		field.String("password").MaxLen(255),
 		field.Bool("is_locked").Default(false),
-		field.Enum("role").Values("CUSTOMER", "RECEPTIONIST", "TICKET_MANAGER", "ADMIN").Default("CUSTOMER"),
+		field.Enum("role").Values("CUSTOMER", "STAFF", "TICKET_MANAGER", "ADMIN").Default("CUSTOMER"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

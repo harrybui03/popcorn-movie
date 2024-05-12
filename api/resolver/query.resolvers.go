@@ -109,7 +109,17 @@ func (r *queryResolver) ShowTimes(ctx context.Context, input model.ListShowTimeI
 
 // Seats is the resolver for the Seats field.
 func (r *queryResolver) Seats(ctx context.Context, input model.ListSeatInput) (*model.ListSeatOutput, error) {
-	return nil, nil
+	seats, count, err := r.service.Seat().GetAllSeats(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.ListSeatOutput{
+		Data: seats,
+		Pagination: &model.PaginationOutput{
+			Total: count,
+		},
+	}, nil
 }
 
 // GetAvailableSeats is the resolver for the GetAvailableSeats field.
@@ -121,6 +131,56 @@ func (r *queryResolver) GetAvailableSeats(ctx context.Context, input model.ListA
 
 	return &model.ListAvailableSeatOutput{
 		Data: availableSeats,
+		Pagination: &model.PaginationOutput{
+			Total: count,
+		},
+	}, nil
+}
+
+// Users is the resolver for the Users field.
+func (r *queryResolver) Users(ctx context.Context, input model.ListUserInput) (*model.ListUserOutput, error) {
+	listUsers, count, err := r.service.User().GetAllUsers(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.ListUserOutput{
+		Data: listUsers,
+		Pagination: &model.PaginationOutput{
+			Total: count,
+		},
+	}, nil
+}
+
+// Transactions is the resolver for the Transactions field.
+func (r *queryResolver) Transactions(ctx context.Context, input model.ListTransactionInput) (*model.ListTransactionOutput, error) {
+	listTransactions, count, err := r.service.Transaction().GetAllTransactions(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.ListTransactionOutput{
+		Data: listTransactions,
+		Pagination: &model.PaginationOutput{
+			Total: count,
+		},
+	}, nil
+}
+
+// GetRevenue is the resolver for the GetRevenue field.
+func (r *queryResolver) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.RevenueOutput, error) {
+	panic(fmt.Errorf("not implemented: GetRevenue - GetRevenue"))
+}
+
+// Tickets is the resolver for the Tickets field.
+func (r *queryResolver) Tickets(ctx context.Context, input model.ListTicketInput) (*model.ListTicketOutput, error) {
+	tickets, count, err := r.service.Ticket().GetAllTickets(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.ListTicketOutput{
+		Data: tickets,
 		Pagination: &model.PaginationOutput{
 			Total: count,
 		},

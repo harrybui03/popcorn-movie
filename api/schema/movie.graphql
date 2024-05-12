@@ -33,3 +33,34 @@ type ListMovieOutput {
     data:[Movie]
     pagination:PaginationOutput
 }
+
+input CreateMovieInput{
+    title:String!
+    genre:String!
+    status:MovieStatus!
+    language:String!
+    director:String!
+    cast:String!
+    poster:String!
+    rated:String!
+    duration:Int!
+    trailer:String!
+    openingDay:Time!
+    story:String!
+}
+
+input UpdateMovieInput {
+    id: ID!
+    title:String
+    genre:String
+    status:MovieStatus
+    language:String
+    director:String
+    cast:String
+    poster:String
+    rated:String
+    duration:Int
+    trailer:String
+    openingDay:Time
+    story:String
+}

@@ -4,6 +4,18 @@ type Mutation {
     Login(input: LoginInput!):JWT!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
     ChangePassword(input: ChangePasswordInput!):String! @auth
+    CreateUser(input: CreateUserInput!):User! @auth @hasRole(roles: [ADMIN ,TICKET_MANAGER])
+    UpdateUser(input: UpdateUserInput!):User! @auth @hasRole(roles: [ADMIN, TICKET_MANAGER])
     #Transaction
     CreateTransaction(input: CreateTransactionInput!):Transaction! @auth
+    #Movie
+    CreateMovie(input: CreateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER ])
+    UpdateMovie(input: UpdateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER])
+    DeleteMovie(input: ID!):String! @auth @hasRole(roles: [TICKET_MANAGER])
+    #ShowTime
+    CreateShowTime(input: CreateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
+    UpdateShowTime(input: UpdateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
+    DeleteShowTime(input: ID!):String! @auth @hasRole(roles: [TICKET_MANAGER])
+    #Tickets
+    GenerateTicket(input: GenerateTicketInput!):[Ticket!] @auth @hasRole(roles: [TICKET_MANAGER])
 }
