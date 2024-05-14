@@ -8,6 +8,7 @@ import (
 	"PopcornMovie/ent"
 	graphql1 "PopcornMovie/graphql"
 	"context"
+	"fmt"
 )
 
 // ID is the resolver for the id field.
@@ -18,6 +19,11 @@ func (r *transactionResolver) ID(ctx context.Context, obj *ent.Transaction) (str
 // User is the resolver for the user field.
 func (r *transactionResolver) User(ctx context.Context, obj *ent.Transaction) (*ent.User, error) {
 	return obj.Edges.User, nil
+}
+
+// Status is the resolver for the status field.
+func (r *transactionResolver) Status(ctx context.Context, obj *ent.Transaction) (string, error) {
+	panic(fmt.Errorf("not implemented: Status - status"))
 }
 
 // Tickets is the resolver for the tickets field.

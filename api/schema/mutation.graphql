@@ -2,12 +2,14 @@ type Mutation {
     #Auth
     Signup(input: RegisterInput!):String!
     Login(input: LoginInput!):JWT!
+    ForgotPassword(input: String!):String!
+    ResetPassword(input: ResetPasswordInput!):String!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
     ChangePassword(input: ChangePasswordInput!):String! @auth
     CreateUser(input: CreateUserInput!):User! @auth @hasRole(roles: [ADMIN ,TICKET_MANAGER])
     UpdateUser(input: UpdateUserInput!):User! @auth @hasRole(roles: [ADMIN, TICKET_MANAGER])
     #Transaction
-    CreateTransaction(input: CreateTransactionInput!):Transaction! @auth
+    CreateTransaction(input: CreateTransactionInput!):CheckOutOutput! @auth @hasRole(roles: [CUSTOMER])
     #Movie
     CreateMovie(input: CreateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER ])
     UpdateMovie(input: UpdateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER])

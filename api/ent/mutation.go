@@ -7624,6 +7624,9 @@ type TransactionMutation struct {
 	id                      *uuid.UUID
 	total                   *float64
 	addtotal                *float64
+	code                    *int
+	addcode                 *int
+	status                  *transaction.Status
 	created_at              *time.Time
 	updated_at              *time.Time
 	clearedFields           map[string]struct{}
@@ -7834,6 +7837,112 @@ func (m *TransactionMutation) OldUserID(ctx context.Context) (v uuid.UUID, err e
 // ResetUserID resets all changes to the "user_id" field.
 func (m *TransactionMutation) ResetUserID() {
 	m.user = nil
+}
+
+// SetCode sets the "code" field.
+func (m *TransactionMutation) SetCode(i int) {
+	m.code = &i
+	m.addcode = nil
+}
+
+// Code returns the value of the "code" field in the mutation.
+func (m *TransactionMutation) Code() (r int, exists bool) {
+	v := m.code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCode returns the old "code" field's value of the Transaction entity.
+// If the Transaction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransactionMutation) OldCode(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCode: %w", err)
+	}
+	return oldValue.Code, nil
+}
+
+// AddCode adds i to the "code" field.
+func (m *TransactionMutation) AddCode(i int) {
+	if m.addcode != nil {
+		*m.addcode += i
+	} else {
+		m.addcode = &i
+	}
+}
+
+// AddedCode returns the value that was added to the "code" field in this mutation.
+func (m *TransactionMutation) AddedCode() (r int, exists bool) {
+	v := m.addcode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCode clears the value of the "code" field.
+func (m *TransactionMutation) ClearCode() {
+	m.code = nil
+	m.addcode = nil
+	m.clearedFields[transaction.FieldCode] = struct{}{}
+}
+
+// CodeCleared returns if the "code" field was cleared in this mutation.
+func (m *TransactionMutation) CodeCleared() bool {
+	_, ok := m.clearedFields[transaction.FieldCode]
+	return ok
+}
+
+// ResetCode resets all changes to the "code" field.
+func (m *TransactionMutation) ResetCode() {
+	m.code = nil
+	m.addcode = nil
+	delete(m.clearedFields, transaction.FieldCode)
+}
+
+// SetStatus sets the "status" field.
+func (m *TransactionMutation) SetStatus(t transaction.Status) {
+	m.status = &t
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *TransactionMutation) Status() (r transaction.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Transaction entity.
+// If the Transaction object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TransactionMutation) OldStatus(ctx context.Context) (v transaction.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *TransactionMutation) ResetStatus() {
+	m.status = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -8077,12 +8186,18 @@ func (m *TransactionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TransactionMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.total != nil {
 		fields = append(fields, transaction.FieldTotal)
 	}
 	if m.user != nil {
 		fields = append(fields, transaction.FieldUserID)
+	}
+	if m.code != nil {
+		fields = append(fields, transaction.FieldCode)
+	}
+	if m.status != nil {
+		fields = append(fields, transaction.FieldStatus)
 	}
 	if m.created_at != nil {
 		fields = append(fields, transaction.FieldCreatedAt)
@@ -8102,6 +8217,10 @@ func (m *TransactionMutation) Field(name string) (ent.Value, bool) {
 		return m.Total()
 	case transaction.FieldUserID:
 		return m.UserID()
+	case transaction.FieldCode:
+		return m.Code()
+	case transaction.FieldStatus:
+		return m.Status()
 	case transaction.FieldCreatedAt:
 		return m.CreatedAt()
 	case transaction.FieldUpdatedAt:
@@ -8119,6 +8238,10 @@ func (m *TransactionMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldTotal(ctx)
 	case transaction.FieldUserID:
 		return m.OldUserID(ctx)
+	case transaction.FieldCode:
+		return m.OldCode(ctx)
+	case transaction.FieldStatus:
+		return m.OldStatus(ctx)
 	case transaction.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case transaction.FieldUpdatedAt:
@@ -8146,6 +8269,20 @@ func (m *TransactionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUserID(v)
 		return nil
+	case transaction.FieldCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCode(v)
+		return nil
+	case transaction.FieldStatus:
+		v, ok := value.(transaction.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
 	case transaction.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -8171,6 +8308,9 @@ func (m *TransactionMutation) AddedFields() []string {
 	if m.addtotal != nil {
 		fields = append(fields, transaction.FieldTotal)
 	}
+	if m.addcode != nil {
+		fields = append(fields, transaction.FieldCode)
+	}
 	return fields
 }
 
@@ -8181,6 +8321,8 @@ func (m *TransactionMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case transaction.FieldTotal:
 		return m.AddedTotal()
+	case transaction.FieldCode:
+		return m.AddedCode()
 	}
 	return nil, false
 }
@@ -8197,6 +8339,13 @@ func (m *TransactionMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddTotal(v)
 		return nil
+	case transaction.FieldCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCode(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Transaction numeric field %s", name)
 }
@@ -8204,7 +8353,11 @@ func (m *TransactionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TransactionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(transaction.FieldCode) {
+		fields = append(fields, transaction.FieldCode)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -8217,6 +8370,11 @@ func (m *TransactionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TransactionMutation) ClearField(name string) error {
+	switch name {
+	case transaction.FieldCode:
+		m.ClearCode()
+		return nil
+	}
 	return fmt.Errorf("unknown Transaction nullable field %s", name)
 }
 
@@ -8229,6 +8387,12 @@ func (m *TransactionMutation) ResetField(name string) error {
 		return nil
 	case transaction.FieldUserID:
 		m.ResetUserID()
+		return nil
+	case transaction.FieldCode:
+		m.ResetCode()
+		return nil
+	case transaction.FieldStatus:
+		m.ResetStatus()
 		return nil
 	case transaction.FieldCreatedAt:
 		m.ResetCreatedAt()

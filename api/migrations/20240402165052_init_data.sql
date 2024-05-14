@@ -1,12 +1,24 @@
+INSERT INTO public.users (id, email, displayname, "password", is_locked, "role", created_at, updated_at)
+VALUES ('6a81cf88-0860-422a-9746-a009d92f32f3', 'customer@gmail.com', 'customer',
+        '$2a$10$6zC.gn4q2g/./Lgt7b.KNuoLp12ggLYhYzx1k/DaylMhf1ZZzQgq2', false, 'CUSTOMER', '2024-05-14 23:48:13.166844',
+        '2024-05-14 23:48:13.166844'),
+       ('b798adac-ce81-4d30-83a6-01673c336e3e', 'admin@gmail.com', 'customer',
+        '$2a$10$T6/OyR3cmk0N6dPFuzW6yOGLTw6ONhWZP1B3.P/WcqLhcb7AkA.Wy', false, 'ADMIN', '2024-05-14 23:56:43.041221',
+        '2024-05-14 23:56:43.041221'),
+       ('da59cdc4-8275-462d-9059-fa8de62f20a5', 'manager@gmail.com', 'customer',
+        '$2a$10$g.piqcnx0ELgnCbgR.luNulwHBpHFE/p.dmpZ2sUu8ukP2A4sSB4G', false, 'TICKET_MANAGER',
+        '2024-05-14 23:57:50.761441', '2024-05-14 23:57:50.761441');
+
+
 INSERT INTO theaters
 VALUES ('018e9fbf-0809-76a7-b848-ab1651254acf', '02 Phạm Ngọc Thạch, Trung Tự, Q. Đống Đa, Tp. Hà Nội',
-        'Popcorn Movive Phạm Ngọc Thạch', '0123456121'),
+        'Popcorn Movie Phạm Ngọc Thạch', '0123456121'),
        ('018e9fbf-0809-7441-8bd4-d9a2620dd4e1',
-        'Tầng 8, TTTM Discovery – 302 Cầu Giấy, P.Dịch Vọng, Quận Cầu Giấy, Hà Nội', 'Popcorn Movive Discovery',
+        'Tầng 8, TTTM Discovery – 302 Cầu Giấy, P.Dịch Vọng, Quận Cầu Giấy, Hà Nội', 'Popcorn Movie Discovery',
         '0124457121'),
        ('018e9fbf-0809-7bcc-a913-9abfa0bc2402',
         'Tầng 4, TTTM The Garden, khu đô thị The Manor, đường Mễ Trì, phường Mỹ Đình 1, quận Nam Từ Liêm, Hà Nội',
-        'Popcorn Movive The Garden', '0223456121');
+        'Popcorn Movie The Garden', '0223456121');
 
 INSERT INTO rooms (id, room_number, theater_id)
 VALUES ('018e9fc2-0cf4-78cf-93b2-4f75ac4bd9b5', 101, '018e9fbf-0809-76a7-b848-ab1651254acf'),

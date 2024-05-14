@@ -16,6 +16,20 @@ type ChangePasswordInput struct {
 	ConfirmNewPassword string `json:"confirmNewPassword"`
 }
 
+type CheckOutOutput struct {
+	Bin           string `json:"Bin"`
+	AccountNumber string `json:"AccountNumber"`
+	AccountName   string `json:"AccountName"`
+	Amount        int    `json:"Amount"`
+	Description   string `json:"Description"`
+	OrderCode     int    `json:"OrderCode"`
+	Currency      string `json:"Currency"`
+	PaymentLinkID string `json:"PaymentLinkId"`
+	Status        string `json:"Status"`
+	CheckoutURL   string `json:"CheckoutUrl"`
+	QRCode        string `json:"QRCode"`
+}
+
 type CreateFoodOrderLineInput struct {
 	FoodID   string `json:"foodID"`
 	Quantity int    `json:"quantity"`
@@ -56,7 +70,7 @@ type CreateTicketInput struct {
 }
 
 type CreateTransactionInput struct {
-	SeatIDs    []*CreateTicketInput        `json:"seatIDs"`
+	TicketIDs  []*CreateTicketInput        `json:"ticketIDs"`
 	Foods      []*CreateFoodOrderLineInput `json:"foods"`
 	ShowTimeID string                      `json:"showTimeID"`
 }
@@ -275,6 +289,13 @@ type RenewAccessTokenInput struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+type ResetPasswordInput struct {
+	Code               string `json:"code"`
+	Email              string `json:"email"`
+	NewPassword        string `json:"newPassword"`
+	ConfirmNewPassword string `json:"confirmNewPassword"`
+}
+
 type RevenueInput struct {
 	Date time.Time   `json:"date"`
 	Type RevenueType `json:"type"`
@@ -311,9 +332,7 @@ type UpdateShowTimeInput struct {
 type UpdateUserInput struct {
 	ID          string  `json:"id"`
 	DisplayName *string `json:"displayName,omitempty"`
-	Email       *string `json:"email,omitempty"`
 	IsLocked    *bool   `json:"isLocked,omitempty"`
-	Role        *Role   `json:"role,omitempty"`
 }
 
 type MovieStatus string

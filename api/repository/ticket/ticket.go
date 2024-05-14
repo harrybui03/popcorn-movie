@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	TicketQuery() *ent.TicketQuery
 	TicketCreate() *ent.TicketCreate
+	TicketUpdate() *ent.TicketUpdate
 	CreateTicket(ctx context.Context, input model.CreateTicket) (*ent.Ticket, error)
 	CreateBulkTicket(ctx context.Context, input []*ent.TicketCreate) ([]*ent.Ticket, error)
 	CountTickets(ctx context.Context, query *ent.TicketQuery) (int, error)
@@ -18,6 +19,10 @@ type Repository interface {
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) TicketUpdate() *ent.TicketUpdate {
+	return i.client.Ticket.Update()
 }
 
 func (i impl) TicketCreate() *ent.TicketCreate {

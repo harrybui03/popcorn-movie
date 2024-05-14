@@ -23,6 +23,10 @@ type Transaction struct {
 	Total float64 `json:"total,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
+	// Code holds the value of the "code" field.
+	Code int `json:"code,omitempty"`
+	// Status holds the value of the "status" field.
+	Status transaction.Status `json:"status,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -82,6 +86,10 @@ func (*Transaction) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case transaction.FieldTotal:
 			values[i] = new(sql.NullFloat64)
+		case transaction.FieldCode:
+			values[i] = new(sql.NullInt64)
+		case transaction.FieldStatus:
+			values[i] = new(sql.NullString)
 		case transaction.FieldCreatedAt, transaction.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case transaction.FieldID, transaction.FieldUserID:
@@ -118,6 +126,18 @@ func (t *Transaction) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
 				t.UserID = *value
+			}
+		case transaction.FieldCode:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field code", values[i])
+			} else if value.Valid {
+				t.Code = int(value.Int64)
+			}
+		case transaction.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				t.Status = transaction.Status(value.String)
 			}
 		case transaction.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -187,6 +207,12 @@ func (t *Transaction) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.UserID))
+	builder.WriteString(", ")
+	builder.WriteString("code=")
+	builder.WriteString(fmt.Sprintf("%v", t.Code))
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", t.Status))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))

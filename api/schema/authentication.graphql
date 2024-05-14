@@ -24,3 +24,10 @@ input ChangePasswordInput {
     newPassword:String!
     confirmNewPassword:String!
 }
+
+input ResetPasswordInput {
+    code:String!
+    email:String!
+    newPassword:String!
+    confirmNewPassword:String!
+}

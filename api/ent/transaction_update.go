@@ -67,6 +67,47 @@ func (tu *TransactionUpdate) SetNillableUserID(u *uuid.UUID) *TransactionUpdate 
 	return tu
 }
 
+// SetCode sets the "code" field.
+func (tu *TransactionUpdate) SetCode(i int) *TransactionUpdate {
+	tu.mutation.ResetCode()
+	tu.mutation.SetCode(i)
+	return tu
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (tu *TransactionUpdate) SetNillableCode(i *int) *TransactionUpdate {
+	if i != nil {
+		tu.SetCode(*i)
+	}
+	return tu
+}
+
+// AddCode adds i to the "code" field.
+func (tu *TransactionUpdate) AddCode(i int) *TransactionUpdate {
+	tu.mutation.AddCode(i)
+	return tu
+}
+
+// ClearCode clears the value of the "code" field.
+func (tu *TransactionUpdate) ClearCode() *TransactionUpdate {
+	tu.mutation.ClearCode()
+	return tu
+}
+
+// SetStatus sets the "status" field.
+func (tu *TransactionUpdate) SetStatus(t transaction.Status) *TransactionUpdate {
+	tu.mutation.SetStatus(t)
+	return tu
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tu *TransactionUpdate) SetNillableStatus(t *transaction.Status) *TransactionUpdate {
+	if t != nil {
+		tu.SetStatus(*t)
+	}
+	return tu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (tu *TransactionUpdate) SetUpdatedAt(t time.Time) *TransactionUpdate {
 	tu.mutation.SetUpdatedAt(t)
@@ -199,6 +240,11 @@ func (tu *TransactionUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TransactionUpdate) check() error {
+	if v, ok := tu.mutation.Status(); ok {
+		if err := transaction.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Transaction.status": %w`, err)}
+		}
+	}
 	if _, ok := tu.mutation.UserID(); tu.mutation.UserCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Transaction.user"`)
 	}
@@ -222,6 +268,18 @@ func (tu *TransactionUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.AddedTotal(); ok {
 		_spec.AddField(transaction.FieldTotal, field.TypeFloat64, value)
+	}
+	if value, ok := tu.mutation.Code(); ok {
+		_spec.SetField(transaction.FieldCode, field.TypeInt, value)
+	}
+	if value, ok := tu.mutation.AddedCode(); ok {
+		_spec.AddField(transaction.FieldCode, field.TypeInt, value)
+	}
+	if tu.mutation.CodeCleared() {
+		_spec.ClearField(transaction.FieldCode, field.TypeInt)
+	}
+	if value, ok := tu.mutation.Status(); ok {
+		_spec.SetField(transaction.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := tu.mutation.UpdatedAt(); ok {
 		_spec.SetField(transaction.FieldUpdatedAt, field.TypeTime, value)
@@ -400,6 +458,47 @@ func (tuo *TransactionUpdateOne) SetNillableUserID(u *uuid.UUID) *TransactionUpd
 	return tuo
 }
 
+// SetCode sets the "code" field.
+func (tuo *TransactionUpdateOne) SetCode(i int) *TransactionUpdateOne {
+	tuo.mutation.ResetCode()
+	tuo.mutation.SetCode(i)
+	return tuo
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (tuo *TransactionUpdateOne) SetNillableCode(i *int) *TransactionUpdateOne {
+	if i != nil {
+		tuo.SetCode(*i)
+	}
+	return tuo
+}
+
+// AddCode adds i to the "code" field.
+func (tuo *TransactionUpdateOne) AddCode(i int) *TransactionUpdateOne {
+	tuo.mutation.AddCode(i)
+	return tuo
+}
+
+// ClearCode clears the value of the "code" field.
+func (tuo *TransactionUpdateOne) ClearCode() *TransactionUpdateOne {
+	tuo.mutation.ClearCode()
+	return tuo
+}
+
+// SetStatus sets the "status" field.
+func (tuo *TransactionUpdateOne) SetStatus(t transaction.Status) *TransactionUpdateOne {
+	tuo.mutation.SetStatus(t)
+	return tuo
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tuo *TransactionUpdateOne) SetNillableStatus(t *transaction.Status) *TransactionUpdateOne {
+	if t != nil {
+		tuo.SetStatus(*t)
+	}
+	return tuo
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (tuo *TransactionUpdateOne) SetUpdatedAt(t time.Time) *TransactionUpdateOne {
 	tuo.mutation.SetUpdatedAt(t)
@@ -545,6 +644,11 @@ func (tuo *TransactionUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TransactionUpdateOne) check() error {
+	if v, ok := tuo.mutation.Status(); ok {
+		if err := transaction.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Transaction.status": %w`, err)}
+		}
+	}
 	if _, ok := tuo.mutation.UserID(); tuo.mutation.UserCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Transaction.user"`)
 	}
@@ -585,6 +689,18 @@ func (tuo *TransactionUpdateOne) sqlSave(ctx context.Context) (_node *Transactio
 	}
 	if value, ok := tuo.mutation.AddedTotal(); ok {
 		_spec.AddField(transaction.FieldTotal, field.TypeFloat64, value)
+	}
+	if value, ok := tuo.mutation.Code(); ok {
+		_spec.SetField(transaction.FieldCode, field.TypeInt, value)
+	}
+	if value, ok := tuo.mutation.AddedCode(); ok {
+		_spec.AddField(transaction.FieldCode, field.TypeInt, value)
+	}
+	if tuo.mutation.CodeCleared() {
+		_spec.ClearField(transaction.FieldCode, field.TypeInt)
+	}
+	if value, ok := tuo.mutation.Status(); ok {
+		_spec.SetField(transaction.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := tuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(transaction.FieldUpdatedAt, field.TypeTime, value)

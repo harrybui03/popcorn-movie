@@ -9,7 +9,6 @@ import (
 	graphql1 "PopcornMovie/graphql"
 	"PopcornMovie/model"
 	"context"
-	"fmt"
 )
 
 // Signup is the resolver for the Signup field.
@@ -30,6 +29,26 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 	}
 
 	return jwt, nil
+}
+
+// ForgotPassword is the resolver for the ForgotPassword field.
+func (r *mutationResolver) ForgotPassword(ctx context.Context, input string) (string, error) {
+	message, err := r.service.Auth().ForgotPassword(ctx, input)
+	if err != nil {
+		return "", err
+	}
+
+	return message, nil
+}
+
+// ResetPassword is the resolver for the ResetPassword field.
+func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
+	message, err := r.service.Auth().ResetPassword(ctx, input)
+	if err != nil {
+		return "", err
+	}
+
+	return message, nil
 }
 
 // RenewAccessToken is the resolver for the RenewAccessToken field.
@@ -73,43 +92,85 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUse
 }
 
 // CreateTransaction is the resolver for the CreateTransaction field.
-func (r *mutationResolver) CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*ent.Transaction, error) {
+func (r *mutationResolver) CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*model.CheckOutOutput, error) {
 	transaction, err := r.service.Transaction().CreateTransaction(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 
-	return transaction, nil
+	return &model.CheckOutOutput{
+		Amount:        transaction.Amount,
+		Status:        transaction.Status,
+		AccountName:   transaction.AccountName,
+		AccountNumber: transaction.AccountNumber,
+		Bin:           transaction.Bin,
+		Currency:      transaction.Currency,
+		Description:   transaction.Description,
+		OrderCode:     int(transaction.OrderCode),
+		CheckoutURL:   transaction.CheckoutUrl,
+		QRCode:        transaction.QRCode,
+		PaymentLinkID: transaction.PaymentLinkId,
+	}, nil
 }
 
 // CreateMovie is the resolver for the CreateMovie field.
 func (r *mutationResolver) CreateMovie(ctx context.Context, input model.CreateMovieInput) (*ent.Movie, error) {
-	panic(fmt.Errorf("not implemented: CreateMovie - CreateMovie"))
+	movie, err := r.service.Movie().CreateMovie(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return movie, nil
 }
 
 // UpdateMovie is the resolver for the UpdateMovie field.
 func (r *mutationResolver) UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*ent.Movie, error) {
-	panic(fmt.Errorf("not implemented: UpdateMovie - UpdateMovie"))
+	movie, err := r.service.Movie().UpdateMovie(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return movie, nil
 }
 
 // DeleteMovie is the resolver for the DeleteMovie field.
 func (r *mutationResolver) DeleteMovie(ctx context.Context, input string) (string, error) {
-	panic(fmt.Errorf("not implemented: DeleteMovie - DeleteMovie"))
+	message, err := r.service.Movie().DeleteMovie(ctx, input)
+	if err != nil {
+		return "", err
+	}
+
+	return message, nil
 }
 
 // CreateShowTime is the resolver for the CreateShowTime field.
 func (r *mutationResolver) CreateShowTime(ctx context.Context, input model.CreateShowTimeInput) (*ent.ShowTime, error) {
-	panic(fmt.Errorf("not implemented: CreateShowTime - CreateShowTime"))
+	showTime, err := r.service.ShowTime().CreateShowTime(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return showTime, nil
 }
 
 // UpdateShowTime is the resolver for the UpdateShowTime field.
 func (r *mutationResolver) UpdateShowTime(ctx context.Context, input model.UpdateShowTimeInput) (*ent.ShowTime, error) {
-	panic(fmt.Errorf("not implemented: UpdateShowTime - UpdateShowTime"))
+	showTime, err := r.service.ShowTime().UpdateShowTime(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return showTime, nil
 }
 
 // DeleteShowTime is the resolver for the DeleteShowTime field.
 func (r *mutationResolver) DeleteShowTime(ctx context.Context, input string) (string, error) {
-	panic(fmt.Errorf("not implemented: DeleteShowTime - DeleteShowTime"))
+	message, err := r.service.ShowTime().DeleteShowTime(ctx, input)
+	if err != nil {
+		return "", err
+	}
+
+	return message, nil
 }
 
 // GenerateTicket is the resolver for the GenerateTicket field.

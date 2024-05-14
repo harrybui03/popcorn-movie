@@ -3,6 +3,7 @@
 package transaction
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -18,6 +19,10 @@ const (
 	FieldTotal = "total"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
+	// FieldCode holds the string denoting the code field in the database.
+	FieldCode = "code"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -58,6 +63,8 @@ var Columns = []string{
 	FieldID,
 	FieldTotal,
 	FieldUserID,
+	FieldCode,
+	FieldStatus,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -81,6 +88,33 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 )
 
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusPENDING is the default value of the Status enum.
+const DefaultStatus = StatusPENDING
+
+// Status values.
+const (
+	StatusPENDING Status = "PENDING"
+	StatusPAID    Status = "PAID"
+	StatusCANCEL  Status = "CANCEL"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusPENDING, StatusPAID, StatusCANCEL:
+		return nil
+	default:
+		return fmt.Errorf("transaction: invalid enum value for status field: %q", s)
+	}
+}
+
 // OrderOption defines the ordering options for the Transaction queries.
 type OrderOption func(*sql.Selector)
 
@@ -97,6 +131,16 @@ func ByTotal(opts ...sql.OrderTermOption) OrderOption {
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
+}
+
+// ByCode orders the results by the code field.
+func ByCode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCode, opts...).ToFunc()
+}
+
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

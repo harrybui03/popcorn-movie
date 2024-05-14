@@ -4,6 +4,7 @@ import (
 	"PopcornMovie/cmd/middleware"
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
+	"PopcornMovie/gateway/payment"
 	"PopcornMovie/resolver"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -43,9 +44,13 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 				os.Exit(1)
 			}
 
+			err = payment.NewPaymentService(configs.Payos)
+			if err != nil {
+				logger.Error("Getting error from create payment service", zap.Error(err))
+				os.Exit(1)
+			}
 			// GraphQL schema resolver handler.
-			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(db, logger, configs.AppConfig))
-
+			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(db, logger, *configs))
 			// Create a Gin router instance
 			app := gin.Default()
 

@@ -2,12 +2,27 @@ type Transaction {
     id: ID!
     user: User!
     total: Float!
+    status: String!
     tickets: [Ticket!]!
     foods: [FoodOrderLine!]!
 }
 
+type CheckOutOutput{
+    Bin           :String!
+    AccountNumber :String!
+    AccountName   :String!
+    Amount        :Int!
+    Description   :String!
+    OrderCode     :Int!
+    Currency      :String!
+    PaymentLinkId :String!
+    Status        :String!
+    CheckoutUrl   :String!
+    QRCode        :String!
+}
+
 input CreateTransactionInput{
-    seatIDs: [CreateTicketInput!]!
+    ticketIDs: [CreateTicketInput!]!
     foods: [CreateFoodOrderLineInput!]!
     showTimeID: ID!
 }

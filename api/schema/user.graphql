@@ -17,9 +17,7 @@ input CreateUserInput {
 input UpdateUserInput {
     id: ID!
     displayName: String
-    email: String
     isLocked: Boolean
-    role:Role
 }
 
 input ListUserInput {

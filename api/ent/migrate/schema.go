@@ -251,6 +251,8 @@ var (
 	TransactionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "total", Type: field.TypeFloat64},
+		{Name: "code", Type: field.TypeInt, Unique: true, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"PENDING", "PAID", "CANCEL"}, Default: "PENDING"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "user_id", Type: field.TypeUUID},
@@ -263,7 +265,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "transactions_users_transactions",
-				Columns:    []*schema.Column{TransactionsColumns[4]},
+				Columns:    []*schema.Column{TransactionsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

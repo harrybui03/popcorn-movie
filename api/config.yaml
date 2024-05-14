@@ -4,3 +4,15 @@ app:
   jwtSecret: $JWT_SECRET
   jwtDuration: $JWT_DURATION
   refreshTokenDuration: $REFRESH_TOKEN_DURATION
+payos:
+  clientID: $PAYOS_CLIENT_ID
+  apiKey: $PAYOS_API_KEY
+  checksumKey: $PAYOS_CHECKSUM_KEY
+  domain: $DOMAIN
+  baseURL: $BASE_URL
+stmp:
+  port: $SMTP_PORT
+  host: $SMTP_HOST
+  username: $SMTP_USERNAME
+  password: $SMTP_PASSWORD
+  from: $SMTP_FROM

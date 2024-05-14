@@ -62,6 +62,20 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	CheckOutOutput struct {
+		AccountName   func(childComplexity int) int
+		AccountNumber func(childComplexity int) int
+		Amount        func(childComplexity int) int
+		Bin           func(childComplexity int) int
+		CheckoutURL   func(childComplexity int) int
+		Currency      func(childComplexity int) int
+		Description   func(childComplexity int) int
+		OrderCode     func(childComplexity int) int
+		PaymentLinkID func(childComplexity int) int
+		QRCode        func(childComplexity int) int
+		Status        func(childComplexity int) int
+	}
+
 	Comment struct {
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
@@ -179,9 +193,11 @@ type ComplexityRoot struct {
 		CreateUser        func(childComplexity int, input model.CreateUserInput) int
 		DeleteMovie       func(childComplexity int, input string) int
 		DeleteShowTime    func(childComplexity int, input string) int
+		ForgotPassword    func(childComplexity int, input string) int
 		GenerateTicket    func(childComplexity int, input model.GenerateTicketInput) int
 		Login             func(childComplexity int, input model.LoginInput) int
 		RenewAccessToken  func(childComplexity int, input model.RenewAccessTokenInput) int
+		ResetPassword     func(childComplexity int, input model.ResetPasswordInput) int
 		Signup            func(childComplexity int, input model.RegisterInput) int
 		UpdateMovie       func(childComplexity int, input model.UpdateMovieInput) int
 		UpdateShowTime    func(childComplexity int, input model.UpdateShowTimeInput) int
@@ -254,6 +270,7 @@ type ComplexityRoot struct {
 	Transaction struct {
 		Foods   func(childComplexity int) int
 		ID      func(childComplexity int) int
+		Status  func(childComplexity int) int
 		Tickets func(childComplexity int) int
 		Total   func(childComplexity int) int
 		User    func(childComplexity int) int
@@ -290,11 +307,13 @@ type MovieResolver interface {
 type MutationResolver interface {
 	Signup(ctx context.Context, input model.RegisterInput) (string, error)
 	Login(ctx context.Context, input model.LoginInput) (*model.Jwt, error)
+	ForgotPassword(ctx context.Context, input string) (string, error)
+	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
 	RenewAccessToken(ctx context.Context, input model.RenewAccessTokenInput) (*model.Jwt, error)
 	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (string, error)
 	CreateUser(ctx context.Context, input model.CreateUserInput) (*ent.User, error)
 	UpdateUser(ctx context.Context, input model.UpdateUserInput) (*ent.User, error)
-	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*ent.Transaction, error)
+	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*model.CheckOutOutput, error)
 	CreateMovie(ctx context.Context, input model.CreateMovieInput) (*ent.Movie, error)
 	UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*ent.Movie, error)
 	DeleteMovie(ctx context.Context, input string) (string, error)
@@ -352,6 +371,7 @@ type TransactionResolver interface {
 	ID(ctx context.Context, obj *ent.Transaction) (string, error)
 	User(ctx context.Context, obj *ent.Transaction) (*ent.User, error)
 
+	Status(ctx context.Context, obj *ent.Transaction) (string, error)
 	Tickets(ctx context.Context, obj *ent.Transaction) ([]*ent.Ticket, error)
 	Foods(ctx context.Context, obj *ent.Transaction) ([]*ent.FoodOrderLine, error)
 }
@@ -379,6 +399,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "CheckOutOutput.AccountName":
+		if e.complexity.CheckOutOutput.AccountName == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.AccountName(childComplexity), true
+
+	case "CheckOutOutput.AccountNumber":
+		if e.complexity.CheckOutOutput.AccountNumber == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.AccountNumber(childComplexity), true
+
+	case "CheckOutOutput.Amount":
+		if e.complexity.CheckOutOutput.Amount == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.Amount(childComplexity), true
+
+	case "CheckOutOutput.Bin":
+		if e.complexity.CheckOutOutput.Bin == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.Bin(childComplexity), true
+
+	case "CheckOutOutput.CheckoutUrl":
+		if e.complexity.CheckOutOutput.CheckoutURL == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.CheckoutURL(childComplexity), true
+
+	case "CheckOutOutput.Currency":
+		if e.complexity.CheckOutOutput.Currency == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.Currency(childComplexity), true
+
+	case "CheckOutOutput.Description":
+		if e.complexity.CheckOutOutput.Description == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.Description(childComplexity), true
+
+	case "CheckOutOutput.OrderCode":
+		if e.complexity.CheckOutOutput.OrderCode == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.OrderCode(childComplexity), true
+
+	case "CheckOutOutput.PaymentLinkId":
+		if e.complexity.CheckOutOutput.PaymentLinkID == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.PaymentLinkID(childComplexity), true
+
+	case "CheckOutOutput.QRCode":
+		if e.complexity.CheckOutOutput.QRCode == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.QRCode(childComplexity), true
+
+	case "CheckOutOutput.Status":
+		if e.complexity.CheckOutOutput.Status == nil {
+			break
+		}
+
+		return e.complexity.CheckOutOutput.Status(childComplexity), true
 
 	case "Comment.description":
 		if e.complexity.Comment.Description == nil {
@@ -849,6 +946,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteShowTime(childComplexity, args["input"].(string)), true
 
+	case "Mutation.ForgotPassword":
+		if e.complexity.Mutation.ForgotPassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_ForgotPassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ForgotPassword(childComplexity, args["input"].(string)), true
+
 	case "Mutation.GenerateTicket":
 		if e.complexity.Mutation.GenerateTicket == nil {
 			break
@@ -884,6 +993,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RenewAccessToken(childComplexity, args["input"].(model.RenewAccessTokenInput)), true
+
+	case "Mutation.ResetPassword":
+		if e.complexity.Mutation.ResetPassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_ResetPassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ResetPassword(childComplexity, args["input"].(model.ResetPasswordInput)), true
 
 	case "Mutation.Signup":
 		if e.complexity.Mutation.Signup == nil {
@@ -1290,6 +1411,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Transaction.ID(childComplexity), true
 
+	case "Transaction.status":
+		if e.complexity.Transaction.Status == nil {
+			break
+		}
+
+		return e.complexity.Transaction.Status(childComplexity), true
+
 	case "Transaction.tickets":
 		if e.complexity.Transaction.Tickets == nil {
 			break
@@ -1395,6 +1523,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPaginationInput,
 		ec.unmarshalInputRegisterInput,
 		ec.unmarshalInputRenewAccessTokenInput,
+		ec.unmarshalInputResetPasswordInput,
 		ec.unmarshalInputRevenueInput,
 		ec.unmarshalInputUpdateMovieInput,
 		ec.unmarshalInputUpdateShowTimeInput,
@@ -1519,6 +1648,13 @@ input RenewAccessTokenInput {
 
 input ChangePasswordInput {
     oldPassword:String!
+    newPassword:String!
+    confirmNewPassword:String!
+}
+
+input ResetPasswordInput {
+    code:String!
+    email:String!
     newPassword:String!
     confirmNewPassword:String!
 }`, BuiltIn: false},
@@ -1662,12 +1798,14 @@ input UpdateMovieInput {
     #Auth
     Signup(input: RegisterInput!):String!
     Login(input: LoginInput!):JWT!
+    ForgotPassword(input: String!):String!
+    ResetPassword(input: ResetPasswordInput!):String!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
     ChangePassword(input: ChangePasswordInput!):String! @auth
     CreateUser(input: CreateUserInput!):User! @auth @hasRole(roles: [ADMIN ,TICKET_MANAGER])
     UpdateUser(input: UpdateUserInput!):User! @auth @hasRole(roles: [ADMIN, TICKET_MANAGER])
     #Transaction
-    CreateTransaction(input: CreateTransactionInput!):Transaction! @auth
+    CreateTransaction(input: CreateTransactionInput!):CheckOutOutput! @auth @hasRole(roles: [CUSTOMER])
     #Movie
     CreateMovie(input: CreateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER ])
     UpdateMovie(input: UpdateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER])
@@ -1885,12 +2023,27 @@ input GenerateTicketInput{
     id: ID!
     user: User!
     total: Float!
+    status: String!
     tickets: [Ticket!]!
     foods: [FoodOrderLine!]!
 }
 
+type CheckOutOutput{
+    Bin           :String!
+    AccountNumber :String!
+    AccountName   :String!
+    Amount        :Int!
+    Description   :String!
+    OrderCode     :Int!
+    Currency      :String!
+    PaymentLinkId :String!
+    Status        :String!
+    CheckoutUrl   :String!
+    QRCode        :String!
+}
+
 input CreateTransactionInput{
-    seatIDs: [CreateTicketInput!]!
+    ticketIDs: [CreateTicketInput!]!
     foods: [CreateFoodOrderLineInput!]!
     showTimeID: ID!
 }
@@ -1944,9 +2097,7 @@ input CreateUserInput {
 input UpdateUserInput {
     id: ID!
     displayName: String
-    email: String
     isLocked: Boolean
-    role:Role
 }
 
 input ListUserInput {
@@ -2106,6 +2257,21 @@ func (ec *executionContext) field_Mutation_DeleteShowTime_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_ForgotPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_GenerateTicket_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2143,6 +2309,21 @@ func (ec *executionContext) field_Mutation_RenewAccessToken_args(ctx context.Con
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNRenewAccessTokenInput2PopcornMovieᚋmodelᚐRenewAccessTokenInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_ResetPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.ResetPasswordInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNResetPasswordInput2PopcornMovieᚋmodelᚐResetPasswordInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2473,6 +2654,490 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _CheckOutOutput_Bin(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_Bin(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bin, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_Bin(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_AccountNumber(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_AccountNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccountNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_AccountNumber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_AccountName(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_AccountName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AccountName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_AccountName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_Amount(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_Amount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Amount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_Amount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_Description(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_Description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_Description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_OrderCode(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_OrderCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OrderCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_OrderCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_Currency(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_Currency(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Currency, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_Currency(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_PaymentLinkId(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_PaymentLinkId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PaymentLinkID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_PaymentLinkId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_Status(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_Status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_Status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_CheckoutUrl(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_CheckoutUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CheckoutURL, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_CheckoutUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CheckOutOutput_QRCode(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CheckOutOutput_QRCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.QRCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CheckOutOutput_QRCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CheckOutOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Comment_id(ctx context.Context, field graphql.CollectedField, obj *ent.Comment) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Comment_id(ctx, field)
@@ -4403,6 +5068,8 @@ func (ec *executionContext) fieldContext_ListTransactionOutput_data(ctx context.
 				return ec.fieldContext_Transaction_user(ctx, field)
 			case "total":
 				return ec.fieldContext_Transaction_total(ctx, field)
+			case "status":
+				return ec.fieldContext_Transaction_status(ctx, field)
 			case "tickets":
 				return ec.fieldContext_Transaction_tickets(ctx, field)
 			case "foods":
@@ -5256,6 +5923,116 @@ func (ec *executionContext) fieldContext_Mutation_Login(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_ForgotPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_ForgotPassword(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ForgotPassword(rctx, fc.Args["input"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_ForgotPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_ForgotPassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_ResetPassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_ResetPassword(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ResetPassword(rctx, fc.Args["input"].(model.ResetPasswordInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_ResetPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_ResetPassword_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_RenewAccessToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_RenewAccessToken(ctx, field)
 	if err != nil {
@@ -5633,18 +6410,28 @@ func (ec *executionContext) _Mutation_CreateTransaction(ctx context.Context, fie
 			}
 			return ec.directives.Auth(ctx, nil, directive0)
 		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕPopcornMovieᚋmodelᚐRoleᚄ(ctx, []interface{}{"CUSTOMER"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, roles)
+		}
 
-		tmp, err := directive1(rctx)
+		tmp, err := directive2(rctx)
 		if err != nil {
 			return nil, graphql.ErrorOnPath(ctx, err)
 		}
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*ent.Transaction); ok {
+		if data, ok := tmp.(*model.CheckOutOutput); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/ent.Transaction`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/model.CheckOutOutput`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5656,9 +6443,9 @@ func (ec *executionContext) _Mutation_CreateTransaction(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*ent.Transaction)
+	res := resTmp.(*model.CheckOutOutput)
 	fc.Result = res
-	return ec.marshalNTransaction2ᚖPopcornMovieᚋentᚐTransaction(ctx, field.Selections, res)
+	return ec.marshalNCheckOutOutput2ᚖPopcornMovieᚋmodelᚐCheckOutOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_CreateTransaction(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5669,18 +6456,30 @@ func (ec *executionContext) fieldContext_Mutation_CreateTransaction(ctx context.
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Transaction_id(ctx, field)
-			case "user":
-				return ec.fieldContext_Transaction_user(ctx, field)
-			case "total":
-				return ec.fieldContext_Transaction_total(ctx, field)
-			case "tickets":
-				return ec.fieldContext_Transaction_tickets(ctx, field)
-			case "foods":
-				return ec.fieldContext_Transaction_foods(ctx, field)
+			case "Bin":
+				return ec.fieldContext_CheckOutOutput_Bin(ctx, field)
+			case "AccountNumber":
+				return ec.fieldContext_CheckOutOutput_AccountNumber(ctx, field)
+			case "AccountName":
+				return ec.fieldContext_CheckOutOutput_AccountName(ctx, field)
+			case "Amount":
+				return ec.fieldContext_CheckOutOutput_Amount(ctx, field)
+			case "Description":
+				return ec.fieldContext_CheckOutOutput_Description(ctx, field)
+			case "OrderCode":
+				return ec.fieldContext_CheckOutOutput_OrderCode(ctx, field)
+			case "Currency":
+				return ec.fieldContext_CheckOutOutput_Currency(ctx, field)
+			case "PaymentLinkId":
+				return ec.fieldContext_CheckOutOutput_PaymentLinkId(ctx, field)
+			case "Status":
+				return ec.fieldContext_CheckOutOutput_Status(ctx, field)
+			case "CheckoutUrl":
+				return ec.fieldContext_CheckOutOutput_CheckoutUrl(ctx, field)
+			case "QRCode":
+				return ec.fieldContext_CheckOutOutput_QRCode(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type CheckOutOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -8598,6 +9397,8 @@ func (ec *executionContext) fieldContext_Ticket_Transaction(ctx context.Context,
 				return ec.fieldContext_Transaction_user(ctx, field)
 			case "total":
 				return ec.fieldContext_Transaction_total(ctx, field)
+			case "status":
+				return ec.fieldContext_Transaction_status(ctx, field)
 			case "tickets":
 				return ec.fieldContext_Transaction_tickets(ctx, field)
 			case "foods":
@@ -8750,6 +9551,50 @@ func (ec *executionContext) fieldContext_Transaction_total(ctx context.Context, 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_status(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Transaction().Status(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11170,20 +12015,20 @@ func (ec *executionContext) unmarshalInputCreateTransactionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"seatIDs", "foods", "showTimeID"}
+	fieldsInOrder := [...]string{"ticketIDs", "foods", "showTimeID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "seatIDs":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seatIDs"))
+		case "ticketIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ticketIDs"))
 			data, err := ec.unmarshalNCreateTicketInput2ᚕᚖPopcornMovieᚋmodelᚐCreateTicketInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.SeatIDs = data
+			it.TicketIDs = data
 		case "foods":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("foods"))
 			data, err := ec.unmarshalNCreateFoodOrderLineInput2ᚕᚖPopcornMovieᚋmodelᚐCreateFoodOrderLineInputᚄ(ctx, v)
@@ -12149,6 +12994,54 @@ func (ec *executionContext) unmarshalInputRenewAccessTokenInput(ctx context.Cont
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputResetPasswordInput(ctx context.Context, obj interface{}) (model.ResetPasswordInput, error) {
+	var it model.ResetPasswordInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"code", "email", "newPassword", "confirmNewPassword"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "code":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Code = data
+		case "email":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "newPassword":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NewPassword = data
+		case "confirmNewPassword":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confirmNewPassword"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConfirmNewPassword = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRevenueInput(ctx context.Context, obj interface{}) (model.RevenueInput, error) {
 	var it model.RevenueInput
 	asMap := map[string]interface{}{}
@@ -12356,7 +13249,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "displayName", "email", "isLocked", "role"}
+	fieldsInOrder := [...]string{"id", "displayName", "isLocked"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12377,13 +13270,6 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.DisplayName = data
-		case "email":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Email = data
 		case "isLocked":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isLocked"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
@@ -12391,13 +13277,6 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.IsLocked = data
-		case "role":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			data, err := ec.unmarshalORole2ᚖPopcornMovieᚋmodelᚐRole(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Role = data
 		}
 	}
 
@@ -12411,6 +13290,95 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var checkOutOutputImplementors = []string{"CheckOutOutput"}
+
+func (ec *executionContext) _CheckOutOutput(ctx context.Context, sel ast.SelectionSet, obj *model.CheckOutOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, checkOutOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CheckOutOutput")
+		case "Bin":
+			out.Values[i] = ec._CheckOutOutput_Bin(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "AccountNumber":
+			out.Values[i] = ec._CheckOutOutput_AccountNumber(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "AccountName":
+			out.Values[i] = ec._CheckOutOutput_AccountName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Amount":
+			out.Values[i] = ec._CheckOutOutput_Amount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Description":
+			out.Values[i] = ec._CheckOutOutput_Description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "OrderCode":
+			out.Values[i] = ec._CheckOutOutput_OrderCode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Currency":
+			out.Values[i] = ec._CheckOutOutput_Currency(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "PaymentLinkId":
+			out.Values[i] = ec._CheckOutOutput_PaymentLinkId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Status":
+			out.Values[i] = ec._CheckOutOutput_Status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "CheckoutUrl":
+			out.Values[i] = ec._CheckOutOutput_CheckoutUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "QRCode":
+			out.Values[i] = ec._CheckOutOutput_QRCode(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
 
 var commentImplementors = []string{"Comment"}
 
@@ -13570,6 +14538,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "Login":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_Login(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "ForgotPassword":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_ForgotPassword(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "ResetPassword":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_ResetPassword(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -14912,6 +15894,42 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "status":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Transaction_status(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "tickets":
 			field := field
 
@@ -15477,6 +16495,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 func (ec *executionContext) unmarshalNChangePasswordInput2PopcornMovieᚋmodelᚐChangePasswordInput(ctx context.Context, v interface{}) (model.ChangePasswordInput, error) {
 	res, err := ec.unmarshalInputChangePasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCheckOutOutput2PopcornMovieᚋmodelᚐCheckOutOutput(ctx context.Context, sel ast.SelectionSet, v model.CheckOutOutput) graphql.Marshaler {
+	return ec._CheckOutOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCheckOutOutput2ᚖPopcornMovieᚋmodelᚐCheckOutOutput(ctx context.Context, sel ast.SelectionSet, v *model.CheckOutOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CheckOutOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNComment2ᚕᚖPopcornMovieᚋentᚐComment(ctx context.Context, sel ast.SelectionSet, v []*ent.Comment) graphql.Marshaler {
@@ -16060,6 +17092,11 @@ func (ec *executionContext) unmarshalNRegisterInput2PopcornMovieᚋmodelᚐRegis
 
 func (ec *executionContext) unmarshalNRenewAccessTokenInput2PopcornMovieᚋmodelᚐRenewAccessTokenInput(ctx context.Context, v interface{}) (model.RenewAccessTokenInput, error) {
 	res, err := ec.unmarshalInputRenewAccessTokenInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNResetPasswordInput2PopcornMovieᚋmodelᚐResetPasswordInput(ctx context.Context, v interface{}) (model.ResetPasswordInput, error) {
+	res, err := ec.unmarshalInputResetPasswordInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

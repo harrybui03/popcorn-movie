@@ -17,6 +17,8 @@ func (Transaction) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Immutable().Unique(),
 		field.Float("total"),
 		field.UUID("user_id", uuid.UUID{}),
+		field.Int("code").Unique().Optional(),
+		field.Enum("status").Values("PENDING", "PAID", "CANCEL").Default("PENDING"),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

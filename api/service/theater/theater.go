@@ -20,7 +20,7 @@ type Service interface {
 type impl struct {
 	logger     *zap.Logger
 	repository repository.Registry
-	config     config.AppConfig
+	config     config.Configurations
 }
 
 func (i impl) ListTheaters(ctx context.Context, input model.ListTheatersInput) ([]*ent.Theater, int, error) {
@@ -58,7 +58,7 @@ func (i impl) ListTheaters(ctx context.Context, input model.ListTheatersInput) (
 }
 
 // New is a function init Theater Service
-func New(registry repository.Registry, logger *zap.Logger, appConfig config.AppConfig) Service {
+func New(registry repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
 	return &impl{
 		repository: registry,
 		logger:     logger,

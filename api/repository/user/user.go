@@ -13,6 +13,8 @@ type Repository interface {
 	// Create creates a new user.
 	Create(ctx context.Context, input model.CreateUserInput) (*ent.User, error)
 
+	UpdateQuery() *ent.UserUpdate
+
 	FindUserByEmail(ctx context.Context, email string) (*ent.User, error)
 
 	FindUserByID(ctx context.Context, id uuid.UUID) (*ent.User, error)
@@ -26,6 +28,10 @@ type Repository interface {
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) UpdateQuery() *ent.UserUpdate {
+	return i.client.User.Update()
 }
 
 func (i impl) CountUsers(ctx context.Context, query *ent.UserQuery) (int, error) {

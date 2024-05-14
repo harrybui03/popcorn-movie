@@ -3,6 +3,7 @@ package service
 import (
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
+	"PopcornMovie/gateway/email"
 	"PopcornMovie/repository"
 	"PopcornMovie/service/auth"
 	"PopcornMovie/service/food"
@@ -28,6 +29,7 @@ type Registry interface {
 	Seat() seat.Service
 	Transaction() transaction.Service
 	Ticket() ticket.Service
+	Mailer() email.MailSender
 }
 
 type impl struct {
@@ -41,6 +43,11 @@ type impl struct {
 	seat        seat.Service
 	transaction transaction.Service
 	ticket      ticket.Service
+	mailer      email.MailSender
+}
+
+func (i impl) Mailer() email.MailSender {
+	return i.mailer
 }
 
 func (i impl) Ticket() ticket.Service {
@@ -82,7 +89,7 @@ func (i impl) Auth() auth.Service {
 	return i.auth
 }
 
-func New(entClient *ent.Client, logger *zap.Logger, appConfig config.AppConfig) Registry {
+func New(entClient *ent.Client, logger *zap.Logger, appConfig config.Configurations) Registry {
 	repositoryRegistry := repository.New(entClient)
 
 	return &impl{
@@ -96,5 +103,6 @@ func New(entClient *ent.Client, logger *zap.Logger, appConfig config.AppConfig) 
 		seat:        seat.New(repositoryRegistry, logger, appConfig),
 		transaction: transaction.New(repositoryRegistry, logger, appConfig),
 		ticket:      ticket.New(repositoryRegistry, logger, appConfig),
+		mailer:      email.New(appConfig),
 	}
 }

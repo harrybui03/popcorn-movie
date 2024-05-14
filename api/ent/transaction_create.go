@@ -36,6 +36,34 @@ func (tc *TransactionCreate) SetUserID(u uuid.UUID) *TransactionCreate {
 	return tc
 }
 
+// SetCode sets the "code" field.
+func (tc *TransactionCreate) SetCode(i int) *TransactionCreate {
+	tc.mutation.SetCode(i)
+	return tc
+}
+
+// SetNillableCode sets the "code" field if the given value is not nil.
+func (tc *TransactionCreate) SetNillableCode(i *int) *TransactionCreate {
+	if i != nil {
+		tc.SetCode(*i)
+	}
+	return tc
+}
+
+// SetStatus sets the "status" field.
+func (tc *TransactionCreate) SetStatus(t transaction.Status) *TransactionCreate {
+	tc.mutation.SetStatus(t)
+	return tc
+}
+
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (tc *TransactionCreate) SetNillableStatus(t *transaction.Status) *TransactionCreate {
+	if t != nil {
+		tc.SetStatus(*t)
+	}
+	return tc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (tc *TransactionCreate) SetCreatedAt(t time.Time) *TransactionCreate {
 	tc.mutation.SetCreatedAt(t)
@@ -140,6 +168,10 @@ func (tc *TransactionCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *TransactionCreate) defaults() {
+	if _, ok := tc.mutation.Status(); !ok {
+		v := transaction.DefaultStatus
+		tc.mutation.SetStatus(v)
+	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		v := transaction.DefaultCreatedAt()
 		tc.mutation.SetCreatedAt(v)
@@ -157,6 +189,14 @@ func (tc *TransactionCreate) check() error {
 	}
 	if _, ok := tc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "Transaction.user_id"`)}
+	}
+	if _, ok := tc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Transaction.status"`)}
+	}
+	if v, ok := tc.mutation.Status(); ok {
+		if err := transaction.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Transaction.status": %w`, err)}
+		}
 	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Transaction.created_at"`)}
@@ -205,6 +245,14 @@ func (tc *TransactionCreate) createSpec() (*Transaction, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.Total(); ok {
 		_spec.SetField(transaction.FieldTotal, field.TypeFloat64, value)
 		_node.Total = value
+	}
+	if value, ok := tc.mutation.Code(); ok {
+		_spec.SetField(transaction.FieldCode, field.TypeInt, value)
+		_node.Code = value
+	}
+	if value, ok := tc.mutation.Status(); ok {
+		_spec.SetField(transaction.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
 	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.SetField(transaction.FieldCreatedAt, field.TypeTime, value)

@@ -66,6 +66,11 @@ func UserID(v uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldEQ(FieldUserID, v))
 }
 
+// Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
+func Code(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldCode, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Transaction {
 	return predicate.Transaction(sql.FieldEQ(FieldCreatedAt, v))
@@ -134,6 +139,76 @@ func UserIDIn(vs ...uuid.UUID) predicate.Transaction {
 // UserIDNotIn applies the NotIn predicate on the "user_id" field.
 func UserIDNotIn(vs ...uuid.UUID) predicate.Transaction {
 	return predicate.Transaction(sql.FieldNotIn(FieldUserID, vs...))
+}
+
+// CodeEQ applies the EQ predicate on the "code" field.
+func CodeEQ(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldCode, v))
+}
+
+// CodeNEQ applies the NEQ predicate on the "code" field.
+func CodeNEQ(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNEQ(FieldCode, v))
+}
+
+// CodeIn applies the In predicate on the "code" field.
+func CodeIn(vs ...int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldIn(FieldCode, vs...))
+}
+
+// CodeNotIn applies the NotIn predicate on the "code" field.
+func CodeNotIn(vs ...int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNotIn(FieldCode, vs...))
+}
+
+// CodeGT applies the GT predicate on the "code" field.
+func CodeGT(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGT(FieldCode, v))
+}
+
+// CodeGTE applies the GTE predicate on the "code" field.
+func CodeGTE(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldGTE(FieldCode, v))
+}
+
+// CodeLT applies the LT predicate on the "code" field.
+func CodeLT(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLT(FieldCode, v))
+}
+
+// CodeLTE applies the LTE predicate on the "code" field.
+func CodeLTE(v int) predicate.Transaction {
+	return predicate.Transaction(sql.FieldLTE(FieldCode, v))
+}
+
+// CodeIsNil applies the IsNil predicate on the "code" field.
+func CodeIsNil() predicate.Transaction {
+	return predicate.Transaction(sql.FieldIsNull(FieldCode))
+}
+
+// CodeNotNil applies the NotNil predicate on the "code" field.
+func CodeNotNil() predicate.Transaction {
+	return predicate.Transaction(sql.FieldNotNull(FieldCode))
+}
+
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.Transaction {
+	return predicate.Transaction(sql.FieldEQ(FieldStatus, v))
+}
+
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Transaction {
+	return predicate.Transaction(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Transaction {
+	return predicate.Transaction(sql.FieldNotIn(FieldStatus, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

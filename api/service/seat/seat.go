@@ -22,7 +22,7 @@ type Service interface {
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
-	appConfig  config.AppConfig
+	appConfig  config.Configurations
 }
 
 func (i impl) GetAllSeats(ctx context.Context, input model.ListSeatInput) ([]*ent.Seat, int, error) {
@@ -98,7 +98,7 @@ func (i impl) ListAvailableSeats(ctx context.Context, input model.ListAvailableS
 	return seats, *count, nil
 }
 
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.AppConfig) Service {
+func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,

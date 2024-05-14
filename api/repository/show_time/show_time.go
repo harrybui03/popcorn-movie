@@ -9,6 +9,8 @@ type Repository interface {
 	ShowTimeQuery() *ent.ShowTimeQuery
 	GetAllShowTime(ctx context.Context, query *ent.ShowTimeQuery) ([]*ent.ShowTime, error)
 	CountShowTime(ctx context.Context, query *ent.ShowTimeQuery) (*int, error)
+	ShowTimeCreate() *ent.ShowTimeCreate
+	ShowTimeDelete() *ent.ShowTimeDelete
 }
 
 func (i impl) ShowTimeQuery() *ent.ShowTimeQuery {
@@ -41,4 +43,12 @@ func New(client *ent.Client) Repository {
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) ShowTimeCreate() *ent.ShowTimeCreate {
+	return i.client.ShowTime.Create()
+}
+
+func (i impl) ShowTimeDelete() *ent.ShowTimeDelete {
+	return i.client.ShowTime.Delete()
 }

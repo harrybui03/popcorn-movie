@@ -23,7 +23,7 @@ type Service interface {
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
-	appConfig  config.AppConfig
+	appConfig  config.Configurations
 }
 
 func (i impl) ListRooms(ctx context.Context, input model.ListRoomInput) ([]*ent.Room, int, error) {
@@ -77,7 +77,7 @@ func (i impl) ListRooms(ctx context.Context, input model.ListRoomInput) ([]*ent.
 }
 
 // New is function init Service Rooms
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.AppConfig) Service {
+func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,

@@ -4,26 +4,88 @@ import (
 	"PopcornMovie/cmd/middleware"
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
+	"PopcornMovie/gateway/email"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
 	"PopcornMovie/repository"
 	"context"
 	"fmt"
 	"go.uber.org/zap"
+	"strconv"
 	"time"
 )
+
+const CodeResetPassword = "code-reset-password"
 
 type Service interface {
 	Register(ctx context.Context, registerInput model.RegisterInput) (*ent.User, error)
 	Login(ctx context.Context, loginInput model.LoginInput) (*model.Jwt, error)
 	RenewAccessToken(ctx context.Context, input model.RenewAccessTokenInput) (*model.Jwt, error)
 	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (string, error)
+	ForgotPassword(ctx context.Context, email string) (string, error)
+	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
 }
 
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
-	appConfig  config.AppConfig
+	appConfig  config.Configurations
+	mailer     email.MailSender
+}
+
+func (i impl) ForgotPassword(ctx context.Context, email string) (string, error) {
+	exist, _ := i.repository.User().FindUserByEmail(ctx, email)
+	if exist == nil {
+		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorNotFound), "User"), utils.ErrorCodeNotFound)
+	}
+
+	code := utils.GenerateNumber()
+	codeReset := strconv.Itoa(int(code))
+
+	bodyHTML := fmt.Sprintf(`
+		<p>Hello %s,</p>
+		<p>You have requested to reset your password.</p>
+		<p>Here the code reset password ( Please don't let others know this code: %s</p>
+		<br>
+		<p>Ignore this email if you do remember your password, or you have not made the request.</p>
+	`, email, codeReset)
+
+	ctx = context.WithValue(ctx, CodeResetPassword, codeReset)
+
+	err := i.mailer.SendMail(email, "Reset Password", bodyHTML)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	return "Please check your email to reset password", nil
+}
+
+func (i impl) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
+	// get code from context
+	codeReset := ctx.Value(CodeResetPassword).(string)
+	if codeReset != input.Code {
+		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorMessageNotEqual), "Code reset input", "Code reset server"), utils.ErrorCodeUnauthorized)
+	}
+
+	user, _ := i.repository.User().FindUserByEmail(ctx, input.Email)
+	if user == nil {
+		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorNotFound), "User"), utils.ErrorCodeNotFound)
+	}
+
+	hashPassword, err := utils.HashPassword(input.NewPassword)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	_, err = user.Update().SetPassword(hashPassword).Save(ctx)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	return "Password reset successfully", nil
 }
 
 func (i impl) Register(ctx context.Context, registerInput model.RegisterInput) (*ent.User, error) {
@@ -88,14 +150,14 @@ func (i impl) Login(ctx context.Context, loginInput model.LoginInput) (*model.Jw
 		return nil, utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorIncorrect), "password"), utils.ErrorCodeBadRequest)
 	}
 	// gen JWT
-	accessToken, err, _ := utils.CreateToken(user.ID, string(user.Role), i.appConfig.JWTDuration, i.appConfig.JWTSecret)
+	accessToken, err, _ := utils.CreateToken(user.ID, string(user.Role), i.appConfig.AppConfig.JWTDuration, i.appConfig.AppConfig.JWTSecret)
 	if err != nil {
 		i.logger.Error(err.Error())
 		return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
 	}
 
 	// gen Refresh token
-	refreshToken, err, payload := utils.CreateToken(user.ID, string(user.Role), i.appConfig.RefreshTokenDuration, i.appConfig.JWTSecret)
+	refreshToken, err, payload := utils.CreateToken(user.ID, string(user.Role), i.appConfig.AppConfig.RefreshTokenDuration, i.appConfig.AppConfig.JWTSecret)
 	if err != nil {
 		i.logger.Error(err.Error())
 		return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
@@ -103,7 +165,7 @@ func (i impl) Login(ctx context.Context, loginInput model.LoginInput) (*model.Jw
 
 	_, err = i.repository.Session().Create(ctx, model.CreateSessionInput{
 		RefreshToken: refreshToken,
-		ExpiresAt:    time.Now().Add(i.appConfig.RefreshTokenDuration),
+		ExpiresAt:    time.Now().Add(i.appConfig.AppConfig.RefreshTokenDuration),
 		UserID:       user.ID.String(),
 		ID:           payload.ID.String(),
 	})
@@ -119,7 +181,7 @@ func (i impl) Login(ctx context.Context, loginInput model.LoginInput) (*model.Jw
 }
 
 func (i impl) RenewAccessToken(ctx context.Context, input model.RenewAccessTokenInput) (*model.Jwt, error) {
-	payload, err := utils.VerifyToken(input.RefreshToken, i.appConfig.JWTSecret)
+	payload, err := utils.VerifyToken(input.RefreshToken, i.appConfig.AppConfig.JWTSecret)
 	if err != nil {
 		i.logger.Error(err.Error())
 		return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
@@ -139,7 +201,7 @@ func (i impl) RenewAccessToken(ctx context.Context, input model.RenewAccessToken
 		return nil, utils.WrapGQLError(ctx, string(utils.ErrorUnauthorizedRequest), utils.ErrorCodeUnauthorized)
 	}
 
-	refreshToken, err, _ := utils.CreateToken(payload.UserID, payload.Role, i.appConfig.RefreshTokenDuration, i.appConfig.JWTSecret)
+	refreshToken, err, _ := utils.CreateToken(payload.UserID, payload.Role, i.appConfig.AppConfig.RefreshTokenDuration, i.appConfig.AppConfig.JWTSecret)
 	if err != nil {
 		i.logger.Error(err.Error())
 		return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
@@ -184,7 +246,7 @@ func (i impl) ChangePassword(ctx context.Context, input model.ChangePasswordInpu
 
 }
 
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.AppConfig) Service {
+func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,

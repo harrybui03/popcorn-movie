@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS "transactions"
 ) PRIMARY KEY,
     "total" float not null,
     "user_id" uuid not null,
+    "status" varchar not null,
+    "code" int  unique,
     created_at timestamp without time zone default now
 (
 ),

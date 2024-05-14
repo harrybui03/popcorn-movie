@@ -10,6 +10,9 @@ import (
 
 type Repository interface {
 	MovieQuery() *ent.MovieQuery
+	MovieCreate() *ent.MovieCreate
+	MovieUpdate() *ent.MovieUpdate
+	MovieDelete() *ent.MovieDelete
 	GetAllMovie(ctx context.Context, query *ent.MovieQuery) ([]*ent.Movie, error)
 	CountMovies(ctx context.Context, query *ent.MovieQuery) (*int, error)
 	GetMovieByID(ctx context.Context, id uuid.UUID) (*ent.Movie, error)
@@ -17,6 +20,18 @@ type Repository interface {
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) MovieUpdate() *ent.MovieUpdate {
+	return i.client.Movie.Update()
+}
+
+func (i impl) MovieDelete() *ent.MovieDelete {
+	return i.client.Movie.Delete()
+}
+
+func (i impl) MovieCreate() *ent.MovieCreate {
+	return i.client.Movie.Create()
 }
 
 func (i impl) GetMovieByID(ctx context.Context, id uuid.UUID) (*ent.Movie, error) {

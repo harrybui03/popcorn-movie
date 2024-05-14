@@ -21,7 +21,7 @@ type Service interface {
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
-	appConfig  config.AppConfig
+	appConfig  config.Configurations
 }
 
 func (i impl) GenerateTickets(ctx context.Context, input model.GenerateTicketInput) ([]*ent.Ticket, error) {
@@ -98,7 +98,7 @@ func (i impl) GetAllTickets(ctx context.Context, input model.ListTicketInput) ([
 	return tickets, count, nil
 }
 
-func New(r repository.Registry, l *zap.Logger, c config.AppConfig) Service {
+func New(r repository.Registry, l *zap.Logger, c config.Configurations) Service {
 	return &impl{
 		repository: r,
 		logger:     l,

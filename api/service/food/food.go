@@ -17,7 +17,7 @@ type Service interface {
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
-	appConfig  config.AppConfig
+	appConfig  config.Configurations
 }
 
 func (i impl) ListFood(ctx context.Context, input model.ListFoodInput) ([]*ent.Food, int, error) {
@@ -44,7 +44,7 @@ func (i impl) ListFood(ctx context.Context, input model.ListFoodInput) ([]*ent.F
 }
 
 // New is function init Service Rooms
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.AppConfig) Service {
+func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,
