@@ -12,7 +12,6 @@ import '../components/adminPage/styles.css'
 
 function AdminDashBoard(params) {
   const { currentChosen } = useParams();
-  console.log(currentChosen)
 
   const [isCollapse, setIsCollapse] = useState(false);
   const updateData = () => {
@@ -28,15 +27,7 @@ function AdminDashBoard(params) {
             isCollapse={isCollapse}></SideBar>
           <div className='col p-0 d-flex flex-column justify-content-between' style={{ flexShrink: '0' }}>
             <Header updateData={updateData} isCollapse={isCollapse} params={params} ></Header>
-            {currentChosen === 'home' ? (
-              <Home></Home>
-            ) : currentChosen === 'manage-users' ? (
-              <ManageUser/>
-            ) : currentChosen === 'manage-comments' ? (
-              <ManageComment />
-            ) : (
-              <Home></Home>
-            )}
+            <ManageUser/>
             <Footer></Footer>
             <LogOut></LogOut>
             <ChangePW {...params}></ChangePW>

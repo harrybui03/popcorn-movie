@@ -41,14 +41,23 @@ export const buildQuery = (props: IbuildQuery): IbuildQueryReturn => {
   }
 }
 
-export const graphQLClient = new GraphQLClient('http://localhost:8000/query', {
-  requestMiddleware,
-  responseMiddleware,
-})
+export const graphQLClient = new GraphQLClient('http://localhost:8000/query')
 
 export const fetchGraphQL = async <T extends object>(
   query: any,
   variables?: any
 ): Promise<T> => {
   return await graphQLClient.request(query, variables)
+}
+
+export const graphQLClientWithToken = new GraphQLClient('http://localhost:8000/query', {
+  requestMiddleware,
+  responseMiddleware,
+})
+
+export const fetchGraphQLWithToken = async <T extends object>(
+  query: any,
+  variables?: any
+): Promise<T> => {
+  return await graphQLClientWithToken.request(query, variables)
 }

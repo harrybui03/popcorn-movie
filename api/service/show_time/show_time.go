@@ -181,6 +181,12 @@ func (i impl) ListShowTimes(ctx context.Context, input model.ListShowTimeInput) 
 			query.Where(showtime.HasRoomWith(room.IDIn(roomIDs...)))
 		}
 
+		if input.Filter.Date != nil {
+			startDay := *input.Filter.Date
+			endDay := startDay.AddDate(0, 0, 1)
+			query.Where(showtime.StartAtGTE(startDay), showtime.EndAtLTE(endDay))
+		}
+
 		if input.Filter.MovieID != nil {
 			movieID, err := uuid.Parse(*input.Filter.MovieID)
 			if err != nil {

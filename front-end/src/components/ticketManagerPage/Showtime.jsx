@@ -5,6 +5,9 @@ import { faHouse, faAdd, faAngleRight, faMagnifyingGlass, faEdit, faTrash, faUns
 import LoadingSpinner from '../defaultPage/Loading'
 import { addDays, addMinutes, format, parseISO } from 'date-fns';
 import { da } from 'date-fns/locale';
+import { useGetAllThearters } from '../customerPage/hook/useQuery';
+import { useGetAllMovies } from '../defaultPage/hook/useQuery';
+import  { useGetAllShowtimes ,useGetAllRooms} from './hook/useQuery';
 
 
 function Showtime({ setDeleteIdShowtime }) {
@@ -22,61 +25,19 @@ function Showtime({ setDeleteIdShowtime }) {
         'rgb(189, 60, 88)',
         'rgb(75, 200, 173)',
     ];
-    const [theater, setTheater] = useState([]);
+    const theaterData = useGetAllThearters()
+    const theater = theaterData?.data??[]
     const [theaterChosen, setTheaterChosen] = useState(null);
-    const getTheater = async () => {
-        try {
-            // Địa chỉ API và tham số
-            const apiUrl = 'http://localhost:8080/theaters';
 
-            // Gọi API bằng phương thức GET
-            const response = await fetch(apiUrl);
+    const movieData = useGetAllMovies(null)
+    const movies = movieData?.data??[]
+    const [moviesDisplay, setMoviesDisplay] = useState(null);
 
-            // Kiểm tra trạng thái của response
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            else {
-                // Chuyển đổi response thành JSON
-                const result = await response.json();
-                // Cập nhật state với dữ liệu từ API
-                setTheater(result);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    const [room, setRoom] = useState([]);
+    const roomData = useGetAllRooms()
+    const room = roomData?.data??[]
     const [roomOption, setRoomOption] = useState([]);
     const [roomChosen, setRoomChosen] = useState(null);
-    const getRoom = async () => {
-        try {
-            // Địa chỉ API và tham số
-            const apiUrl = 'http://localhost:8080/rooms';
-
-            // Gọi API bằng phương thức GET
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${auth.accessToken}`
-                }
-            });
-
-            // Kiểm tra trạng thái của response
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            else {
-                // Chuyển đổi response thành JSON
-                const result = await response.json();
-                // Cập nhật state với dữ liệu từ API
-                setRoom(result);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
+    
 
     const handleChangeTheater = (event) => {
         setTheaterChosen(event.target.value);
@@ -87,8 +48,6 @@ function Showtime({ setDeleteIdShowtime }) {
     };
 
     useEffect(() => {
-        getTheater();
-        getRoom();
         getDefaultDate();
         generateTimeList();
     }, []);
@@ -168,9 +127,9 @@ function Showtime({ setDeleteIdShowtime }) {
     useEffect(() => {
         if (dateFrom !== '' && dateTo !== '' && isValidDateRange(dateFrom, dateTo)) {
             const a = generateDateRange(dateFrom, dateTo);
+            console.log(a);
             setCustomDate(a);
         } else {
-            console.log('hihi');
             setCustomDate([]);
         }
     }, [dateFrom, dateTo]);
@@ -210,25 +169,15 @@ function Showtime({ setDeleteIdShowtime }) {
 
     const getShowTime = async (theater, room, date) => {
         try {
-            // Địa chỉ API và tham số
-            const apiUrl = `http://localhost:8080/showtimes?theater=${theater}&date=${date}`;
+            console.log(theater,room , date)
 
-            // Gọi API bằng phương thức GET
-            const response = await fetch(apiUrl);
-
-            // Kiểm tra trạng thái của response
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+            const showTimeData = useGetAllShowtimes(theater, date);
+            const temp = showTimeData?.data??[];
+            const data = temp.filter(e => e.room.id === parseInt(room));
+            data.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+            return data;     
             }
-            else {
-                // Chuyển đổi response thành JSON
-                const result = await response.json();
-                const temp = result.showTimes;
-                const data = temp.filter(e => e.room.id === parseInt(room));
-                data.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
-                return data;
-            }
-        } catch (error) {
+        catch (error) {
             console.error('Error fetching data:', error);
         }
     }
@@ -276,7 +225,6 @@ function Showtime({ setDeleteIdShowtime }) {
         if (defaultShowtime.length > 0) {
             setDisplayShowtime(defaultShowtime);
         }
-        console.log(defaultShowtime);
     }, [defaultShowtime]);
 
     useEffect(() => {
@@ -333,40 +281,7 @@ function Showtime({ setDeleteIdShowtime }) {
         }
     }
 
-    const [movies, setMovies] = useState(null);
-    const [moviesDisplay, setMoviesDisplay] = useState(null);
 
-    const getMovie = async () => {
-        try {
-            // Địa chỉ API và tham số
-            const apiUrl = 'http://localhost:8080/movies/manager';
-
-            // Gọi API bằng phương thức GET
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${auth.accessToken}`
-                }
-            });
-            // Kiểm tra trạng thái của response
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            else {
-                // Chuyển đổi response thành JSON
-                const result = await response.json();
-                const data = result.filter(e => e.status !== 'Over')
-                // Cập nhật state với dữ liệu từ API
-                setMovies(data);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
-
-    useEffect(() => {
-        getMovie();
-    }, []);
 
     useEffect(() => {
         const a = [];

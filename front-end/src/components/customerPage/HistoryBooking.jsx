@@ -12,7 +12,7 @@ function HistoryBooking(params) {
     const auth = useAuth();
 
     const historyData = useGetAllTransactions(auth.id)
-    const history = historyData?.data
+    const history = historyData?.data??[]
 
 
     // const getHistory = async () => {

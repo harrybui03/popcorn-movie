@@ -4,14 +4,27 @@ import useAuth from "../../hooks/useAuth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter, faHouse, faAngleRight, faAdd } from "@fortawesome/free-solid-svg-icons";
 import 'bootstrap/dist/css/bootstrap.min.css'
+import { useGetAllUsers } from "./hook/useQuery";
+import { useCreateUser, useLockUser } from "./hook/useMutation";
+import { useNavigate } from "react-router-dom";
 
 const ManageUser = () => {
     const auth = useAuth();
+    const navigate = useNavigate()
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        confirmPassword: '',
+        displayName: '',
+        role: 'CUSTOMER'
+    });
+    const [userEdit, setUserEdit] = useState({});
+    const usersData = useGetAllUsers()
+    const users = usersData?.data??[]
     const [search, setSearch] = useState('');
     const [selectedOption, setSelectedOption] = useState('id');
     const [selectedStatus, setSelectedStatus] = useState('active');
     const [searchPage, setSearchPage] = useState('');
-    const [users, setUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 10;
     const lastIndex = currentPage * recordsPerPage;
@@ -19,19 +32,30 @@ const ManageUser = () => {
     const records = users.slice(firstIndex, lastIndex);
     const numberOfPages = Math.ceil(users.length / recordsPerPage);
     const maxPageDisplay = 5;
-    // console.log(dataSearch);
-    const getUsers = async () => {
-        try {
-            const response = await axios.get(`http://localhost:8080/users`, {
-                headers: {
-                    'Authorization': `Bearer ${auth.accessToken}`
-                },
-            });
-            setUsers(response.data);
-        } catch (error) {
-            console.log(error);
-        }
+
+    const onError = () =>{
+        console.log('Insert fail')
     }
+
+    const onSuccess = () => {
+        window.location.href = '/admin/manage-users'
+    }
+
+
+    const {handleCreateUser , messageInsertUser , isPending} = useCreateUser({onSuccess , onError})
+
+    function createUser() {
+        handleCreateUser(formData)
+    }
+
+    const {handleLockUser } = useLockUser()
+    function handleUpdateLockUser(user){
+        const isLocked = !user.isLocked
+        handleLockUser({isLocked , id: user.id})
+    }
+
+
+
 
     const getPages = () => {
         const startPage = Math.max(currentPage - Math.floor(maxPageDisplay / 2), 1);
@@ -67,9 +91,9 @@ const ManageUser = () => {
         setSelectedStatus(newOption);
     };
 
-    useEffect(() => {
-        getUsers();
-    }, [])
+    // useEffect(() => {
+    //     getUsers();
+    // }, [])
 
     useEffect(() => {
         setCurrentPage(1);
@@ -87,14 +111,7 @@ const ManageUser = () => {
         setAction(a);
     }
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        displayName: '',
-        role: 'CUSTOMER'
-    });
-
+  
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -103,38 +120,6 @@ const ManageUser = () => {
         }));
     };
 
-    const [messageInsertUser, setMessageInsertUser] = useState({ isShow: false, text: '', success: false });
-
-    const insertUser = async () => {
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\\/-]).{8,}$/;
-        if (formData.email === '' || formData.password === '' || formData.confirmPassword === '' || formData.displayName === '') {
-            setMessageInsertUser({ isShow: true, text: "Vui lòng điền đủ thông tin.", success: false });
-        } else if (formData.password !== formData.confirmPassword) {
-            setMessageInsertUser({ isShow: true, text: "Vui lòng xác nhận lại mật khẩu.", success: false });
-        } else if (!passwordRegex.test(formData.password)) {
-            setMessageInsertUser({ isShow: true, text: "Mật khẩu ít nhất 8 kí tự (phải bao gồm chữ hoa, chữ thường, chữ số và kí tự đặt biệt)", success: false });
-        } else {
-            try {
-                const response = await fetch('http://localhost:8080/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${auth.accessToken}`
-                    },
-                    body: JSON.stringify({ email: formData.email, password: formData.password, displayName: formData.displayName, role: formData.role }),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                setMessageInsertUser({ isShow: true, text: "Tạo tài khoản thành công", success: true });
-                const data = await response.json();
-                console.log(data);
-            } catch (error) {
-                console.error('Error during sign-in:', error);
-            }
-        }
-    }
 
 
     const handleBack = () => {
@@ -150,31 +135,27 @@ const ManageUser = () => {
             role: 'CUSTOMER'
         });
         setMessageInsertUser({ isShow: false, text: '', success: false });
-        getUsers();
     };
 
-    const [userEdit, setUserEdit] = useState({});
-    const handleLockUser = async (user) => {
-        console.log(user);
-        try {
-            const response = await fetch(`http://localhost:8080/users?user=${user.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${auth.accessToken}`
-                },
-                body: JSON.stringify({ locked: !user.locked }),
-            });
+    // const handleLockUser = async (user) => {
+    //     try {
+    //         const response = await fetch(`http://localhost:8080/users?user=${user.id}`, {
+    //             method: 'PUT',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${auth.accessToken}`
+    //             },
+    //             body: JSON.stringify({ locked: !user.locked }),
+    //         });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }            
-            const data = await response.json();
-            getUsers();
-        } catch (error) {
-            console.error('Error during sign-in:', error);
-        }
-    }
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! Status: ${response.status}`);
+    //         }            
+    //         const data = await response.json();
+    //     } catch (error) {
+    //         console.error('Error during sign-in:', error);
+    //     }
+    // }
 
 
     return (
@@ -243,12 +224,12 @@ const ManageUser = () => {
                                 {
                                     users && users.filter((itemStatus) => {
                                         if (selectedStatus === 'active') {
-                                            return itemStatus.locked === false;
+                                            return itemStatus.isLocked === false;
                                         }
 
                                         else if (selectedStatus === 'inactive') {
 
-                                            return itemStatus.locked === true;
+                                            return itemStatus.isLocked === true;
                                         }
                                         return itemStatus;
                                     }).filter((item) => {
@@ -273,7 +254,7 @@ const ManageUser = () => {
                                                 <p>{user.email}</p>
                                             </td>
 
-                                            <td className="active"><p>{user.locked === false ? "Active" : "Inactive"}</p></td>
+                                            <td className="active"><p>{user.isLocked === false ? "Active" : "Inactive"}</p></td>
 
                                             <td className="role">
                                                 <p>{user.role.replace("ROLE_", "")}</p>
@@ -330,7 +311,7 @@ const ManageUser = () => {
                                     </div>
                                     <div className="modal-footer">
                                         <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                        <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={() => handleLockUser(userEdit)}>{userEdit.locked ? 'Mở khóa' : 'Khóa'}</button>
+                                        <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={() => handleUpdateLockUser(userEdit)}>{userEdit.locked ? 'Mở khóa' : 'Khóa'}</button>
                                     </div>
                                 </div>
                             </div>
@@ -364,8 +345,8 @@ const ManageUser = () => {
                                 name="role"
                                 onChange={handleChange} required>
                                 <option value="CUSTOMER">CUSTOMER</option>
-                                <option value="ROLE_TICKET_MANAGER">MANAGER</option>
-                                <option value="ROLE_STAFF">STAFF</option>
+                                <option value="TICKET_MANAGER">TICKET_MANAGER</option>
+                                <option value="STAFF">STAFF</option>
                             </select>
                         </div>
 
@@ -377,7 +358,7 @@ const ManageUser = () => {
 
                         <div className="group group-login-signup my-4">
                             <button onClick={handleBack} className="btn btn-primary m-2">Quay về</button>
-                            <button onClick={insertUser} className="btn btn-primary m-2">Tạo tài khoản</button>
+                            {!isPending && <button onClick={createUser} className="btn btn-primary m-2">Tạo tài khoản</button>}
                         </div>
                     </div>
                 </div>
