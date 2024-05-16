@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faAdd, faAngleRight, faMagnifyingGlass, faEdit, faTrash, faUnsorted, faSortUp, faSortDown, faSave, faBackward } from "@fortawesome/free-solid-svg-icons";
 import LoadingSpinner from '../defaultPage/Loading'
 import { addDays, addMinutes, format, parseISO } from 'date-fns';
-import { da } from 'date-fns/locale';
 import { useGetAllThearters } from '../customerPage/hook/useQuery';
 import { useGetAllMovies } from '../defaultPage/hook/useQuery';
 import  { useGetAllShowtimes ,useGetAllRooms} from './hook/useQuery';
@@ -567,7 +566,7 @@ function Showtime({ setDeleteIdShowtime }) {
                             <form className='mx-3 d-flex justify-content-start align-items-center'>
                                 <label htmlFor='chooseRoom' className='mx-2'>Chọn Phòng</label>
                                 <select defaultValue={roomChosen?.toString()} id='chooseRoom' className='p-1 rounded-2' style={{ backgroundColor: 'white', color: 'black' }} onChange={handleChangeRoom}>
-                                    {roomOption.map((item) => (
+                                    {room.map((item) => (
                                         <option key={item.id} value={item.id.toString()}>{item.roomNumber}</option>
                                     ))}
                                 </select>

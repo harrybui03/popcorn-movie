@@ -82,6 +82,11 @@ type CreateUserInput struct {
 	Role        *Role  `json:"role,omitempty"`
 }
 
+type DailyRevenueOutput struct {
+	Date  time.Time `json:"date"`
+	Total float64   `json:"total"`
+}
+
 type GenerateTicketInput struct {
 	ShowTimeID string  `json:"showTimeID"`
 	Price      float64 `json:"price"`
@@ -263,6 +268,12 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
+type MonthlyRevenueOutput struct {
+	YearMonth     time.Time             `json:"yearMonth"`
+	DailyRevenues []*DailyRevenueOutput `json:"dailyRevenues"`
+	Total         float64               `json:"total"`
+}
+
 type Mutation struct {
 }
 
@@ -297,12 +308,9 @@ type ResetPasswordInput struct {
 }
 
 type RevenueInput struct {
-	Date time.Time   `json:"date"`
-	Type RevenueType `json:"type"`
-}
-
-type RevenueOutput struct {
-	Revenue float64 `json:"revenue"`
+	Year  int         `json:"year"`
+	Month int         `json:"month"`
+	Type  RevenueType `json:"type"`
 }
 
 type UpdateMovieInput struct {

@@ -11,6 +11,8 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"sort"
+	"strconv"
 )
 
 type Service interface {
@@ -94,6 +96,27 @@ func (i impl) GetAllTickets(ctx context.Context, input model.ListTicketInput) ([
 		i.logger.Error(err.Error())
 		return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
 	}
+
+	sort.Slice(tickets, func(i, j int) bool {
+		// Extract the seat numbers
+		seatNumberI := tickets[i].Edges.Seat.SeatNumber
+		seatNumberJ := tickets[j].Edges.Seat.SeatNumber
+
+		// Extract the row and column parts
+		rowI := seatNumberI[0] // First character (e.g., 'A')
+		rowJ := seatNumberJ[0] // First character (e.g., 'A')
+
+		colI, _ := strconv.Atoi(seatNumberI[1:]) // Remaining part after the first character (e.g., '1')
+		colJ, _ := strconv.Atoi(seatNumberJ[1:]) // Remaining part after the first character (e.g., '1')
+
+		// Compare rows first
+		if rowI != rowJ {
+			return rowI < rowJ
+		}
+
+		// If rows are the same, compare columns
+		return colI < colJ
+	})
 
 	return tickets, count, nil
 }

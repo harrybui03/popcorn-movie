@@ -5,6 +5,7 @@ type Transaction {
     status: String!
     tickets: [Ticket!]!
     foods: [FoodOrderLine!]!
+    createdAt: Time!
 }
 
 type CheckOutOutput{
@@ -49,10 +50,18 @@ enum RevenueType{
 }
 
 input RevenueInput{
-    date: Time!
+    year: Int!
+    month: Int!
     type: RevenueType!
 }
 
-type RevenueOutput {
-    revenue: Float!
+type DailyRevenueOutput{
+    date: Time!
+    total: Float!
+}
+
+type MonthlyRevenueOutput {
+    yearMonth: Time!
+    dailyRevenues: [DailyRevenueOutput!]!
+    total: Float!
 }

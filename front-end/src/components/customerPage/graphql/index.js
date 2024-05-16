@@ -80,7 +80,8 @@ function useGraphql() {
     node: `
     data{
       id
-      total      
+      total 
+      createdAt
     }
     pagination{
       total

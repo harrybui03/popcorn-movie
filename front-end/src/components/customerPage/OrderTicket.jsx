@@ -428,23 +428,32 @@ function CustomerDashBoard(params) {
           </div>
           <div className='p-5' style={{ userSelect: 'none' }}>
             {tickets ? (
-              tickets.map((item, index) => (
-                <React.Fragment key={item.id}>
-                  <button
-                    className={`btn seat 
-                      ${item.booked ? 'seat-booked' : seats.indexOf(item) === -1 ? 'seat-vacant' : 'seat-selecting'}
-                      ${item.Seat.Category === 'COUPLE' ? 'seat-couple' : 'seat-standard'}
-                      
-                      `}
-                    disabled={item.booked}
-                    onClick={() => handleSelectSeats(item)}
-                  >
-                    {item.Seat.SeatNumber}
-                  </button>
-                  {((item.Seat.Category !== 'COUPLE' && index % 10 === 4) || (item.Seat.Category === 'COUPLE' && (index % 10 === 2 || index % 10 === 7))) && <div style={{ width: '8rem', display: 'inline-block' }}></div>}
-                  {(index % 10 === 9 || (item.Seat.category === 'COUPLE' && index % 10 === 4)) && <br />}
-                </React.Fragment>
-              ))
+    tickets.map((item, index) => (
+      <React.Fragment key={item.ID}>
+        <button
+          className={`btn seat 
+            ${item.IsBooked ? 'seat-booked' : seats.indexOf(item) === -1 ? 'seat-vacant' : 'seat-selecting'}
+            ${item.Seat.Category === 'COUPLE' ? 'seat-couple' : 'seat-standard'}
+            `}
+          disabled={item.IsBooked}
+          onClick={() => handleSelectSeats(item)}
+        >
+          {item.Seat.SeatNumber}
+        </button>
+        
+        {/* Add spacing after every 5th non-COUPLE seat */}
+        {item.Seat.Category !== 'COUPLE' && (index % 5 === 4) && <div style={{ width: '8rem', display: 'inline-block' }}></div>}
+        
+        {/* Add spacing for COUPLE seats */}
+        {item.Seat.Category === 'COUPLE' && (index % 2 === 1) && <div style={{ width: '8rem', display: 'inline-block' }}></div>}
+        
+        {/* Break line after every 10 seats */}
+        {(index % 10 === 9) && <br />}
+      </React.Fragment>
+    ))
+    
+    
+              
             ) : (
               <div className='d-flex justify-content-center my-5'>
                 <LoadingSpinner />

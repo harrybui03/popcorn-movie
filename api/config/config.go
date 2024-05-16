@@ -28,8 +28,8 @@ type PayosConfig struct {
 }
 
 type SMTPConfig struct {
-	SMTPHost     string `mapstructure:"port"`
-	SMTPPort     string `mapstructure:"host"`
+	SMTPHost     string `mapstructure:"host"`
+	SMTPPort     string `mapstructure:"port"`
 	SMTPUsername string `mapstructure:"username"`
 	SMTPPassword string `mapstructure:"password"`
 	SenderEmail  string `mapstructure:"from"`

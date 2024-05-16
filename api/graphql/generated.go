@@ -91,6 +91,11 @@ type ComplexityRoot struct {
 		UserID       func(childComplexity int) int
 	}
 
+	DailyRevenueOutput struct {
+		Date  func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
+
 	Food struct {
 		ID    func(childComplexity int) int
 		Image func(childComplexity int) int
@@ -169,6 +174,12 @@ type ComplexityRoot struct {
 		Pagination func(childComplexity int) int
 	}
 
+	MonthlyRevenueOutput struct {
+		DailyRevenues func(childComplexity int) int
+		Total         func(childComplexity int) int
+		YearMonth     func(childComplexity int) int
+	}
+
 	Movie struct {
 		Cast       func(childComplexity int) int
 		Director   func(childComplexity int) int
@@ -225,10 +236,6 @@ type ComplexityRoot struct {
 		Users             func(childComplexity int, input model.ListUserInput) int
 	}
 
-	RevenueOutput struct {
-		Revenue func(childComplexity int) int
-	}
-
 	Room struct {
 		ID         func(childComplexity int) int
 		RoomNumber func(childComplexity int) int
@@ -268,12 +275,13 @@ type ComplexityRoot struct {
 	}
 
 	Transaction struct {
-		Foods   func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Status  func(childComplexity int) int
-		Tickets func(childComplexity int) int
-		Total   func(childComplexity int) int
-		User    func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		Foods     func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Status    func(childComplexity int) int
+		Tickets   func(childComplexity int) int
+		Total     func(childComplexity int) int
+		User      func(childComplexity int) int
 	}
 
 	User struct {
@@ -335,7 +343,7 @@ type QueryResolver interface {
 	GetAvailableSeats(ctx context.Context, input model.ListAvailableSeatInput) (*model.ListAvailableSeatOutput, error)
 	Users(ctx context.Context, input model.ListUserInput) (*model.ListUserOutput, error)
 	Transactions(ctx context.Context, input model.ListTransactionInput) (*model.ListTransactionOutput, error)
-	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.RevenueOutput, error)
+	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error)
 	Tickets(ctx context.Context, input model.ListTicketInput) (*model.ListTicketOutput, error)
 }
 type RoomResolver interface {
@@ -539,6 +547,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CreateSessionInput.UserID(childComplexity), true
+
+	case "DailyRevenueOutput.date":
+		if e.complexity.DailyRevenueOutput.Date == nil {
+			break
+		}
+
+		return e.complexity.DailyRevenueOutput.Date(childComplexity), true
+
+	case "DailyRevenueOutput.total":
+		if e.complexity.DailyRevenueOutput.Total == nil {
+			break
+		}
+
+		return e.complexity.DailyRevenueOutput.Total(childComplexity), true
 
 	case "Food.id":
 		if e.complexity.Food.ID == nil {
@@ -770,6 +792,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ListUserOutput.Pagination(childComplexity), true
+
+	case "MonthlyRevenueOutput.dailyRevenues":
+		if e.complexity.MonthlyRevenueOutput.DailyRevenues == nil {
+			break
+		}
+
+		return e.complexity.MonthlyRevenueOutput.DailyRevenues(childComplexity), true
+
+	case "MonthlyRevenueOutput.total":
+		if e.complexity.MonthlyRevenueOutput.Total == nil {
+			break
+		}
+
+		return e.complexity.MonthlyRevenueOutput.Total(childComplexity), true
+
+	case "MonthlyRevenueOutput.yearMonth":
+		if e.complexity.MonthlyRevenueOutput.YearMonth == nil {
+			break
+		}
+
+		return e.complexity.MonthlyRevenueOutput.YearMonth(childComplexity), true
 
 	case "Movie.cast":
 		if e.complexity.Movie.Cast == nil {
@@ -1229,13 +1272,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity, args["input"].(model.ListUserInput)), true
 
-	case "RevenueOutput.revenue":
-		if e.complexity.RevenueOutput.Revenue == nil {
-			break
-		}
-
-		return e.complexity.RevenueOutput.Revenue(childComplexity), true
-
 	case "Room.id":
 		if e.complexity.Room.ID == nil {
 			break
@@ -1396,6 +1432,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Ticket.Transaction(childComplexity), true
+
+	case "Transaction.createdAt":
+		if e.complexity.Transaction.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Transaction.CreatedAt(childComplexity), true
 
 	case "Transaction.foods":
 		if e.complexity.Transaction.Foods == nil {
@@ -1839,7 +1882,7 @@ input UpdateMovieInput {
     Users(input: ListUserInput!):ListUserOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
     #Transaction
     Transactions(input: ListTransactionInput!):ListTransactionOutput!
-    GetRevenue(input: RevenueInput!):RevenueOutput!
+    GetRevenue(input: RevenueInput!):MonthlyRevenueOutput!
     #Ticket
     Tickets(input: ListTicketInput!):ListTicketOutput!
 }`, BuiltIn: false},
@@ -2026,6 +2069,7 @@ input GenerateTicketInput{
     status: String!
     tickets: [Ticket!]!
     foods: [FoodOrderLine!]!
+    createdAt: Time!
 }
 
 type CheckOutOutput{
@@ -2070,12 +2114,20 @@ enum RevenueType{
 }
 
 input RevenueInput{
-    date: Time!
+    year: Int!
+    month: Int!
     type: RevenueType!
 }
 
-type RevenueOutput {
-    revenue: Float!
+type DailyRevenueOutput{
+    date: Time!
+    total: Float!
+}
+
+type MonthlyRevenueOutput {
+    yearMonth: Time!
+    dailyRevenues: [DailyRevenueOutput!]!
+    total: Float!
 }
 `, BuiltIn: false},
 	{Name: "../schema/user.graphql", Input: `type User {
@@ -3572,6 +3624,94 @@ func (ec *executionContext) fieldContext_CreateSessionInput_ExpiresAt(ctx contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailyRevenueOutput_date(ctx context.Context, field graphql.CollectedField, obj *model.DailyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailyRevenueOutput_date(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Date, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailyRevenueOutput_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DailyRevenueOutput_total(ctx context.Context, field graphql.CollectedField, obj *model.DailyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DailyRevenueOutput_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DailyRevenueOutput_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DailyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5074,6 +5214,8 @@ func (ec *executionContext) fieldContext_ListTransactionOutput_data(ctx context.
 				return ec.fieldContext_Transaction_tickets(ctx, field)
 			case "foods":
 				return ec.fieldContext_Transaction_foods(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Transaction_createdAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
@@ -5230,6 +5372,144 @@ func (ec *executionContext) fieldContext_ListUserOutput_pagination(ctx context.C
 				return ec.fieldContext_PaginationOutput_total(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type PaginationOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyRevenueOutput_yearMonth(ctx context.Context, field graphql.CollectedField, obj *model.MonthlyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyRevenueOutput_yearMonth(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.YearMonth, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyRevenueOutput_yearMonth(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyRevenueOutput_dailyRevenues(ctx context.Context, field graphql.CollectedField, obj *model.MonthlyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyRevenueOutput_dailyRevenues(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DailyRevenues, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DailyRevenueOutput)
+	fc.Result = res
+	return ec.marshalNDailyRevenueOutput2ᚕᚖPopcornMovieᚋmodelᚐDailyRevenueOutputᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyRevenueOutput_dailyRevenues(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "date":
+				return ec.fieldContext_DailyRevenueOutput_date(ctx, field)
+			case "total":
+				return ec.fieldContext_DailyRevenueOutput_total(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DailyRevenueOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyRevenueOutput_total(ctx context.Context, field graphql.CollectedField, obj *model.MonthlyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyRevenueOutput_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyRevenueOutput_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8036,9 +8316,9 @@ func (ec *executionContext) _Query_GetRevenue(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.RevenueOutput)
+	res := resTmp.(*model.MonthlyRevenueOutput)
 	fc.Result = res
-	return ec.marshalNRevenueOutput2ᚖPopcornMovieᚋmodelᚐRevenueOutput(ctx, field.Selections, res)
+	return ec.marshalNMonthlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_GetRevenue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8049,10 +8329,14 @@ func (ec *executionContext) fieldContext_Query_GetRevenue(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "revenue":
-				return ec.fieldContext_RevenueOutput_revenue(ctx, field)
+			case "yearMonth":
+				return ec.fieldContext_MonthlyRevenueOutput_yearMonth(ctx, field)
+			case "dailyRevenues":
+				return ec.fieldContext_MonthlyRevenueOutput_dailyRevenues(ctx, field)
+			case "total":
+				return ec.fieldContext_MonthlyRevenueOutput_total(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type RevenueOutput", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MonthlyRevenueOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -8254,50 +8538,6 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RevenueOutput_revenue(ctx context.Context, field graphql.CollectedField, obj *model.RevenueOutput) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RevenueOutput_revenue(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Revenue, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RevenueOutput_revenue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RevenueOutput",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9403,6 +9643,8 @@ func (ec *executionContext) fieldContext_Ticket_Transaction(ctx context.Context,
 				return ec.fieldContext_Transaction_tickets(ctx, field)
 			case "foods":
 				return ec.fieldContext_Transaction_foods(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Transaction_createdAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Transaction", field.Name)
 		},
@@ -9705,6 +9947,50 @@ func (ec *executionContext) fieldContext_Transaction_foods(ctx context.Context, 
 				return ec.fieldContext_FoodOrderLine_quantity(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type FoodOrderLine", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Transaction_createdAt(ctx context.Context, field graphql.CollectedField, obj *ent.Transaction) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Transaction_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Transaction_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Transaction",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -13049,20 +13335,27 @@ func (ec *executionContext) unmarshalInputRevenueInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"date", "type"}
+	fieldsInOrder := [...]string{"year", "month", "type"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "date":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+		case "year":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("year"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Date = data
+			it.Year = data
+		case "month":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("month"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Month = data
 		case "type":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
 			data, err := ec.unmarshalNRevenueType2PopcornMovieᚋmodelᚐRevenueType(ctx, v)
@@ -13560,6 +13853,50 @@ func (ec *executionContext) _CreateSessionInput(ctx context.Context, sel ast.Sel
 			}
 		case "ExpiresAt":
 			out.Values[i] = ec._CreateSessionInput_ExpiresAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var dailyRevenueOutputImplementors = []string{"DailyRevenueOutput"}
+
+func (ec *executionContext) _DailyRevenueOutput(ctx context.Context, sel ast.SelectionSet, obj *model.DailyRevenueOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dailyRevenueOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DailyRevenueOutput")
+		case "date":
+			out.Values[i] = ec._DailyRevenueOutput_date(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total":
+			out.Values[i] = ec._DailyRevenueOutput_total(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -14348,6 +14685,55 @@ func (ec *executionContext) _ListUserOutput(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var monthlyRevenueOutputImplementors = []string{"MonthlyRevenueOutput"}
+
+func (ec *executionContext) _MonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, obj *model.MonthlyRevenueOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyRevenueOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonthlyRevenueOutput")
+		case "yearMonth":
+			out.Values[i] = ec._MonthlyRevenueOutput_yearMonth(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "dailyRevenues":
+			out.Values[i] = ec._MonthlyRevenueOutput_dailyRevenues(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "total":
+			out.Values[i] = ec._MonthlyRevenueOutput_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var movieImplementors = []string{"Movie"}
 
 func (ec *executionContext) _Movie(ctx context.Context, sel ast.SelectionSet, obj *ent.Movie) graphql.Marshaler {
@@ -15034,45 +15420,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var revenueOutputImplementors = []string{"RevenueOutput"}
-
-func (ec *executionContext) _RevenueOutput(ctx context.Context, sel ast.SelectionSet, obj *model.RevenueOutput) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, revenueOutputImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("RevenueOutput")
-		case "revenue":
-			out.Values[i] = ec._RevenueOutput_revenue(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16002,6 +16349,11 @@ func (ec *executionContext) _Transaction(ctx context.Context, sel ast.SelectionS
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "createdAt":
+			out.Values[i] = ec._Transaction_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -16613,6 +16965,60 @@ func (ec *executionContext) unmarshalNCreateUserInput2PopcornMovieᚋmodelᚐCre
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNDailyRevenueOutput2ᚕᚖPopcornMovieᚋmodelᚐDailyRevenueOutputᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.DailyRevenueOutput) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDailyRevenueOutput2ᚖPopcornMovieᚋmodelᚐDailyRevenueOutput(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNDailyRevenueOutput2ᚖPopcornMovieᚋmodelᚐDailyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.DailyRevenueOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DailyRevenueOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
 	res, err := graphql.UnmarshalFloatContext(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -17046,6 +17452,20 @@ func (ec *executionContext) unmarshalNLoginInput2PopcornMovieᚋmodelᚐLoginInp
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNMonthlyRevenueOutput2PopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v model.MonthlyRevenueOutput) graphql.Marshaler {
+	return ec._MonthlyRevenueOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMonthlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.MonthlyRevenueOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MonthlyRevenueOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNMovie2PopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v ent.Movie) graphql.Marshaler {
 	return ec._Movie(ctx, sel, &v)
 }
@@ -17103,20 +17523,6 @@ func (ec *executionContext) unmarshalNResetPasswordInput2PopcornMovieᚋmodelᚐ
 func (ec *executionContext) unmarshalNRevenueInput2PopcornMovieᚋmodelᚐRevenueInput(ctx context.Context, v interface{}) (model.RevenueInput, error) {
 	res, err := ec.unmarshalInputRevenueInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRevenueOutput2PopcornMovieᚋmodelᚐRevenueOutput(ctx context.Context, sel ast.SelectionSet, v model.RevenueOutput) graphql.Marshaler {
-	return ec._RevenueOutput(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNRevenueOutput2ᚖPopcornMovieᚋmodelᚐRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.RevenueOutput) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._RevenueOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNRevenueType2PopcornMovieᚋmodelᚐRevenueType(ctx context.Context, v interface{}) (model.RevenueType, error) {

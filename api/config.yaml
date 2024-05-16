@@ -10,7 +10,7 @@ payos:
   checksumKey: $PAYOS_CHECKSUM_KEY
   domain: $DOMAIN
   baseURL: $BASE_URL
-stmp:
+smtp:
   port: $SMTP_PORT
   host: $SMTP_HOST
   username: $SMTP_USERNAME

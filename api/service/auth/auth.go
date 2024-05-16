@@ -63,7 +63,11 @@ func (i impl) ForgotPassword(ctx context.Context, email string) (string, error) 
 
 func (i impl) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
 	// get code from context
-	codeReset := ctx.Value(CodeResetPassword).(string)
+	codeReset, ok := ctx.Value(CodeResetPassword).(string)
+	if !ok {
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
 	if codeReset != input.Code {
 		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorMessageNotEqual), "Code reset input", "Code reset server"), utils.ErrorCodeUnauthorized)
 	}
@@ -246,10 +250,11 @@ func (i impl) ChangePassword(ctx context.Context, input model.ChangePasswordInpu
 
 }
 
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
+func New(repository repository.Registry, logger *zap.Logger, mailer email.MailSender, appConfig config.Configurations) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,
 		appConfig:  appConfig,
+		mailer:     mailer,
 	}
 }

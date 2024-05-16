@@ -10,43 +10,27 @@ import { useGetAllTransactions } from "./hook/useQuery";
 
 function HistoryBooking(params) {
     const auth = useAuth();
-
+    console.log(auth)
     const historyData = useGetAllTransactions(auth.id)
     const history = historyData?.data??[]
-
-
-    // const getHistory = async () => {
-    //     try {
-    //         const response = await fetch(`http://localhost:8080/transactions/history`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Authorization': `Bearer ${auth.accessToken}`,
-    //             },
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! Status: ${response.status}`);
-    //         }
-    //         const data = await response.json();
-    //         data.sort((a, b) => {
-    //             const date1 = new Date(a.createdAt);
-    //             const date2 = new Date(b.createdAt);
-    //             return date2 - date1;
-    //         })
-
-    //         setHistory(data);
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         throw error;
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     getHistory();
-    // }, []);
-
+    console.log(history)
     const convertTimeStringToDate = (dateTimeString) => {
-        return dateTimeString.replace('T', ' ');
+        const date = new Date(dateTimeString);
+
+        // Extract date components
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+
+        // Extract time components
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+        // Format the date and time
+        const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        return formattedDate;
     }
 
     return (

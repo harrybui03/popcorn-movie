@@ -168,7 +168,7 @@ func (r *queryResolver) Transactions(ctx context.Context, input model.ListTransa
 }
 
 // GetRevenue is the resolver for the GetRevenue field.
-func (r *queryResolver) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.RevenueOutput, error) {
+func (r *queryResolver) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error) {
 	panic(fmt.Errorf("not implemented: GetRevenue - GetRevenue"))
 }
 

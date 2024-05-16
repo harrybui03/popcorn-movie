@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"PopcornMovie/ent"
+	"PopcornMovie/model"
 	"context"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -12,10 +13,16 @@ type Repository interface {
 	CreateTransaction(ctx context.Context, userId uuid.UUID) (*ent.Transaction, error)
 	GetAllTransactions(ctx context.Context, query *ent.TransactionQuery) ([]*ent.Transaction, error)
 	CountTransactions(ctx context.Context, query *ent.TransactionQuery) (int, error)
+	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error)
 }
 
 type impl struct {
 	client *ent.Client
+}
+
+func (i impl) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error) {
+	//i.client.
+	return nil, nil
 }
 
 func (i impl) CountTransactions(ctx context.Context, query *ent.TransactionQuery) (int, error) {

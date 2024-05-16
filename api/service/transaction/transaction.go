@@ -14,18 +14,24 @@ import (
 	"github.com/google/uuid"
 	"github.com/payOSHQ/payos-lib-golang"
 	"go.uber.org/zap"
+	"time"
 )
 
 type Service interface {
 	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*payos.CheckoutResponseDataType, error)
 	GetAllTransactions(ctx context.Context, input model.ListTransactionInput) ([]*ent.Transaction, int, error)
 	VerifyPaymentData(ctx context.Context, webhookDataReq payos.WebhookType) error
+	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error)
 }
 
 type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
 	appConfig  config.Configurations
+}
+
+func (i impl) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error) {
+	return nil, nil
 }
 
 func (i impl) VerifyPaymentData(ctx context.Context, webhookDataReq payos.WebhookType) error {
@@ -192,6 +198,25 @@ func (i impl) CreateTransaction(ctx context.Context, input model.CreateTransacti
 	}
 
 	return output, nil
+}
+
+// Function to get all days in a month for a given month and year
+func getAllDaysInMonth(year int, month time.Month) []time.Time {
+	// Get the first day of the month
+	firstDay := time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
+
+	// Calculate the last day of the month
+	lastDay := firstDay.AddDate(0, 1, -1)
+
+	// Prepare a slice to hold all days of the month
+	var days []time.Time
+
+	// Iterate through all days in the month
+	for day := firstDay; !day.After(lastDay); day = day.AddDate(0, 0, 1) {
+		days = append(days, day)
+	}
+
+	return days
 }
 
 func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
