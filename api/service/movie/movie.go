@@ -4,13 +4,18 @@ import (
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
 	"PopcornMovie/ent/movie"
+	cloudinary_gateway "PopcornMovie/gateway/cloudinary"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
 	"PopcornMovie/repository"
 	"context"
 	"fmt"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"io"
+	"os"
+	"time"
 )
 
 type Service interface {
@@ -25,6 +30,7 @@ type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
 	appConfig  config.Configurations
+	cld        cloudinary_gateway.GateWay
 }
 
 func (i impl) UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*ent.Movie, error) {
@@ -77,10 +83,6 @@ func (i impl) UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*e
 		movieUpdate.SetOpeningDay(*input.OpeningDay)
 	}
 
-	if input.Poster != nil {
-		movieUpdate.SetPoster(*input.Poster)
-	}
-
 	if input.Rated != nil {
 		movieUpdate.SetRated(*input.Rated)
 	}
@@ -91,6 +93,15 @@ func (i impl) UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*e
 
 	if input.Trailer != nil {
 		movieUpdate.SetTrailer(*input.Trailer)
+	}
+
+	if input.File != nil {
+		imageURL, err := i.uploadImage(ctx, *input.File)
+		if err != nil {
+			return nil, err
+		}
+
+		movieUpdate.SetPoster(imageURL)
 	}
 
 	movieRecordUpdated, err := movieUpdate.Save(ctx)
@@ -119,6 +130,11 @@ func (i impl) DeleteMovie(ctx context.Context, id string) (string, error) {
 }
 
 func (i impl) CreateMovie(ctx context.Context, input model.CreateMovieInput) (*ent.Movie, error) {
+	imageURL, err := i.uploadImage(ctx, input.File)
+	if err != nil {
+		return nil, err
+	}
+
 	movieRecord, err := i.repository.
 		Movie().MovieCreate().
 		SetStatus(movie.Status(input.Status)).
@@ -129,8 +145,7 @@ func (i impl) CreateMovie(ctx context.Context, input model.CreateMovieInput) (*e
 		SetGenre(input.Genre).
 		SetLanguage(input.Language).
 		SetOpeningDay(input.OpeningDay).
-		SetPoster(input.Poster).
-		SetPoster(input.Poster).
+		SetPoster(imageURL).
 		SetRated(input.Rated).
 		SetStory(input.Story).
 		SetTrailer(input.Trailer).Save(ctx)
@@ -186,10 +201,43 @@ func (i impl) ListMovies(ctx context.Context, input model.ListMovieInput) ([]*en
 	return movies, *count, nil
 }
 
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
+func (i impl) uploadImage(ctx context.Context, fileUpload graphql.Upload) (string, error) {
+	timestamp := time.Now().Format("20060102-150405")
+	fileName := fmt.Sprintf("%v-%v-%v", "movie-image", timestamp, fileUpload.Filename)
+	stream, readErr := io.ReadAll(fileUpload.File)
+	if readErr != nil {
+		i.logger.Error(readErr.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorBadRequest), utils.ErrorCodeBadRequest)
+	}
+
+	err := os.WriteFile(fileName, stream, 0644)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorBadRequest), utils.ErrorCodeBadRequest)
+	}
+
+	file, err := os.Open(fileName)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorBadRequest), utils.ErrorCodeBadRequest)
+	}
+	defer file.Close()
+
+	// Upload the file to Cloudinary.
+	imageURL, err := i.cld.UploadToCloudinary(ctx, file, fileName)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	return imageURL, nil
+}
+
+func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations, cld cloudinary_gateway.GateWay) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,
 		appConfig:  appConfig,
+		cld:        cld,
 	}
 }

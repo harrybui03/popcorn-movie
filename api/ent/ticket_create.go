@@ -12,6 +12,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -22,6 +24,7 @@ type TicketCreate struct {
 	config
 	mutation *TicketMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetIsBooked sets the "is_booked" field.
@@ -230,6 +233,7 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 		_node = &Ticket{config: tc.config}
 		_spec = sqlgraph.NewCreateSpec(ticket.Table, sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = tc.conflict
 	if id, ok := tc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -304,11 +308,332 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Ticket.Create().
+//		SetIsBooked(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TicketUpsert) {
+//			SetIsBooked(v+v).
+//		}).
+//		Exec(ctx)
+func (tc *TicketCreate) OnConflict(opts ...sql.ConflictOption) *TicketUpsertOne {
+	tc.conflict = opts
+	return &TicketUpsertOne{
+		create: tc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Ticket.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tc *TicketCreate) OnConflictColumns(columns ...string) *TicketUpsertOne {
+	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+	return &TicketUpsertOne{
+		create: tc,
+	}
+}
+
+type (
+	// TicketUpsertOne is the builder for "upsert"-ing
+	//  one Ticket node.
+	TicketUpsertOne struct {
+		create *TicketCreate
+	}
+
+	// TicketUpsert is the "OnConflict" setter.
+	TicketUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetIsBooked sets the "is_booked" field.
+func (u *TicketUpsert) SetIsBooked(v bool) *TicketUpsert {
+	u.Set(ticket.FieldIsBooked, v)
+	return u
+}
+
+// UpdateIsBooked sets the "is_booked" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateIsBooked() *TicketUpsert {
+	u.SetExcluded(ticket.FieldIsBooked)
+	return u
+}
+
+// SetPrice sets the "price" field.
+func (u *TicketUpsert) SetPrice(v float64) *TicketUpsert {
+	u.Set(ticket.FieldPrice, v)
+	return u
+}
+
+// UpdatePrice sets the "price" field to the value that was provided on create.
+func (u *TicketUpsert) UpdatePrice() *TicketUpsert {
+	u.SetExcluded(ticket.FieldPrice)
+	return u
+}
+
+// AddPrice adds v to the "price" field.
+func (u *TicketUpsert) AddPrice(v float64) *TicketUpsert {
+	u.Add(ticket.FieldPrice, v)
+	return u
+}
+
+// SetTransactionID sets the "transaction_id" field.
+func (u *TicketUpsert) SetTransactionID(v uuid.UUID) *TicketUpsert {
+	u.Set(ticket.FieldTransactionID, v)
+	return u
+}
+
+// UpdateTransactionID sets the "transaction_id" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateTransactionID() *TicketUpsert {
+	u.SetExcluded(ticket.FieldTransactionID)
+	return u
+}
+
+// ClearTransactionID clears the value of the "transaction_id" field.
+func (u *TicketUpsert) ClearTransactionID() *TicketUpsert {
+	u.SetNull(ticket.FieldTransactionID)
+	return u
+}
+
+// SetSeatID sets the "seat_id" field.
+func (u *TicketUpsert) SetSeatID(v uuid.UUID) *TicketUpsert {
+	u.Set(ticket.FieldSeatID, v)
+	return u
+}
+
+// UpdateSeatID sets the "seat_id" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateSeatID() *TicketUpsert {
+	u.SetExcluded(ticket.FieldSeatID)
+	return u
+}
+
+// SetShowTimeID sets the "show_time_id" field.
+func (u *TicketUpsert) SetShowTimeID(v uuid.UUID) *TicketUpsert {
+	u.Set(ticket.FieldShowTimeID, v)
+	return u
+}
+
+// UpdateShowTimeID sets the "show_time_id" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateShowTimeID() *TicketUpsert {
+	u.SetExcluded(ticket.FieldShowTimeID)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TicketUpsert) SetUpdatedAt(v time.Time) *TicketUpsert {
+	u.Set(ticket.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateUpdatedAt() *TicketUpsert {
+	u.SetExcluded(ticket.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Ticket.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(ticket.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TicketUpsertOne) UpdateNewValues() *TicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(ticket.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(ticket.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Ticket.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *TicketUpsertOne) Ignore() *TicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TicketUpsertOne) DoNothing() *TicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TicketCreate.OnConflict
+// documentation for more info.
+func (u *TicketUpsertOne) Update(set func(*TicketUpsert)) *TicketUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TicketUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetIsBooked sets the "is_booked" field.
+func (u *TicketUpsertOne) SetIsBooked(v bool) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetIsBooked(v)
+	})
+}
+
+// UpdateIsBooked sets the "is_booked" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateIsBooked() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateIsBooked()
+	})
+}
+
+// SetPrice sets the "price" field.
+func (u *TicketUpsertOne) SetPrice(v float64) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetPrice(v)
+	})
+}
+
+// AddPrice adds v to the "price" field.
+func (u *TicketUpsertOne) AddPrice(v float64) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.AddPrice(v)
+	})
+}
+
+// UpdatePrice sets the "price" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdatePrice() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdatePrice()
+	})
+}
+
+// SetTransactionID sets the "transaction_id" field.
+func (u *TicketUpsertOne) SetTransactionID(v uuid.UUID) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "transaction_id" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateTransactionID() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// ClearTransactionID clears the value of the "transaction_id" field.
+func (u *TicketUpsertOne) ClearTransactionID() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearTransactionID()
+	})
+}
+
+// SetSeatID sets the "seat_id" field.
+func (u *TicketUpsertOne) SetSeatID(v uuid.UUID) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetSeatID(v)
+	})
+}
+
+// UpdateSeatID sets the "seat_id" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateSeatID() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateSeatID()
+	})
+}
+
+// SetShowTimeID sets the "show_time_id" field.
+func (u *TicketUpsertOne) SetShowTimeID(v uuid.UUID) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetShowTimeID(v)
+	})
+}
+
+// UpdateShowTimeID sets the "show_time_id" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateShowTimeID() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateShowTimeID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TicketUpsertOne) SetUpdatedAt(v time.Time) *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateUpdatedAt() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *TicketUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TicketCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TicketUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TicketUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: TicketUpsertOne.ID is not supported by MySQL driver. Use TicketUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TicketUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // TicketCreateBulk is the builder for creating many Ticket entities in bulk.
 type TicketCreateBulk struct {
 	config
 	err      error
 	builders []*TicketCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Ticket entities in the database.
@@ -338,6 +663,7 @@ func (tcb *TicketCreateBulk) Save(ctx context.Context) ([]*Ticket, error) {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = tcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -384,6 +710,221 @@ func (tcb *TicketCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (tcb *TicketCreateBulk) ExecX(ctx context.Context) {
 	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Ticket.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TicketUpsert) {
+//			SetIsBooked(v+v).
+//		}).
+//		Exec(ctx)
+func (tcb *TicketCreateBulk) OnConflict(opts ...sql.ConflictOption) *TicketUpsertBulk {
+	tcb.conflict = opts
+	return &TicketUpsertBulk{
+		create: tcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Ticket.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tcb *TicketCreateBulk) OnConflictColumns(columns ...string) *TicketUpsertBulk {
+	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+	return &TicketUpsertBulk{
+		create: tcb,
+	}
+}
+
+// TicketUpsertBulk is the builder for "upsert"-ing
+// a bulk of Ticket nodes.
+type TicketUpsertBulk struct {
+	create *TicketCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Ticket.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(ticket.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TicketUpsertBulk) UpdateNewValues() *TicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(ticket.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(ticket.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Ticket.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *TicketUpsertBulk) Ignore() *TicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TicketUpsertBulk) DoNothing() *TicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TicketCreateBulk.OnConflict
+// documentation for more info.
+func (u *TicketUpsertBulk) Update(set func(*TicketUpsert)) *TicketUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TicketUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetIsBooked sets the "is_booked" field.
+func (u *TicketUpsertBulk) SetIsBooked(v bool) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetIsBooked(v)
+	})
+}
+
+// UpdateIsBooked sets the "is_booked" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateIsBooked() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateIsBooked()
+	})
+}
+
+// SetPrice sets the "price" field.
+func (u *TicketUpsertBulk) SetPrice(v float64) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetPrice(v)
+	})
+}
+
+// AddPrice adds v to the "price" field.
+func (u *TicketUpsertBulk) AddPrice(v float64) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.AddPrice(v)
+	})
+}
+
+// UpdatePrice sets the "price" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdatePrice() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdatePrice()
+	})
+}
+
+// SetTransactionID sets the "transaction_id" field.
+func (u *TicketUpsertBulk) SetTransactionID(v uuid.UUID) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "transaction_id" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateTransactionID() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// ClearTransactionID clears the value of the "transaction_id" field.
+func (u *TicketUpsertBulk) ClearTransactionID() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearTransactionID()
+	})
+}
+
+// SetSeatID sets the "seat_id" field.
+func (u *TicketUpsertBulk) SetSeatID(v uuid.UUID) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetSeatID(v)
+	})
+}
+
+// UpdateSeatID sets the "seat_id" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateSeatID() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateSeatID()
+	})
+}
+
+// SetShowTimeID sets the "show_time_id" field.
+func (u *TicketUpsertBulk) SetShowTimeID(v uuid.UUID) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetShowTimeID(v)
+	})
+}
+
+// UpdateShowTimeID sets the "show_time_id" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateShowTimeID() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateShowTimeID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TicketUpsertBulk) SetUpdatedAt(v time.Time) *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateUpdatedAt() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *TicketUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TicketCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TicketCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TicketUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

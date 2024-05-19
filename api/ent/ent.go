@@ -7,6 +7,7 @@ import (
 	"PopcornMovie/ent/food"
 	"PopcornMovie/ent/foodorderline"
 	"PopcornMovie/ent/movie"
+	"PopcornMovie/ent/resetpassword"
 	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/seat"
 	"PopcornMovie/ent/session"
@@ -88,6 +89,7 @@ func checkColumn(table, column string) error {
 			food.Table:          food.ValidColumn,
 			foodorderline.Table: foodorderline.ValidColumn,
 			movie.Table:         movie.ValidColumn,
+			resetpassword.Table: resetpassword.ValidColumn,
 			room.Table:          room.ValidColumn,
 			seat.Table:          seat.ValidColumn,
 			session.Table:       session.ValidColumn,

@@ -8,6 +8,8 @@ import (
 	"io"
 	"strconv"
 	"time"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 type ChangePasswordInput struct {
@@ -36,18 +38,18 @@ type CreateFoodOrderLineInput struct {
 }
 
 type CreateMovieInput struct {
-	Title      string      `json:"title"`
-	Genre      string      `json:"genre"`
-	Status     MovieStatus `json:"status"`
-	Language   string      `json:"language"`
-	Director   string      `json:"director"`
-	Cast       string      `json:"cast"`
-	Poster     string      `json:"poster"`
-	Rated      string      `json:"rated"`
-	Duration   int         `json:"duration"`
-	Trailer    string      `json:"trailer"`
-	OpeningDay time.Time   `json:"openingDay"`
-	Story      string      `json:"story"`
+	Title      string         `json:"title"`
+	Genre      string         `json:"genre"`
+	Status     MovieStatus    `json:"status"`
+	Language   string         `json:"language"`
+	Director   string         `json:"director"`
+	Cast       string         `json:"cast"`
+	Rated      string         `json:"rated"`
+	Duration   int            `json:"duration"`
+	Trailer    string         `json:"trailer"`
+	OpeningDay time.Time      `json:"openingDay"`
+	Story      string         `json:"story"`
+	File       graphql.Upload `json:"file"`
 }
 
 type CreateSessionInput struct {
@@ -197,6 +199,7 @@ type ListSeatOutput struct {
 
 type ListShowTimeFilter struct {
 	MovieID   *string    `json:"movieId,omitempty"`
+	RoomID    *string    `json:"roomId,omitempty"`
 	TheaterID *string    `json:"theaterId,omitempty"`
 	Date      *time.Time `json:"date,omitempty"`
 }
@@ -268,10 +271,13 @@ type LoginInput struct {
 	Password string `json:"password"`
 }
 
+type MessageCreateOutput struct {
+	Output string `json:"output"`
+}
+
 type MonthlyRevenueOutput struct {
-	YearMonth     time.Time             `json:"yearMonth"`
-	DailyRevenues []*DailyRevenueOutput `json:"dailyRevenues"`
-	Total         float64               `json:"total"`
+	Total float64 `json:"total"`
+	Month int     `json:"month"`
 }
 
 type Mutation struct {
@@ -301,32 +307,29 @@ type RenewAccessTokenInput struct {
 }
 
 type ResetPasswordInput struct {
-	Code               string `json:"code"`
-	Email              string `json:"email"`
+	Token              string `json:"token"`
 	NewPassword        string `json:"newPassword"`
 	ConfirmNewPassword string `json:"confirmNewPassword"`
 }
 
 type RevenueInput struct {
-	Year  int         `json:"year"`
-	Month int         `json:"month"`
-	Type  RevenueType `json:"type"`
+	Year int `json:"year"`
 }
 
 type UpdateMovieInput struct {
-	ID         string       `json:"id"`
-	Title      *string      `json:"title,omitempty"`
-	Genre      *string      `json:"genre,omitempty"`
-	Status     *MovieStatus `json:"status,omitempty"`
-	Language   *string      `json:"language,omitempty"`
-	Director   *string      `json:"director,omitempty"`
-	Cast       *string      `json:"cast,omitempty"`
-	Poster     *string      `json:"poster,omitempty"`
-	Rated      *string      `json:"rated,omitempty"`
-	Duration   *int         `json:"duration,omitempty"`
-	Trailer    *string      `json:"trailer,omitempty"`
-	OpeningDay *time.Time   `json:"openingDay,omitempty"`
-	Story      *string      `json:"story,omitempty"`
+	ID         string          `json:"id"`
+	Title      *string         `json:"title,omitempty"`
+	Genre      *string         `json:"genre,omitempty"`
+	Status     *MovieStatus    `json:"status,omitempty"`
+	Language   *string         `json:"language,omitempty"`
+	Director   *string         `json:"director,omitempty"`
+	Cast       *string         `json:"cast,omitempty"`
+	Rated      *string         `json:"rated,omitempty"`
+	Duration   *int            `json:"duration,omitempty"`
+	Trailer    *string         `json:"trailer,omitempty"`
+	OpeningDay *time.Time      `json:"openingDay,omitempty"`
+	Story      *string         `json:"story,omitempty"`
+	File       *graphql.Upload `json:"file,omitempty"`
 }
 
 type UpdateShowTimeInput struct {
@@ -341,6 +344,11 @@ type UpdateUserInput struct {
 	ID          string  `json:"id"`
 	DisplayName *string `json:"displayName,omitempty"`
 	IsLocked    *bool   `json:"isLocked,omitempty"`
+}
+
+type YearlyRevenueOutput struct {
+	Total float64                 `json:"total"`
+	Arr   []*MonthlyRevenueOutput `json:"arr"`
 }
 
 type MovieStatus string

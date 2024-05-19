@@ -2,8 +2,8 @@ package transaction
 
 import (
 	"PopcornMovie/ent"
-	"PopcornMovie/model"
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -13,16 +13,28 @@ type Repository interface {
 	CreateTransaction(ctx context.Context, userId uuid.UUID) (*ent.Transaction, error)
 	GetAllTransactions(ctx context.Context, query *ent.TransactionQuery) ([]*ent.Transaction, error)
 	CountTransactions(ctx context.Context, query *ent.TransactionQuery) (int, error)
-	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error)
+	GetRevenue(ctx context.Context, year, month int) (float64, error)
 }
 
 type impl struct {
 	client *ent.Client
 }
 
-func (i impl) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error) {
-	//i.client.
-	return nil, nil
+func (i impl) GetRevenue(ctx context.Context, year, month int) (float64, error) {
+	var total float64
+	query := fmt.Sprintf(`SELECT COALESCE(SUM(total), 0) AS total_sum FROM public.transactions WHERE EXTRACT(YEAR FROM created_at) = %d AND EXTRACT(MONTH FROM created_at) = %d;`, year, month)
+	rows, err := i.client.QueryContext(ctx, query)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(&total); err != nil {
+			return 0, errors.WithStack(err)
+		}
+	}
+
+	return total, err
 }
 
 func (i impl) CountTransactions(ctx context.Context, query *ent.TransactionQuery) (int, error) {

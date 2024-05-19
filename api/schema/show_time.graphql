@@ -8,6 +8,7 @@ type ShowTime{
 
 input ListShowTimeFilter{
     movieId: String
+    roomId:String
     theaterId: String
     date: Time
 }

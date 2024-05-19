@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -29,6 +30,7 @@ type TransactionQuery struct {
 	withUser           *UserQuery
 	withTickets        *TicketQuery
 	withFoodOrderLines *FoodOrderLineQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -458,6 +460,9 @@ func (tq *TransactionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(tq.modifiers) > 0 {
+		_spec.Modifiers = tq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -582,6 +587,9 @@ func (tq *TransactionQuery) loadFoodOrderLines(ctx context.Context, query *FoodO
 
 func (tq *TransactionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := tq.querySpec()
+	if len(tq.modifiers) > 0 {
+		_spec.Modifiers = tq.modifiers
+	}
 	_spec.Node.Columns = tq.ctx.Fields
 	if len(tq.ctx.Fields) > 0 {
 		_spec.Unique = tq.ctx.Unique != nil && *tq.ctx.Unique
@@ -647,6 +655,9 @@ func (tq *TransactionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if tq.ctx.Unique != nil && *tq.ctx.Unique {
 		selector.Distinct()
 	}
+	for _, m := range tq.modifiers {
+		m(selector)
+	}
 	for _, p := range tq.predicates {
 		p(selector)
 	}
@@ -662,6 +673,32 @@ func (tq *TransactionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (tq *TransactionQuery) ForUpdate(opts ...sql.LockOption) *TransactionQuery {
+	if tq.driver.Dialect() == dialect.Postgres {
+		tq.Unique(false)
+	}
+	tq.modifiers = append(tq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return tq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (tq *TransactionQuery) ForShare(opts ...sql.LockOption) *TransactionQuery {
+	if tq.driver.Dialect() == dialect.Postgres {
+		tq.Unique(false)
+	}
+	tq.modifiers = append(tq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return tq
 }
 
 // TransactionGroupBy is the group-by builder for Transaction entities.

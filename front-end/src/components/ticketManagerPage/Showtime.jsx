@@ -32,11 +32,26 @@ function Showtime({ setDeleteIdShowtime }) {
     const movies = movieData?.data??[]
     const [moviesDisplay, setMoviesDisplay] = useState(null);
 
-    const roomData = useGetAllRooms()
-    const room = roomData?.data??[]
     const [roomOption, setRoomOption] = useState([]);
     const [roomChosen, setRoomChosen] = useState(null);
-    
+    const [defaultDate, setDefaultDate] = useState([]);
+    const [customDate, setCustomDate] = useState([]);
+    const [displayDate, setDisplayDate] = useState([]);
+
+    const roomData = useGetAllRooms(theaterChosen)
+    const room = roomData?.data??[]
+    const showTimeData = useGetAllShowtimes(theaterChosen,roomChosen);
+    const displayShowtime = showTimeData.data??[]
+
+    // const [defaultShowtime, setDefaultShowtime] = useState([]);
+    // const [customShowtime, setCustomShowtime] = useState([]);
+    // const [displayShowtime, setDisplayShowtime] = useState([]);
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+    const [messageAddShowtime, setMessageAddShowtime] = useState({ isShow: false, text: '', success: false, item: null });
+    const [showtimeData, setShowtimeData] = useState({});
+    const [timeStartAddShowtime, setTimeStartAddShowtime] = useState('');
+    const [isConflict, setIsConflict] = useState(true);
 
     const handleChangeTheater = (event) => {
         setTheaterChosen(event.target.value);
@@ -75,23 +90,15 @@ function Showtime({ setDeleteIdShowtime }) {
         }
     }, [roomOption]);
 
-    const [defaultDate, setDefaultDate] = useState([]);
-    const [customDate, setCustomDate] = useState([]);
-    const [displayDate, setDisplayDate] = useState([]);
-    const [defaultShowtime, setDefaultShowtime] = useState([]);
-    const [customShowtime, setCustomShowtime] = useState([]);
-    const [displayShowtime, setDisplayShowtime] = useState([]);
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
-
-    useEffect(() => {
-        if (roomChosen !== null && theaterChosen !== null && defaultDate.length > 0 && (dateFrom === '' || dateTo === '')) {
-            setDisplayDate(defaultDate);
-            getDefaultShowtime();
-        } else {
-            getCustomShowtime();
-        }
-    }, [roomChosen]);
+ 
+    // useEffect(() => {
+    //     if (roomChosen !== null && theaterChosen !== null && defaultDate.length > 0 && (dateFrom === '' || dateTo === '')) {
+    //         setDisplayDate(defaultDate);
+    //         getDefaultShowtime();
+    //     } else {
+    //         getCustomShowtime();
+    //     }
+    // }, [roomChosen]);
 
     const getDefaultDate = () => {
         const today = new Date();
@@ -166,43 +173,43 @@ function Showtime({ setDeleteIdShowtime }) {
         setTimeList(timeList);
     }
 
-    const getShowTime = async (theater, room, date) => {
-        try {
-            console.log(theater,room , date)
+    // const getShowTime = async (theater, room, date) => {
+    //     try {
+    //         const showTimeData = useGetAllShowtimes(theater, date);
+    //         const temp = showTimeData?.data??[];
+    //         const data = temp.filter(e => e.room.id === room);
+    //         data.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+    //         return data;     
+    //         }
+    //     catch (error) {
+    //         console.error('Error fetching data:', error);
+    //     }
+    // }
 
-            const showTimeData = useGetAllShowtimes(theater, date);
-            const temp = showTimeData?.data??[];
-            const data = temp.filter(e => e.room.id === parseInt(room));
-            data.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
-            return data;     
-            }
-        catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    }
-
-    const getDefaultShowtime = async () => {
-        const temp = [];
-        for (let i = 0; i < defaultDate.length; i++) {
-            const a = await getShowTime(theaterChosen, roomChosen, defaultDate[i]);
-            temp.push(a);
-        }
-        setDefaultShowtime(temp);
-        // console.log(temp);
-        // console.log(timeList);
-        // console.log(defaultDate);
-    }
-    const getCustomShowtime = async () => {
-        const temp = [];
-        for (let i = 0; i < customDate.length; i++) {
-            const a = await getShowTime(theaterChosen, roomChosen, customDate[i]);
-            temp.push(a);
-        }
-        setCustomShowtime(temp);
-        // console.log(temp);
-        // console.log(timeList);
-        // console.log(defaultDate);
-    }
+    // const getDefaultShowtime = async () => {
+    //     const temp = [];
+    //     for (let i = 0; i < defaultDate.length; i++) {
+    //         // const a = await getShowTime(theaterChosen, roomChosen, defaultDate[i]);
+    //         const showTimeData = useGetAllShowtimes(theaterChosen, defaultDate[i]);
+    //         const temp = showTimeData?.data??[];
+    //         const data = temp.filter(e => e.room.id === room);
+    //         data.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+    //         temp.push(data);
+    //     }
+    //     setDefaultShowtime(temp);
+    // }
+    // const getCustomShowtime = async () => {
+    //     const temp = [];
+    //     for (let i = 0; i < customDate.length; i++) {
+    //         // const a = await getShowTime(theaterChosen, roomChosen, customDate[i]);
+    //         const showTimeData = useGetAllShowtimes(theaterChosen, defaultDate[i]);
+    //         const temp = showTimeData?.data??[];
+    //         const data = temp.filter(e => e.room.id === room);
+    //         data.sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+    //         temp.push(data);
+    //     }
+    //     setCustomShowtime(temp);
+    // }
 
     useEffect(() => {
         if (defaultDate.length > 0) {
@@ -210,41 +217,45 @@ function Showtime({ setDeleteIdShowtime }) {
         }
     }, [defaultDate]);
 
-    useEffect(() => {
-        if (roomChosen !== null && theaterChosen !== null && defaultDate.length > 0 && (dateFrom === '' || dateTo === '')) {
-            setDisplayDate(defaultDate);
-            getDefaultShowtime();
-        } else {
-            setDisplayDate(customDate);
-            getCustomShowtime();
-        }
-    }, [customDate]);
+    // useEffect(() => {
+    //     if (roomChosen !== null && theaterChosen !== null && defaultDate.length > 0 && (dateFrom === '' || dateTo === '')) {
+    //         setDisplayDate(defaultDate);
+    //         getDefaultShowtime();
+    //     } else {
+    //         setDisplayDate(customDate);
+    //         getCustomShowtime();
+    //     }
+    // }, [customDate]);
 
-    useEffect(() => {
-        if (defaultShowtime.length > 0) {
-            setDisplayShowtime(defaultShowtime);
-        }
-    }, [defaultShowtime]);
+    // useEffect(() => {
+    //     if (defaultShowtime.length > 0) {
+    //         setDisplayShowtime(defaultShowtime);
+    //     }
+    // }, [defaultShowtime]);
 
-    useEffect(() => {
-        if (customShowtime.length > 0) {
-            setDisplayShowtime(customShowtime);
-        } else {
-            setDisplayShowtime(defaultShowtime);
-        }
-    }, [customShowtime]);
+    // useEffect(() => {
+    //     if (customShowtime.length > 0) {
+    //         setDisplayShowtime(customShowtime);
+    //     } else {
+    //         setDisplayShowtime(defaultShowtime);
+    //     }
+    // }, [customShowtime]);
 
     const compareTimes = (time1, time2) => {
-        // Chia chuỗi thời gian thành giờ và phút
-        if (time1.length > time2.length) {
-            time1 = time1.split('T')[1];
-        } else {
-            time2 = time2.split('T')[1];
+        // Check for null or undefined times
+        if (!time1 || !time2) {
+            return null;
         }
+        
+        // Extract the time part if the date-time string is in ISO 8601 format
+        time1 = time1.includes('T') ? time1.split('T')[1] : time1;
+        time2 = time2.includes('T') ? time2.split('T')[1] : time2;
+    
+        // Extract hours and minutes
         const [hour1, minute1] = time1.split(':').map(Number);
         const [hour2, minute2] = time2.split(':').map(Number);
-
-        // So sánh giờ và phút
+    
+        // Compare hours and minutes
         if (hour1 < hour2 || (hour1 === hour2 && minute1 < minute2)) {
             return -1;
         } else if (hour1 > hour2 || (hour1 === hour2 && minute1 > minute2)) {
@@ -340,10 +351,7 @@ function Showtime({ setDeleteIdShowtime }) {
         }))
     }
 
-    const [messageAddShowtime, setMessageAddShowtime] = useState({ isShow: false, text: '', success: false, item: null });
-    const [showtimeData, setShowtimeData] = useState({});
-    const [timeStartAddShowtime, setTimeStartAddShowtime] = useState('');
-    const [isConflict, setIsConflict] = useState(true);
+
 
     const addShowtime = (indexDate, item) => {
         setTimeStartAddShowtime(displayDate[indexDate] + 'T' + item + ':00');
@@ -357,50 +365,50 @@ function Showtime({ setDeleteIdShowtime }) {
         return endFormatted;
     }
 
-    async function checkAvailableShowtime(end) {
-        try {
-            const response = await fetch(`http://localhost:8080/rooms/available?room=${parseInt(roomChosen)}&start=${timeStartAddShowtime}&end=${end}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${auth.accessToken}`,
-                },
-            });
+    // async function checkAvailableShowtime(end) {
+    //     try {
+    //         const response = await fetch(`http://localhost:8080/rooms/available?room=${parseInt(roomChosen)}&start=${timeStartAddShowtime}&end=${end}`, {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 'Authorization': `Bearer ${auth.accessToken}`,
+    //             },
+    //         });
 
-            if (!response.ok) {
-                return false;
-            }
-            const data = await response.json();
-            if (data.message === 'Room is available') {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    }
+    //         if (!response.ok) {
+    //             return false;
+    //         }
+    //         const data = await response.json();
+    //         if (data.message === 'Room is available') {
+    //             return true;
+    //         } else {
+    //             return false;
+    //         }
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //         throw error;
+    //     }
+    // }
 
-    const checkConflict = async (item) => {
-        const end = calculateEnd(timeStartAddShowtime, item.duration);
-        const condition = await checkAvailableShowtime(end);
-        if (condition) {
-            const data = {
-                movieId: item.id,
-                roomId: parseInt(roomChosen),
-                startAt: timeStartAddShowtime,
-                endAt: end,
-            };
-            setIsConflict(false);
-            setShowtimeData(data);
-            setMessageAddShowtime({ isShow: true, text: 'Đã chọn, vui lòng lưu để cập nhật dữ liệu.', success: true, item: item });
-        } else {
-            setIsConflict(true);
-            setShowtimeData({});
-            setMessageAddShowtime({ isShow: true, text: 'Bị xung đột thời gian, vui lòng chọn phim hoặc giờ chiếu khác!', success: false, item: item });
-        }
-    }
+    // const checkConflict = async (item) => {
+    //     const end = calculateEnd(timeStartAddShowtime, item.duration);
+    //     const condition = await checkAvailableShowtime(end);
+    //     if (condition) {
+    //         const data = {
+    //             movieId: item.id,
+    //             roomId: parseInt(roomChosen),
+    //             startAt: timeStartAddShowtime,
+    //             endAt: end,
+    //         };
+    //         setIsConflict(false);
+    //         setShowtimeData(data);
+    //         setMessageAddShowtime({ isShow: true, text: 'Đã chọn, vui lòng lưu để cập nhật dữ liệu.', success: true, item: item });
+    //     } else {
+    //         setIsConflict(true);
+    //         setShowtimeData({});
+    //         setMessageAddShowtime({ isShow: true, text: 'Bị xung đột thời gian, vui lòng chọn phim hoặc giờ chiếu khác!', success: false, item: item });
+    //     }
+    // }
 
     async function generateTicket(ticket) {
         try {
@@ -512,9 +520,10 @@ function Showtime({ setDeleteIdShowtime }) {
         setMessageDeleteShowtime({ isShow: false, text: '', success: false });
         if (dateFrom !== '' && dateTo !== '') {
             getCustomShowtime();
-        } else {
-            getDefaultShowtime();
         }
+        // } else {
+        //     getDefaultShowtime();
+        // }
     };
 
     // Hàm so sánh ngày
@@ -522,7 +531,6 @@ function Showtime({ setDeleteIdShowtime }) {
         // Chuyển đổi chuỗi ngày thành đối tượng Date
         const datetime1 = new Date(date1);
         const datetime2 = new Date(date2);
-        console.log(date1, date2);
         // So sánh ngày
         if (datetime1 < datetime2) {
             return -1;
@@ -650,7 +658,7 @@ function Showtime({ setDeleteIdShowtime }) {
                                                                 style={{ width: '100%', height: `${3}rem`, minWidth: '8rem', background: 'white', color: 'gray' }}>
                                                                 {compareDate(displayDate[indexDate], defaultDate[0]) !== -1 && <FontAwesomeIcon className='mx-3' icon={faAdd} />}
                                                             </div>
-                                                        ) : (compareTimes((index < 47 ? timeList[index + 1] + '' : '24:00'), date[i].startAt + '') <= 0) ? (
+                                                        ) : (compareTimes((index < 47 ? timeList[index + 1] + '' : '24:00'), date[i]?.startAt + '') <= 0) ? (
                                                             isNewDate = false,
                                                             <div key={item} onClick={() => { if (compareDate(displayDate[indexDate], defaultDate[0]) !== -1) addShowtime(indexDate, item) }} className={`p-2 fw-bold ${compareDate(displayDate[indexDate], defaultDate[0]) !== -1 ? 'showtime' : ''} rounded-2 border border-light d-flex justify-content-center align-items-center`}
                                                                 style={{ width: '100%', height: `${3}rem`, minWidth: '8rem', background: 'white', color: 'gray' }}>

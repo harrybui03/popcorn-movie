@@ -5,6 +5,7 @@ import (
 	"PopcornMovie/repository/food"
 	"PopcornMovie/repository/food_order_line"
 	"PopcornMovie/repository/movie"
+	"PopcornMovie/repository/reset_password"
 	"PopcornMovie/repository/room"
 	"PopcornMovie/repository/seat"
 	"PopcornMovie/repository/session"
@@ -31,6 +32,7 @@ type Registry interface {
 	Transaction() transaction.Repository
 	Ticket() ticket.Repository
 	FoodOrderLine() food_order_line.Repository
+	ResetPassword() reset_password.Repository
 	DoinTx(ctx context.Context, txFunc func(ctx context.Context, repoRegistry Registry) error) error
 }
 
@@ -46,6 +48,7 @@ type impl struct {
 	ticket        ticket.Repository
 	foodOrderLine food_order_line.Repository
 	transaction   transaction.Repository
+	resetPassword reset_password.Repository
 	client        *ent.Client
 	tx            *ent.Tx
 }
@@ -78,6 +81,7 @@ func (i impl) DoinTx(ctx context.Context, txFunc func(ctx context.Context, repoR
 		ticket:        ticket.New(tx.Client()),
 		foodOrderLine: food_order_line.New(tx.Client()),
 		transaction:   transaction.New(tx.Client()),
+		resetPassword: reset_password.New(tx.Client()),
 	}
 
 	if err := txFunc(ctx, impl); err != nil {
@@ -135,6 +139,10 @@ func (i impl) FoodOrderLine() food_order_line.Repository {
 	return i.foodOrderLine
 }
 
+func (i impl) ResetPassword() reset_password.Repository {
+	return i.resetPassword
+}
+
 // New creates a new repository registry.
 func New(client *ent.Client) Registry {
 	return &impl{
@@ -149,6 +157,7 @@ func New(client *ent.Client) Registry {
 		ticket:        ticket.New(client),
 		foodOrderLine: food_order_line.New(client),
 		transaction:   transaction.New(client),
+		resetPassword: reset_password.New(client),
 		client:        client,
 	}
 }

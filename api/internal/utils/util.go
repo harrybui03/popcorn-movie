@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"fmt"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -29,4 +31,18 @@ func GenerateNumber() int64 {
 	millisStr := strconv.FormatInt(millis, 10)
 	number, _ := strconv.Atoi(millisStr[len(millisStr)-6:])
 	return int64(number)
+}
+
+// generateUniqueFilePath generates a unique file path name based on the provided directory and file extension.
+func GenerateUniqueFilePath(dir, ext string) string {
+	// Get the current timestamp.
+	timestamp := time.Now().Format("20060102-150405")
+
+	// Create the unique file name.
+	fileName := fmt.Sprintf("%s-%s%s", timestamp, ext)
+
+	// Join the directory and file name to get the full file path.
+	filePath := filepath.Join(dir, fileName)
+
+	return filePath
 }

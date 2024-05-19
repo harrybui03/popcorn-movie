@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -20,6 +22,7 @@ type TheaterCreate struct {
 	config
 	mutation *TheaterMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetAddress sets the "address" field.
@@ -182,6 +185,7 @@ func (tc *TheaterCreate) createSpec() (*Theater, *sqlgraph.CreateSpec) {
 		_node = &Theater{config: tc.config}
 		_spec = sqlgraph.NewCreateSpec(theater.Table, sqlgraph.NewFieldSpec(theater.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = tc.conflict
 	if id, ok := tc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -225,11 +229,254 @@ func (tc *TheaterCreate) createSpec() (*Theater, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Theater.Create().
+//		SetAddress(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TheaterUpsert) {
+//			SetAddress(v+v).
+//		}).
+//		Exec(ctx)
+func (tc *TheaterCreate) OnConflict(opts ...sql.ConflictOption) *TheaterUpsertOne {
+	tc.conflict = opts
+	return &TheaterUpsertOne{
+		create: tc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Theater.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tc *TheaterCreate) OnConflictColumns(columns ...string) *TheaterUpsertOne {
+	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+	return &TheaterUpsertOne{
+		create: tc,
+	}
+}
+
+type (
+	// TheaterUpsertOne is the builder for "upsert"-ing
+	//  one Theater node.
+	TheaterUpsertOne struct {
+		create *TheaterCreate
+	}
+
+	// TheaterUpsert is the "OnConflict" setter.
+	TheaterUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetAddress sets the "address" field.
+func (u *TheaterUpsert) SetAddress(v string) *TheaterUpsert {
+	u.Set(theater.FieldAddress, v)
+	return u
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *TheaterUpsert) UpdateAddress() *TheaterUpsert {
+	u.SetExcluded(theater.FieldAddress)
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *TheaterUpsert) SetName(v string) *TheaterUpsert {
+	u.Set(theater.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TheaterUpsert) UpdateName() *TheaterUpsert {
+	u.SetExcluded(theater.FieldName)
+	return u
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (u *TheaterUpsert) SetPhoneNumber(v string) *TheaterUpsert {
+	u.Set(theater.FieldPhoneNumber, v)
+	return u
+}
+
+// UpdatePhoneNumber sets the "phone_number" field to the value that was provided on create.
+func (u *TheaterUpsert) UpdatePhoneNumber() *TheaterUpsert {
+	u.SetExcluded(theater.FieldPhoneNumber)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TheaterUpsert) SetUpdatedAt(v time.Time) *TheaterUpsert {
+	u.Set(theater.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TheaterUpsert) UpdateUpdatedAt() *TheaterUpsert {
+	u.SetExcluded(theater.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Theater.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(theater.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TheaterUpsertOne) UpdateNewValues() *TheaterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(theater.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(theater.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Theater.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *TheaterUpsertOne) Ignore() *TheaterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TheaterUpsertOne) DoNothing() *TheaterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TheaterCreate.OnConflict
+// documentation for more info.
+func (u *TheaterUpsertOne) Update(set func(*TheaterUpsert)) *TheaterUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TheaterUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetAddress sets the "address" field.
+func (u *TheaterUpsertOne) SetAddress(v string) *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *TheaterUpsertOne) UpdateAddress() *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TheaterUpsertOne) SetName(v string) *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TheaterUpsertOne) UpdateName() *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (u *TheaterUpsertOne) SetPhoneNumber(v string) *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetPhoneNumber(v)
+	})
+}
+
+// UpdatePhoneNumber sets the "phone_number" field to the value that was provided on create.
+func (u *TheaterUpsertOne) UpdatePhoneNumber() *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdatePhoneNumber()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TheaterUpsertOne) SetUpdatedAt(v time.Time) *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TheaterUpsertOne) UpdateUpdatedAt() *TheaterUpsertOne {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *TheaterUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TheaterCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TheaterUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TheaterUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: TheaterUpsertOne.ID is not supported by MySQL driver. Use TheaterUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TheaterUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // TheaterCreateBulk is the builder for creating many Theater entities in bulk.
 type TheaterCreateBulk struct {
 	config
 	err      error
 	builders []*TheaterCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Theater entities in the database.
@@ -259,6 +506,7 @@ func (tcb *TheaterCreateBulk) Save(ctx context.Context) ([]*Theater, error) {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = tcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -305,6 +553,179 @@ func (tcb *TheaterCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (tcb *TheaterCreateBulk) ExecX(ctx context.Context) {
 	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Theater.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TheaterUpsert) {
+//			SetAddress(v+v).
+//		}).
+//		Exec(ctx)
+func (tcb *TheaterCreateBulk) OnConflict(opts ...sql.ConflictOption) *TheaterUpsertBulk {
+	tcb.conflict = opts
+	return &TheaterUpsertBulk{
+		create: tcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Theater.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (tcb *TheaterCreateBulk) OnConflictColumns(columns ...string) *TheaterUpsertBulk {
+	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+	return &TheaterUpsertBulk{
+		create: tcb,
+	}
+}
+
+// TheaterUpsertBulk is the builder for "upsert"-ing
+// a bulk of Theater nodes.
+type TheaterUpsertBulk struct {
+	create *TheaterCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Theater.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(theater.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *TheaterUpsertBulk) UpdateNewValues() *TheaterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(theater.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(theater.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Theater.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *TheaterUpsertBulk) Ignore() *TheaterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TheaterUpsertBulk) DoNothing() *TheaterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TheaterCreateBulk.OnConflict
+// documentation for more info.
+func (u *TheaterUpsertBulk) Update(set func(*TheaterUpsert)) *TheaterUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TheaterUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetAddress sets the "address" field.
+func (u *TheaterUpsertBulk) SetAddress(v string) *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *TheaterUpsertBulk) UpdateAddress() *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// SetName sets the "name" field.
+func (u *TheaterUpsertBulk) SetName(v string) *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *TheaterUpsertBulk) UpdateName() *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetPhoneNumber sets the "phone_number" field.
+func (u *TheaterUpsertBulk) SetPhoneNumber(v string) *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetPhoneNumber(v)
+	})
+}
+
+// UpdatePhoneNumber sets the "phone_number" field to the value that was provided on create.
+func (u *TheaterUpsertBulk) UpdatePhoneNumber() *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdatePhoneNumber()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TheaterUpsertBulk) SetUpdatedAt(v time.Time) *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TheaterUpsertBulk) UpdateUpdatedAt() *TheaterUpsertBulk {
+	return u.Update(func(s *TheaterUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *TheaterUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TheaterCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TheaterCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TheaterUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

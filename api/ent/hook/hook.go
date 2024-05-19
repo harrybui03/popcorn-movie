@@ -56,6 +56,18 @@ func (f MovieFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MovieMutation", m)
 }
 
+// The ResetPasswordFunc type is an adapter to allow the use of ordinary
+// function as ResetPassword mutator.
+type ResetPasswordFunc func(context.Context, *ent.ResetPasswordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ResetPasswordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ResetPasswordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ResetPasswordMutation", m)
+}
+
 // The RoomFunc type is an adapter to allow the use of ordinary
 // function as Room mutator.
 type RoomFunc func(context.Context, *ent.RoomMutation) (ent.Value, error)

@@ -3,6 +3,7 @@ package service
 import (
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
+	"PopcornMovie/gateway/cloudinary"
 	"PopcornMovie/gateway/email"
 	"PopcornMovie/repository"
 	"PopcornMovie/service/auth"
@@ -86,13 +87,15 @@ func (i impl) Auth() auth.Service {
 func New(entClient *ent.Client, logger *zap.Logger, appConfig config.Configurations) Registry {
 	repositoryRegistry := repository.New(entClient)
 	mailer := email.New(appConfig)
+	clouldinary, _ := cloudinary.New(appConfig, logger)
+
 	return &impl{
 		user:        user.New(repositoryRegistry, logger, appConfig),
 		auth:        auth.New(repositoryRegistry, logger, mailer, appConfig),
 		theater:     theater.New(repositoryRegistry, logger, appConfig),
 		room:        room.New(repositoryRegistry, logger, appConfig),
 		food:        food.New(repositoryRegistry, logger, appConfig),
-		movie:       movie.New(repositoryRegistry, logger, appConfig),
+		movie:       movie.New(repositoryRegistry, logger, appConfig, clouldinary),
 		showTime:    show_time.New(repositoryRegistry, logger, appConfig),
 		seat:        seat.New(repositoryRegistry, logger, appConfig),
 		transaction: transaction.New(repositoryRegistry, logger, appConfig),

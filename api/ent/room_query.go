@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -29,6 +30,7 @@ type RoomQuery struct {
 	withTheater   *TheaterQuery
 	withSeats     *SeatQuery
 	withShowTimes *ShowTimeQuery
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -458,6 +460,9 @@ func (rq *RoomQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Room, e
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -582,6 +587,9 @@ func (rq *RoomQuery) loadShowTimes(ctx context.Context, query *ShowTimeQuery, no
 
 func (rq *RoomQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
+	if len(rq.modifiers) > 0 {
+		_spec.Modifiers = rq.modifiers
+	}
 	_spec.Node.Columns = rq.ctx.Fields
 	if len(rq.ctx.Fields) > 0 {
 		_spec.Unique = rq.ctx.Unique != nil && *rq.ctx.Unique
@@ -647,6 +655,9 @@ func (rq *RoomQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if rq.ctx.Unique != nil && *rq.ctx.Unique {
 		selector.Distinct()
 	}
+	for _, m := range rq.modifiers {
+		m(selector)
+	}
 	for _, p := range rq.predicates {
 		p(selector)
 	}
@@ -662,6 +673,32 @@ func (rq *RoomQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (rq *RoomQuery) ForUpdate(opts ...sql.LockOption) *RoomQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return rq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (rq *RoomQuery) ForShare(opts ...sql.LockOption) *RoomQuery {
+	if rq.driver.Dialect() == dialect.Postgres {
+		rq.Unique(false)
+	}
+	rq.modifiers = append(rq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return rq
 }
 
 // RoomGroupBy is the group-by builder for Room entities.

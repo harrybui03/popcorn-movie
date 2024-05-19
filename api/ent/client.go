@@ -15,6 +15,7 @@ import (
 	"PopcornMovie/ent/food"
 	"PopcornMovie/ent/foodorderline"
 	"PopcornMovie/ent/movie"
+	"PopcornMovie/ent/resetpassword"
 	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/seat"
 	"PopcornMovie/ent/session"
@@ -29,6 +30,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+
+	stdsql "database/sql"
 )
 
 // Client is the client that holds all ent builders.
@@ -44,6 +47,8 @@ type Client struct {
 	FoodOrderLine *FoodOrderLineClient
 	// Movie is the client for interacting with the Movie builders.
 	Movie *MovieClient
+	// ResetPassword is the client for interacting with the ResetPassword builders.
+	ResetPassword *ResetPasswordClient
 	// Room is the client for interacting with the Room builders.
 	Room *RoomClient
 	// Seat is the client for interacting with the Seat builders.
@@ -75,6 +80,7 @@ func (c *Client) init() {
 	c.Food = NewFoodClient(c.config)
 	c.FoodOrderLine = NewFoodOrderLineClient(c.config)
 	c.Movie = NewMovieClient(c.config)
+	c.ResetPassword = NewResetPasswordClient(c.config)
 	c.Room = NewRoomClient(c.config)
 	c.Seat = NewSeatClient(c.config)
 	c.Session = NewSessionClient(c.config)
@@ -179,6 +185,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Food:          NewFoodClient(cfg),
 		FoodOrderLine: NewFoodOrderLineClient(cfg),
 		Movie:         NewMovieClient(cfg),
+		ResetPassword: NewResetPasswordClient(cfg),
 		Room:          NewRoomClient(cfg),
 		Seat:          NewSeatClient(cfg),
 		Session:       NewSessionClient(cfg),
@@ -210,6 +217,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Food:          NewFoodClient(cfg),
 		FoodOrderLine: NewFoodOrderLineClient(cfg),
 		Movie:         NewMovieClient(cfg),
+		ResetPassword: NewResetPasswordClient(cfg),
 		Room:          NewRoomClient(cfg),
 		Seat:          NewSeatClient(cfg),
 		Session:       NewSessionClient(cfg),
@@ -247,8 +255,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Comment, c.Food, c.FoodOrderLine, c.Movie, c.Room, c.Seat, c.Session,
-		c.ShowTime, c.Theater, c.Ticket, c.Transaction, c.User,
+		c.Comment, c.Food, c.FoodOrderLine, c.Movie, c.ResetPassword, c.Room, c.Seat,
+		c.Session, c.ShowTime, c.Theater, c.Ticket, c.Transaction, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -258,8 +266,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Comment, c.Food, c.FoodOrderLine, c.Movie, c.Room, c.Seat, c.Session,
-		c.ShowTime, c.Theater, c.Ticket, c.Transaction, c.User,
+		c.Comment, c.Food, c.FoodOrderLine, c.Movie, c.ResetPassword, c.Room, c.Seat,
+		c.Session, c.ShowTime, c.Theater, c.Ticket, c.Transaction, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -276,6 +284,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.FoodOrderLine.mutate(ctx, m)
 	case *MovieMutation:
 		return c.Movie.mutate(ctx, m)
+	case *ResetPasswordMutation:
+		return c.ResetPassword.mutate(ctx, m)
 	case *RoomMutation:
 		return c.Room.mutate(ctx, m)
 	case *SeatMutation:
@@ -938,6 +948,155 @@ func (c *MovieClient) mutate(ctx context.Context, m *MovieMutation) (Value, erro
 		return (&MovieDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Movie mutation op: %q", m.Op())
+	}
+}
+
+// ResetPasswordClient is a client for the ResetPassword schema.
+type ResetPasswordClient struct {
+	config
+}
+
+// NewResetPasswordClient returns a client for the ResetPassword from the given config.
+func NewResetPasswordClient(c config) *ResetPasswordClient {
+	return &ResetPasswordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `resetpassword.Hooks(f(g(h())))`.
+func (c *ResetPasswordClient) Use(hooks ...Hook) {
+	c.hooks.ResetPassword = append(c.hooks.ResetPassword, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `resetpassword.Intercept(f(g(h())))`.
+func (c *ResetPasswordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ResetPassword = append(c.inters.ResetPassword, interceptors...)
+}
+
+// Create returns a builder for creating a ResetPassword entity.
+func (c *ResetPasswordClient) Create() *ResetPasswordCreate {
+	mutation := newResetPasswordMutation(c.config, OpCreate)
+	return &ResetPasswordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ResetPassword entities.
+func (c *ResetPasswordClient) CreateBulk(builders ...*ResetPasswordCreate) *ResetPasswordCreateBulk {
+	return &ResetPasswordCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ResetPasswordClient) MapCreateBulk(slice any, setFunc func(*ResetPasswordCreate, int)) *ResetPasswordCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ResetPasswordCreateBulk{err: fmt.Errorf("calling to ResetPasswordClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ResetPasswordCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ResetPasswordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ResetPassword.
+func (c *ResetPasswordClient) Update() *ResetPasswordUpdate {
+	mutation := newResetPasswordMutation(c.config, OpUpdate)
+	return &ResetPasswordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ResetPasswordClient) UpdateOne(rp *ResetPassword) *ResetPasswordUpdateOne {
+	mutation := newResetPasswordMutation(c.config, OpUpdateOne, withResetPassword(rp))
+	return &ResetPasswordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ResetPasswordClient) UpdateOneID(id uuid.UUID) *ResetPasswordUpdateOne {
+	mutation := newResetPasswordMutation(c.config, OpUpdateOne, withResetPasswordID(id))
+	return &ResetPasswordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ResetPassword.
+func (c *ResetPasswordClient) Delete() *ResetPasswordDelete {
+	mutation := newResetPasswordMutation(c.config, OpDelete)
+	return &ResetPasswordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ResetPasswordClient) DeleteOne(rp *ResetPassword) *ResetPasswordDeleteOne {
+	return c.DeleteOneID(rp.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ResetPasswordClient) DeleteOneID(id uuid.UUID) *ResetPasswordDeleteOne {
+	builder := c.Delete().Where(resetpassword.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ResetPasswordDeleteOne{builder}
+}
+
+// Query returns a query builder for ResetPassword.
+func (c *ResetPasswordClient) Query() *ResetPasswordQuery {
+	return &ResetPasswordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeResetPassword},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ResetPassword entity by its id.
+func (c *ResetPasswordClient) Get(ctx context.Context, id uuid.UUID) (*ResetPassword, error) {
+	return c.Query().Where(resetpassword.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ResetPasswordClient) GetX(ctx context.Context, id uuid.UUID) *ResetPassword {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a ResetPassword.
+func (c *ResetPasswordClient) QueryUser(rp *ResetPassword) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(resetpassword.Table, resetpassword.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, resetpassword.UserTable, resetpassword.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(rp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ResetPasswordClient) Hooks() []Hook {
+	return c.hooks.ResetPassword
+}
+
+// Interceptors returns the client interceptors.
+func (c *ResetPasswordClient) Interceptors() []Interceptor {
+	return c.inters.ResetPassword
+}
+
+func (c *ResetPasswordClient) mutate(ctx context.Context, m *ResetPasswordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ResetPasswordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ResetPasswordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ResetPasswordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ResetPasswordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ResetPassword mutation op: %q", m.Op())
 	}
 }
 
@@ -2252,6 +2411,22 @@ func (c *UserClient) QueryComments(u *User) *CommentQuery {
 	return query
 }
 
+// QueryResetPassword queries the reset_password edge of a User.
+func (c *UserClient) QueryResetPassword(u *User) *ResetPasswordQuery {
+	query := (&ResetPasswordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(resetpassword.Table, resetpassword.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ResetPasswordTable, user.ResetPasswordColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -2280,11 +2455,35 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Comment, Food, FoodOrderLine, Movie, Room, Seat, Session, ShowTime, Theater,
-		Ticket, Transaction, User []ent.Hook
+		Comment, Food, FoodOrderLine, Movie, ResetPassword, Room, Seat, Session,
+		ShowTime, Theater, Ticket, Transaction, User []ent.Hook
 	}
 	inters struct {
-		Comment, Food, FoodOrderLine, Movie, Room, Seat, Session, ShowTime, Theater,
-		Ticket, Transaction, User []ent.Interceptor
+		Comment, Food, FoodOrderLine, Movie, ResetPassword, Room, Seat, Session,
+		ShowTime, Theater, Ticket, Transaction, User []ent.Interceptor
 	}
 )
+
+// ExecContext allows calling the underlying ExecContext method of the driver if it is supported by it.
+// See, database/sql#DB.ExecContext for more information.
+func (c *config) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+	ex, ok := c.driver.(interface {
+		ExecContext(context.Context, string, ...any) (stdsql.Result, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.ExecContext is not supported")
+	}
+	return ex.ExecContext(ctx, query, args...)
+}
+
+// QueryContext allows calling the underlying QueryContext method of the driver if it is supported by it.
+// See, database/sql#DB.QueryContext for more information.
+func (c *config) QueryContext(ctx context.Context, query string, args ...any) (*stdsql.Rows, error) {
+	q, ok := c.driver.(interface {
+		QueryContext(context.Context, string, ...any) (*stdsql.Rows, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("Driver.QueryContext is not supported")
+	}
+	return q.QueryContext(ctx, query, args...)
+}

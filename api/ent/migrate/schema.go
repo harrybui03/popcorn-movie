@@ -106,6 +106,26 @@ var (
 		Columns:    MoviesColumns,
 		PrimaryKey: []*schema.Column{MoviesColumns[0]},
 	}
+	// ResetPasswordsColumns holds the columns for the "reset_passwords" table.
+	ResetPasswordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// ResetPasswordsTable holds the schema information for the "reset_passwords" table.
+	ResetPasswordsTable = &schema.Table{
+		Name:       "reset_passwords",
+		Columns:    ResetPasswordsColumns,
+		PrimaryKey: []*schema.Column{ResetPasswordsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reset_passwords_users_reset_password",
+				Columns:    []*schema.Column{ResetPasswordsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// RoomsColumns holds the columns for the "rooms" table.
 	RoomsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -294,6 +314,7 @@ var (
 		FoodsTable,
 		FoodOrderLinesTable,
 		MoviesTable,
+		ResetPasswordsTable,
 		RoomsTable,
 		SeatsTable,
 		SessionsTable,
@@ -310,6 +331,7 @@ func init() {
 	CommentsTable.ForeignKeys[1].RefTable = UsersTable
 	FoodOrderLinesTable.ForeignKeys[0].RefTable = FoodsTable
 	FoodOrderLinesTable.ForeignKeys[1].RefTable = TransactionsTable
+	ResetPasswordsTable.ForeignKeys[0].RefTable = UsersTable
 	RoomsTable.ForeignKeys[0].RefTable = TheatersTable
 	SeatsTable.ForeignKeys[0].RefTable = RoomsTable
 	ShowTimesTable.ForeignKeys[0].RefTable = MoviesTable

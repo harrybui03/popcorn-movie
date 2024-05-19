@@ -437,6 +437,29 @@ func HasCommentsWith(preds ...predicate.Comment) predicate.User {
 	})
 }
 
+// HasResetPassword applies the HasEdge predicate on the "reset_password" edge.
+func HasResetPassword() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ResetPasswordTable, ResetPasswordColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasResetPasswordWith applies the HasEdge predicate on the "reset_password" edge with a given conditions (other predicates).
+func HasResetPasswordWith(preds ...predicate.ResetPassword) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newResetPasswordStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

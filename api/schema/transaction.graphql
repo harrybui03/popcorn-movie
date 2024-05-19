@@ -51,8 +51,6 @@ enum RevenueType{
 
 input RevenueInput{
     year: Int!
-    month: Int!
-    type: RevenueType!
 }
 
 type DailyRevenueOutput{
@@ -61,7 +59,11 @@ type DailyRevenueOutput{
 }
 
 type MonthlyRevenueOutput {
-    yearMonth: Time!
-    dailyRevenues: [DailyRevenueOutput!]!
     total: Float!
+    month: Int!
+}
+
+type YearlyRevenueOutput {
+    total: Float!
+    arr: [MonthlyRevenueOutput]!
 }

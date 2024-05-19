@@ -44,9 +44,11 @@ type UserEdges struct {
 	Transactions []*Transaction `json:"transactions,omitempty"`
 	// Comments holds the value of the comments edge.
 	Comments []*Comment `json:"comments,omitempty"`
+	// ResetPassword holds the value of the reset_password edge.
+	ResetPassword []*ResetPassword `json:"reset_password,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TransactionsOrErr returns the Transactions value or an error if the edge
@@ -65,6 +67,15 @@ func (e UserEdges) CommentsOrErr() ([]*Comment, error) {
 		return e.Comments, nil
 	}
 	return nil, &NotLoadedError{edge: "comments"}
+}
+
+// ResetPasswordOrErr returns the ResetPassword value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ResetPasswordOrErr() ([]*ResetPassword, error) {
+	if e.loadedTypes[2] {
+		return e.ResetPassword, nil
+	}
+	return nil, &NotLoadedError{edge: "reset_password"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -164,6 +175,11 @@ func (u *User) QueryTransactions() *TransactionQuery {
 // QueryComments queries the "comments" edge of the User entity.
 func (u *User) QueryComments() *CommentQuery {
 	return NewUserClient(u.config).QueryComments(u)
+}
+
+// QueryResetPassword queries the "reset_password" edge of the User entity.
+func (u *User) QueryResetPassword() *ResetPasswordQuery {
+	return NewUserClient(u.config).QueryResetPassword(u)
 }
 
 // Update returns a builder for updating this User.

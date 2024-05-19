@@ -19,8 +19,8 @@ type Query {
     #Users
     Users(input: ListUserInput!):ListUserOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
     #Transaction
-    Transactions(input: ListTransactionInput!):ListTransactionOutput!
-    GetRevenue(input: RevenueInput!):MonthlyRevenueOutput!
+    Transactions(input: ListTransactionInput!):ListTransactionOutput! @auth @hasRole(roles: [CUSTOMER])
+    GetRevenue(input: RevenueInput!):YearlyRevenueOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
     #Ticket
     Tickets(input: ListTicketInput!):ListTicketOutput!
 }

@@ -68,6 +68,21 @@ function useGraphql() {
     },
   });
 
-  return { getAllMovies, login, queryKey , getMovieByID };
+  const signup = buildQuery({
+    operation:"Signup",
+    options: {
+      type:"mutation",
+    },
+    node:`
+    id
+    displayName
+    email
+    `,
+    params:{
+      input:"RegisterInput!"
+    }
+  })
+
+  return { getAllMovies, login,signup, queryKey , getMovieByID };
 }
 export default useGraphql;

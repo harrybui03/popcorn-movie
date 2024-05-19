@@ -4,14 +4,15 @@ import (
 	"PopcornMovie/cmd/middleware"
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
+	"PopcornMovie/ent/resetpassword"
 	"PopcornMovie/gateway/email"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
 	"PopcornMovie/repository"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
-	"strconv"
 	"time"
 )
 
@@ -39,20 +40,24 @@ func (i impl) ForgotPassword(ctx context.Context, email string) (string, error) 
 		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorNotFound), "User"), utils.ErrorCodeNotFound)
 	}
 
-	code := utils.GenerateNumber()
-	codeReset := strconv.Itoa(int(code))
+	tokenGen := uuid.New()
+	resetPasswordLink := i.appConfig.Payos.Domain + "/reset-password?token=" + tokenGen.String()
 
 	bodyHTML := fmt.Sprintf(`
 		<p>Hello %s,</p>
 		<p>You have requested to reset your password.</p>
-		<p>Here the code reset password ( Please don't let others know this code: %s</p>
+		<p><a href="%s">Click here</a> to reset password</p>
 		<br>
 		<p>Ignore this email if you do remember your password, or you have not made the request.</p>
-	`, email, codeReset)
+	`, email, resetPasswordLink)
 
-	ctx = context.WithValue(ctx, CodeResetPassword, codeReset)
+	_, err := i.repository.ResetPassword().ResetPasswordCreate().SetID(tokenGen).SetUserID(exist.ID).Save(ctx)
+	if err != nil {
+		i.logger.Error(err.Error())
+		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
 
-	err := i.mailer.SendMail(email, "Reset Password", bodyHTML)
+	err = i.mailer.SendMail(email, "Reset Password", bodyHTML)
 	if err != nil {
 		i.logger.Error(err.Error())
 		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
@@ -62,17 +67,14 @@ func (i impl) ForgotPassword(ctx context.Context, email string) (string, error) 
 }
 
 func (i impl) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
-	// get code from context
-	codeReset, ok := ctx.Value(CodeResetPassword).(string)
-	if !ok {
+	token, err := uuid.Parse(input.Token)
+	if err != nil {
+		i.logger.Error(err.Error())
 		return "", utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
 	}
 
-	if codeReset != input.Code {
-		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorMessageNotEqual), "Code reset input", "Code reset server"), utils.ErrorCodeUnauthorized)
-	}
-
-	user, _ := i.repository.User().FindUserByEmail(ctx, input.Email)
+	resetPassword, _ := i.repository.ResetPassword().ResetPasswordQuery().Where(resetpassword.ID(token)).WithUser().First(ctx)
+	user := resetPassword.Edges.User
 	if user == nil {
 		return "", utils.WrapGQLError(ctx, fmt.Sprintf(string(utils.ErrorNotFound), "User"), utils.ErrorCodeNotFound)
 	}

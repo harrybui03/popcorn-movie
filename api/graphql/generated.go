@@ -174,10 +174,13 @@ type ComplexityRoot struct {
 		Pagination func(childComplexity int) int
 	}
 
+	MessageCreateOutput struct {
+		Output func(childComplexity int) int
+	}
+
 	MonthlyRevenueOutput struct {
-		DailyRevenues func(childComplexity int) int
-		Total         func(childComplexity int) int
-		YearMonth     func(childComplexity int) int
+		Month func(childComplexity int) int
+		Total func(childComplexity int) int
 	}
 
 	Movie struct {
@@ -292,6 +295,11 @@ type ComplexityRoot struct {
 		Password    func(childComplexity int) int
 		Role        func(childComplexity int) int
 	}
+
+	YearlyRevenueOutput struct {
+		Arr   func(childComplexity int) int
+		Total func(childComplexity int) int
+	}
 }
 
 type CommentResolver interface {
@@ -313,12 +321,12 @@ type MovieResolver interface {
 	Status(ctx context.Context, obj *ent.Movie) (model.MovieStatus, error)
 }
 type MutationResolver interface {
-	Signup(ctx context.Context, input model.RegisterInput) (string, error)
+	Signup(ctx context.Context, input model.RegisterInput) (*ent.User, error)
 	Login(ctx context.Context, input model.LoginInput) (*model.Jwt, error)
-	ForgotPassword(ctx context.Context, input string) (string, error)
-	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error)
+	ForgotPassword(ctx context.Context, input string) (*model.MessageCreateOutput, error)
+	ResetPassword(ctx context.Context, input model.ResetPasswordInput) (*model.MessageCreateOutput, error)
 	RenewAccessToken(ctx context.Context, input model.RenewAccessTokenInput) (*model.Jwt, error)
-	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (string, error)
+	ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.MessageCreateOutput, error)
 	CreateUser(ctx context.Context, input model.CreateUserInput) (*ent.User, error)
 	UpdateUser(ctx context.Context, input model.UpdateUserInput) (*ent.User, error)
 	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*model.CheckOutOutput, error)
@@ -327,7 +335,7 @@ type MutationResolver interface {
 	DeleteMovie(ctx context.Context, input string) (string, error)
 	CreateShowTime(ctx context.Context, input model.CreateShowTimeInput) (*ent.ShowTime, error)
 	UpdateShowTime(ctx context.Context, input model.UpdateShowTimeInput) (*ent.ShowTime, error)
-	DeleteShowTime(ctx context.Context, input string) (string, error)
+	DeleteShowTime(ctx context.Context, input string) (*model.MessageCreateOutput, error)
 	GenerateTicket(ctx context.Context, input model.GenerateTicketInput) ([]*ent.Ticket, error)
 }
 type QueryResolver interface {
@@ -343,7 +351,7 @@ type QueryResolver interface {
 	GetAvailableSeats(ctx context.Context, input model.ListAvailableSeatInput) (*model.ListAvailableSeatOutput, error)
 	Users(ctx context.Context, input model.ListUserInput) (*model.ListUserOutput, error)
 	Transactions(ctx context.Context, input model.ListTransactionInput) (*model.ListTransactionOutput, error)
-	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error)
+	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.YearlyRevenueOutput, error)
 	Tickets(ctx context.Context, input model.ListTicketInput) (*model.ListTicketOutput, error)
 }
 type RoomResolver interface {
@@ -793,12 +801,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ListUserOutput.Pagination(childComplexity), true
 
-	case "MonthlyRevenueOutput.dailyRevenues":
-		if e.complexity.MonthlyRevenueOutput.DailyRevenues == nil {
+	case "MessageCreateOutput.output":
+		if e.complexity.MessageCreateOutput.Output == nil {
 			break
 		}
 
-		return e.complexity.MonthlyRevenueOutput.DailyRevenues(childComplexity), true
+		return e.complexity.MessageCreateOutput.Output(childComplexity), true
+
+	case "MonthlyRevenueOutput.month":
+		if e.complexity.MonthlyRevenueOutput.Month == nil {
+			break
+		}
+
+		return e.complexity.MonthlyRevenueOutput.Month(childComplexity), true
 
 	case "MonthlyRevenueOutput.total":
 		if e.complexity.MonthlyRevenueOutput.Total == nil {
@@ -806,13 +821,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MonthlyRevenueOutput.Total(childComplexity), true
-
-	case "MonthlyRevenueOutput.yearMonth":
-		if e.complexity.MonthlyRevenueOutput.YearMonth == nil {
-			break
-		}
-
-		return e.complexity.MonthlyRevenueOutput.YearMonth(childComplexity), true
 
 	case "Movie.cast":
 		if e.complexity.Movie.Cast == nil {
@@ -1524,6 +1532,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Role(childComplexity), true
 
+	case "YearlyRevenueOutput.arr":
+		if e.complexity.YearlyRevenueOutput.Arr == nil {
+			break
+		}
+
+		return e.complexity.YearlyRevenueOutput.Arr(childComplexity), true
+
+	case "YearlyRevenueOutput.total":
+		if e.complexity.YearlyRevenueOutput.Total == nil {
+			break
+		}
+
+		return e.complexity.YearlyRevenueOutput.Total(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -1696,8 +1718,7 @@ input ChangePasswordInput {
 }
 
 input ResetPasswordInput {
-    code:String!
-    email:String!
+    token:ID!
     newPassword:String!
     confirmNewPassword:String!
 }`, BuiltIn: false},
@@ -1745,7 +1766,10 @@ input PaginationInput {
 type PaginationOutput {
     total: Int!
 }
-`, BuiltIn: false},
+
+type MessageCreateOutput{
+    output:String!
+}`, BuiltIn: false},
 	{Name: "../schema/food.graphql", Input: `type Food {
     id:ID!
     name:String!
@@ -1771,7 +1795,9 @@ input CreateFoodOrderLineInput {
     foodID: ID!
     quantity: Int!
 }`, BuiltIn: false},
-	{Name: "../schema/movie.graphql", Input: `type Movie{
+	{Name: "../schema/movie.graphql", Input: `scalar Upload
+
+type Movie{
     id:ID!
     title:String!
     genre:String!
@@ -1814,12 +1840,12 @@ input CreateMovieInput{
     language:String!
     director:String!
     cast:String!
-    poster:String!
     rated:String!
     duration:Int!
     trailer:String!
     openingDay:Time!
     story:String!
+    file:Upload!
 }
 
 input UpdateMovieInput {
@@ -1830,21 +1856,21 @@ input UpdateMovieInput {
     language:String
     director:String
     cast:String
-    poster:String
     rated:String
     duration:Int
     trailer:String
     openingDay:Time
     story:String
+    file:Upload
 }`, BuiltIn: false},
 	{Name: "../schema/mutation.graphql", Input: `type Mutation {
     #Auth
-    Signup(input: RegisterInput!):String!
+    Signup(input: RegisterInput!):User!
     Login(input: LoginInput!):JWT!
-    ForgotPassword(input: String!):String!
-    ResetPassword(input: ResetPasswordInput!):String!
+    ForgotPassword(input: String!):MessageCreateOutput!
+    ResetPassword(input: ResetPasswordInput!):MessageCreateOutput!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
-    ChangePassword(input: ChangePasswordInput!):String! @auth
+    ChangePassword(input: ChangePasswordInput!):MessageCreateOutput! @auth
     CreateUser(input: CreateUserInput!):User! @auth @hasRole(roles: [ADMIN ,TICKET_MANAGER])
     UpdateUser(input: UpdateUserInput!):User! @auth @hasRole(roles: [ADMIN, TICKET_MANAGER])
     #Transaction
@@ -1856,7 +1882,7 @@ input UpdateMovieInput {
     #ShowTime
     CreateShowTime(input: CreateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
     UpdateShowTime(input: UpdateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
-    DeleteShowTime(input: ID!):String! @auth @hasRole(roles: [TICKET_MANAGER])
+    DeleteShowTime(input: ID!):MessageCreateOutput! @auth @hasRole(roles: [TICKET_MANAGER])
     #Tickets
     GenerateTicket(input: GenerateTicketInput!):[Ticket!] @auth @hasRole(roles: [TICKET_MANAGER])
 }`, BuiltIn: false},
@@ -1882,7 +1908,7 @@ input UpdateMovieInput {
     Users(input: ListUserInput!):ListUserOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
     #Transaction
     Transactions(input: ListTransactionInput!):ListTransactionOutput!
-    GetRevenue(input: RevenueInput!):MonthlyRevenueOutput!
+    GetRevenue(input: RevenueInput!):YearlyRevenueOutput!
     #Ticket
     Tickets(input: ListTicketInput!):ListTicketOutput!
 }`, BuiltIn: false},
@@ -1980,6 +2006,7 @@ type ListSeatOutput{
 
 input ListShowTimeFilter{
     movieId: String
+    roomId:String
     theaterId: String
     date: Time
 }
@@ -2115,8 +2142,6 @@ enum RevenueType{
 
 input RevenueInput{
     year: Int!
-    month: Int!
-    type: RevenueType!
 }
 
 type DailyRevenueOutput{
@@ -2125,9 +2150,13 @@ type DailyRevenueOutput{
 }
 
 type MonthlyRevenueOutput {
-    yearMonth: Time!
-    dailyRevenues: [DailyRevenueOutput!]!
     total: Float!
+    month: Int!
+}
+
+type YearlyRevenueOutput {
+    total: Float!
+    arr: [MonthlyRevenueOutput]!
 }
 `, BuiltIn: false},
 	{Name: "../schema/user.graphql", Input: `type User {
@@ -5377,8 +5406,8 @@ func (ec *executionContext) fieldContext_ListUserOutput_pagination(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyRevenueOutput_yearMonth(ctx context.Context, field graphql.CollectedField, obj *model.MonthlyRevenueOutput) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyRevenueOutput_yearMonth(ctx, field)
+func (ec *executionContext) _MessageCreateOutput_output(ctx context.Context, field graphql.CollectedField, obj *model.MessageCreateOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MessageCreateOutput_output(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5391,7 +5420,7 @@ func (ec *executionContext) _MonthlyRevenueOutput_yearMonth(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.YearMonth, nil
+		return obj.Output, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5403,69 +5432,19 @@ func (ec *executionContext) _MonthlyRevenueOutput_yearMonth(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyRevenueOutput_yearMonth(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MessageCreateOutput_output(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyRevenueOutput",
+		Object:     "MessageCreateOutput",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MonthlyRevenueOutput_dailyRevenues(ctx context.Context, field graphql.CollectedField, obj *model.MonthlyRevenueOutput) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyRevenueOutput_dailyRevenues(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DailyRevenues, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.DailyRevenueOutput)
-	fc.Result = res
-	return ec.marshalNDailyRevenueOutput2ᚕᚖPopcornMovieᚋmodelᚐDailyRevenueOutputᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MonthlyRevenueOutput_dailyRevenues(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MonthlyRevenueOutput",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "date":
-				return ec.fieldContext_DailyRevenueOutput_date(ctx, field)
-			case "total":
-				return ec.fieldContext_DailyRevenueOutput_total(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type DailyRevenueOutput", field.Name)
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5510,6 +5489,50 @@ func (ec *executionContext) fieldContext_MonthlyRevenueOutput_total(ctx context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyRevenueOutput_month(ctx context.Context, field graphql.CollectedField, obj *model.MonthlyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyRevenueOutput_month(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Month, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyRevenueOutput_month(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6113,9 +6136,9 @@ func (ec *executionContext) _Mutation_Signup(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*ent.User)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖPopcornMovieᚋentᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_Signup(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6125,7 +6148,21 @@ func (ec *executionContext) fieldContext_Mutation_Signup(ctx context.Context, fi
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "displayName":
+				return ec.fieldContext_User_displayName(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "password":
+				return ec.fieldContext_User_password(ctx, field)
+			case "isLocked":
+				return ec.fieldContext_User_isLocked(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	defer func() {
@@ -6229,9 +6266,9 @@ func (ec *executionContext) _Mutation_ForgotPassword(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.MessageCreateOutput)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNMessageCreateOutput2ᚖPopcornMovieᚋmodelᚐMessageCreateOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_ForgotPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6241,7 +6278,11 @@ func (ec *executionContext) fieldContext_Mutation_ForgotPassword(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "output":
+				return ec.fieldContext_MessageCreateOutput_output(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageCreateOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -6284,9 +6325,9 @@ func (ec *executionContext) _Mutation_ResetPassword(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.MessageCreateOutput)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNMessageCreateOutput2ᚖPopcornMovieᚋmodelᚐMessageCreateOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_ResetPassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6296,7 +6337,11 @@ func (ec *executionContext) fieldContext_Mutation_ResetPassword(ctx context.Cont
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "output":
+				return ec.fieldContext_MessageCreateOutput_output(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageCreateOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -6425,10 +6470,10 @@ func (ec *executionContext) _Mutation_ChangePassword(ctx context.Context, field 
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(string); ok {
+		if data, ok := tmp.(*model.MessageCreateOutput); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/model.MessageCreateOutput`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6440,9 +6485,9 @@ func (ec *executionContext) _Mutation_ChangePassword(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.MessageCreateOutput)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNMessageCreateOutput2ᚖPopcornMovieᚋmodelᚐMessageCreateOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_ChangePassword(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6452,7 +6497,11 @@ func (ec *executionContext) fieldContext_Mutation_ChangePassword(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "output":
+				return ec.fieldContext_MessageCreateOutput_output(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageCreateOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -7322,10 +7371,10 @@ func (ec *executionContext) _Mutation_DeleteShowTime(ctx context.Context, field 
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(string); ok {
+		if data, ok := tmp.(*model.MessageCreateOutput); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/model.MessageCreateOutput`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7337,9 +7386,9 @@ func (ec *executionContext) _Mutation_DeleteShowTime(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.MessageCreateOutput)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNMessageCreateOutput2ᚖPopcornMovieᚋmodelᚐMessageCreateOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_DeleteShowTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7349,7 +7398,11 @@ func (ec *executionContext) fieldContext_Mutation_DeleteShowTime(ctx context.Con
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "output":
+				return ec.fieldContext_MessageCreateOutput_output(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageCreateOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -8316,9 +8369,9 @@ func (ec *executionContext) _Query_GetRevenue(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.MonthlyRevenueOutput)
+	res := resTmp.(*model.YearlyRevenueOutput)
 	fc.Result = res
-	return ec.marshalNMonthlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx, field.Selections, res)
+	return ec.marshalNYearlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐYearlyRevenueOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_GetRevenue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8329,14 +8382,12 @@ func (ec *executionContext) fieldContext_Query_GetRevenue(ctx context.Context, f
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "yearMonth":
-				return ec.fieldContext_MonthlyRevenueOutput_yearMonth(ctx, field)
-			case "dailyRevenues":
-				return ec.fieldContext_MonthlyRevenueOutput_dailyRevenues(ctx, field)
 			case "total":
-				return ec.fieldContext_MonthlyRevenueOutput_total(ctx, field)
+				return ec.fieldContext_YearlyRevenueOutput_total(ctx, field)
+			case "arr":
+				return ec.fieldContext_YearlyRevenueOutput_arr(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type MonthlyRevenueOutput", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type YearlyRevenueOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -10260,6 +10311,100 @@ func (ec *executionContext) fieldContext_User_role(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _YearlyRevenueOutput_total(ctx context.Context, field graphql.CollectedField, obj *model.YearlyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_YearlyRevenueOutput_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_YearlyRevenueOutput_total(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "YearlyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _YearlyRevenueOutput_arr(ctx context.Context, field graphql.CollectedField, obj *model.YearlyRevenueOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_YearlyRevenueOutput_arr(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Arr, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.MonthlyRevenueOutput)
+	fc.Result = res
+	return ec.marshalNMonthlyRevenueOutput2ᚕᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_YearlyRevenueOutput_arr(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "YearlyRevenueOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "total":
+				return ec.fieldContext_MonthlyRevenueOutput_total(ctx, field)
+			case "month":
+				return ec.fieldContext_MonthlyRevenueOutput_month(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MonthlyRevenueOutput", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext___Directive_name(ctx, field)
 	if err != nil {
@@ -12115,7 +12260,7 @@ func (ec *executionContext) unmarshalInputCreateMovieInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "genre", "status", "language", "director", "cast", "poster", "rated", "duration", "trailer", "openingDay", "story"}
+	fieldsInOrder := [...]string{"title", "genre", "status", "language", "director", "cast", "rated", "duration", "trailer", "openingDay", "story", "file"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12164,13 +12309,6 @@ func (ec *executionContext) unmarshalInputCreateMovieInput(ctx context.Context, 
 				return it, err
 			}
 			it.Cast = data
-		case "poster":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poster"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Poster = data
 		case "rated":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rated"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -12206,6 +12344,13 @@ func (ec *executionContext) unmarshalInputCreateMovieInput(ctx context.Context, 
 				return it, err
 			}
 			it.Story = data
+		case "file":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+			data, err := ec.unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.File = data
 		}
 	}
 
@@ -12852,7 +12997,7 @@ func (ec *executionContext) unmarshalInputListShowTimeFilter(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"movieId", "theaterId", "date"}
+	fieldsInOrder := [...]string{"movieId", "roomId", "theaterId", "date"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12866,6 +13011,13 @@ func (ec *executionContext) unmarshalInputListShowTimeFilter(ctx context.Context
 				return it, err
 			}
 			it.MovieID = data
+		case "roomId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roomId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RoomID = data
 		case "theaterId":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("theaterId"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -13287,27 +13439,20 @@ func (ec *executionContext) unmarshalInputResetPasswordInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"code", "email", "newPassword", "confirmNewPassword"}
+	fieldsInOrder := [...]string{"token", "newPassword", "confirmNewPassword"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "code":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+		case "token":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("token"))
+			data, err := ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Code = data
-		case "email":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Email = data
+			it.Token = data
 		case "newPassword":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
 			data, err := ec.unmarshalNString2string(ctx, v)
@@ -13335,7 +13480,7 @@ func (ec *executionContext) unmarshalInputRevenueInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"year", "month", "type"}
+	fieldsInOrder := [...]string{"year"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13349,20 +13494,6 @@ func (ec *executionContext) unmarshalInputRevenueInput(ctx context.Context, obj 
 				return it, err
 			}
 			it.Year = data
-		case "month":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("month"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Month = data
-		case "type":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalNRevenueType2PopcornMovieᚋmodelᚐRevenueType(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Type = data
 		}
 	}
 
@@ -13376,7 +13507,7 @@ func (ec *executionContext) unmarshalInputUpdateMovieInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "title", "genre", "status", "language", "director", "cast", "poster", "rated", "duration", "trailer", "openingDay", "story"}
+	fieldsInOrder := [...]string{"id", "title", "genre", "status", "language", "director", "cast", "rated", "duration", "trailer", "openingDay", "story", "file"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13432,13 +13563,6 @@ func (ec *executionContext) unmarshalInputUpdateMovieInput(ctx context.Context, 
 				return it, err
 			}
 			it.Cast = data
-		case "poster":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("poster"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Poster = data
 		case "rated":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rated"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -13474,6 +13598,13 @@ func (ec *executionContext) unmarshalInputUpdateMovieInput(ctx context.Context, 
 				return it, err
 			}
 			it.Story = data
+		case "file":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("file"))
+			data, err := ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.File = data
 		}
 	}
 
@@ -14685,6 +14816,45 @@ func (ec *executionContext) _ListUserOutput(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var messageCreateOutputImplementors = []string{"MessageCreateOutput"}
+
+func (ec *executionContext) _MessageCreateOutput(ctx context.Context, sel ast.SelectionSet, obj *model.MessageCreateOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, messageCreateOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MessageCreateOutput")
+		case "output":
+			out.Values[i] = ec._MessageCreateOutput_output(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var monthlyRevenueOutputImplementors = []string{"MonthlyRevenueOutput"}
 
 func (ec *executionContext) _MonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, obj *model.MonthlyRevenueOutput) graphql.Marshaler {
@@ -14696,18 +14866,13 @@ func (ec *executionContext) _MonthlyRevenueOutput(ctx context.Context, sel ast.S
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("MonthlyRevenueOutput")
-		case "yearMonth":
-			out.Values[i] = ec._MonthlyRevenueOutput_yearMonth(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "dailyRevenues":
-			out.Values[i] = ec._MonthlyRevenueOutput_dailyRevenues(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "total":
 			out.Values[i] = ec._MonthlyRevenueOutput_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "month":
+			out.Values[i] = ec._MonthlyRevenueOutput_month(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -16503,6 +16668,50 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var yearlyRevenueOutputImplementors = []string{"YearlyRevenueOutput"}
+
+func (ec *executionContext) _YearlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, obj *model.YearlyRevenueOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, yearlyRevenueOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("YearlyRevenueOutput")
+		case "total":
+			out.Values[i] = ec._YearlyRevenueOutput_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "arr":
+			out.Values[i] = ec._YearlyRevenueOutput_arr(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var __DirectiveImplementors = []string{"__Directive"}
 
 func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionSet, obj *introspection.Directive) graphql.Marshaler {
@@ -16965,60 +17174,6 @@ func (ec *executionContext) unmarshalNCreateUserInput2PopcornMovieᚋmodelᚐCre
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDailyRevenueOutput2ᚕᚖPopcornMovieᚋmodelᚐDailyRevenueOutputᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.DailyRevenueOutput) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNDailyRevenueOutput2ᚖPopcornMovieᚋmodelᚐDailyRevenueOutput(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNDailyRevenueOutput2ᚖPopcornMovieᚋmodelᚐDailyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.DailyRevenueOutput) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._DailyRevenueOutput(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
 	res, err := graphql.UnmarshalFloatContext(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -17452,18 +17607,56 @@ func (ec *executionContext) unmarshalNLoginInput2PopcornMovieᚋmodelᚐLoginInp
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNMonthlyRevenueOutput2PopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v model.MonthlyRevenueOutput) graphql.Marshaler {
-	return ec._MonthlyRevenueOutput(ctx, sel, &v)
+func (ec *executionContext) marshalNMessageCreateOutput2PopcornMovieᚋmodelᚐMessageCreateOutput(ctx context.Context, sel ast.SelectionSet, v model.MessageCreateOutput) graphql.Marshaler {
+	return ec._MessageCreateOutput(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNMonthlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.MonthlyRevenueOutput) graphql.Marshaler {
+func (ec *executionContext) marshalNMessageCreateOutput2ᚖPopcornMovieᚋmodelᚐMessageCreateOutput(ctx context.Context, sel ast.SelectionSet, v *model.MessageCreateOutput) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._MonthlyRevenueOutput(ctx, sel, v)
+	return ec._MessageCreateOutput(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMonthlyRevenueOutput2ᚕᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v []*model.MonthlyRevenueOutput) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMonthlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalNMovie2PopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v ent.Movie) graphql.Marshaler {
@@ -17523,16 +17716,6 @@ func (ec *executionContext) unmarshalNResetPasswordInput2PopcornMovieᚋmodelᚐ
 func (ec *executionContext) unmarshalNRevenueInput2PopcornMovieᚋmodelᚐRevenueInput(ctx context.Context, v interface{}) (model.RevenueInput, error) {
 	res, err := ec.unmarshalInputRevenueInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNRevenueType2PopcornMovieᚋmodelᚐRevenueType(ctx context.Context, v interface{}) (model.RevenueType, error) {
-	var res model.RevenueType
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNRevenueType2PopcornMovieᚋmodelᚐRevenueType(ctx context.Context, sel ast.SelectionSet, v model.RevenueType) graphql.Marshaler {
-	return v
 }
 
 func (ec *executionContext) unmarshalNRole2PopcornMovieᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
@@ -17918,6 +18101,21 @@ func (ec *executionContext) unmarshalNUpdateUserInput2PopcornMovieᚋmodelᚐUpd
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {
+	res, err := graphql.UnmarshalUpload(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v graphql.Upload) graphql.Marshaler {
+	res := graphql.MarshalUpload(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNUser2PopcornMovieᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
@@ -17974,6 +18172,20 @@ func (ec *executionContext) marshalNUser2ᚖPopcornMovieᚋentᚐUser(ctx contex
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNYearlyRevenueOutput2PopcornMovieᚋmodelᚐYearlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v model.YearlyRevenueOutput) graphql.Marshaler {
+	return ec._YearlyRevenueOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNYearlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐYearlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.YearlyRevenueOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._YearlyRevenueOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -18333,6 +18545,13 @@ func (ec *executionContext) unmarshalOListTheaterFilter2ᚖPopcornMovieᚋmodel�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalOMonthlyRevenueOutput2ᚖPopcornMovieᚋmodelᚐMonthlyRevenueOutput(ctx context.Context, sel ast.SelectionSet, v *model.MonthlyRevenueOutput) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MonthlyRevenueOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOMovie2ᚕᚖPopcornMovieᚋentᚐMovie(ctx context.Context, sel ast.SelectionSet, v []*ent.Movie) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -18681,6 +18900,22 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 		return graphql.Null
 	}
 	res := graphql.MarshalTime(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (*graphql.Upload, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalUpload(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v *graphql.Upload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalUpload(*v)
 	return res
 }
 

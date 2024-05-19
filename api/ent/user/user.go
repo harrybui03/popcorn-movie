@@ -34,6 +34,8 @@ const (
 	EdgeTransactions = "transactions"
 	// EdgeComments holds the string denoting the comments edge name in mutations.
 	EdgeComments = "comments"
+	// EdgeResetPassword holds the string denoting the reset_password edge name in mutations.
+	EdgeResetPassword = "reset_password"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// TransactionsTable is the table that holds the transactions relation/edge.
@@ -50,6 +52,13 @@ const (
 	CommentsInverseTable = "comments"
 	// CommentsColumn is the table column denoting the comments relation/edge.
 	CommentsColumn = "user_id"
+	// ResetPasswordTable is the table that holds the reset_password relation/edge.
+	ResetPasswordTable = "reset_passwords"
+	// ResetPasswordInverseTable is the table name for the ResetPassword entity.
+	// It exists in this package in order to avoid circular dependency with the "resetpassword" package.
+	ResetPasswordInverseTable = "reset_passwords"
+	// ResetPasswordColumn is the table column denoting the reset_password relation/edge.
+	ResetPasswordColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -191,6 +200,20 @@ func ByComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByResetPasswordCount orders the results by reset_password count.
+func ByResetPasswordCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newResetPasswordStep(), opts...)
+	}
+}
+
+// ByResetPassword orders the results by reset_password terms.
+func ByResetPassword(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newResetPasswordStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTransactionsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -203,5 +226,12 @@ func newCommentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CommentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CommentsTable, CommentsColumn),
+	)
+}
+func newResetPasswordStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ResetPasswordInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ResetPasswordTable, ResetPasswordColumn),
 	)
 }

@@ -16,3 +16,7 @@ smtp:
   username: $SMTP_USERNAME
   password: $SMTP_PASSWORD
   from: $SMTP_FROM
+clouldinary:
+  name: $CLOULDINARY_NAME
+  apiKey: $CLOULDINARY_API_KEY
+  apiSecret: $CLOULDINARY_API_SECRET

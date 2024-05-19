@@ -2,8 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { faFacebookSquare, faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { useLogin, useSignUp } from "./hook/useMutation";
+import { toast } from "react-toastify";
 
-import useLogin from "./hook/useMutation";
 
 function LoginSignup() {
     const [isChecked, setIsChecked] = useState(true);
@@ -11,6 +12,12 @@ function LoginSignup() {
     const [loginErrorMessage, setLoginErrorMessage] = useState("");
     const [isSignupSuccess, setIsSignupSuccess] = useState(true);
     const [signupErrorMessage, setSignupErrorMessage] = useState("");
+    const [emailSU, setEmailSU] = useState('');
+    const [pwdSU, setPwdSU] = useState('');
+    const [username, setUsername] = useState('');
+    const [confirmPwd, setConfirmPwd] = useState('');
+    const [email, setEmail] = useState('');
+    const [pwd, setPwd] = useState('');
     const handleCheckboxChange = () => {
         setIsSignupSuccess(true);
         setSignupErrorMessage("");
@@ -19,18 +26,16 @@ function LoginSignup() {
         setIsChecked(!isChecked);
     };
 
-    
-    const [email, setEmail] = useState('');
-    const [pwd, setPwd] = useState('');
+    const { onLogin } =  useLogin({setLoginErrorMessage ,setIsLoginSuccess})
 
-    const {isSuccess , onLogin } =  useLogin({setLoginErrorMessage ,setIsLoginSuccess })
+    const {onSignup } = useSignUp({setIsSignupSuccess , setSignupErrorMessage})
 
     function handleSignIn() {
         onLogin({email , pwd})
     }
     
     function handleSignUp(){
-
+        onSignup({email:emailSU , displayName:username , password:pwdSU, confirmPassword:confirmPwd})
     }
     // const [emailSU, setEmailSU] = useState('');
     // const [pwdSU, setPwdSU] = useState('');
@@ -82,6 +87,7 @@ function LoginSignup() {
 
 
     return (
+        <>
         <div className="login-modal">
             <div className="row">
                 <div className="col-md-6 mx-auto" >
@@ -179,7 +185,9 @@ function LoginSignup() {
                     </div>
                 </div>
             </div>
-        </div>)
+        </div>
+        </>
+    )
 }
 
 export default LoginSignup

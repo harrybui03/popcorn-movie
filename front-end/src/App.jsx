@@ -16,7 +16,8 @@ import PaymentSuccess from './components/customerPage/PaymentSuccess';
 import PaymentFail from './components/customerPage/PaymentFail';
 import HistoryBooking from './components/customerPage/HistoryBooking';
 import VerifyAccount from './components/defaultPage/VerifyAccount';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 function App() {
   const getRoles = (accessToken) => {
     if (accessToken) {
@@ -139,7 +140,7 @@ function App() {
           <Route path='/demo' element={<DemoPage/>}/>
         </Routes>
       </BrowserRouter>
-
+      <ToastContainer />
     </>
   )
 }

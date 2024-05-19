@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type SeatCreate struct {
 	config
 	mutation *SeatMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetSeatNumber sets the "seat_number" field.
@@ -196,6 +199,7 @@ func (sc *SeatCreate) createSpec() (*Seat, *sqlgraph.CreateSpec) {
 		_node = &Seat{config: sc.config}
 		_spec = sqlgraph.NewCreateSpec(seat.Table, sqlgraph.NewFieldSpec(seat.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = sc.conflict
 	if id, ok := sc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -252,11 +256,254 @@ func (sc *SeatCreate) createSpec() (*Seat, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Seat.Create().
+//		SetSeatNumber(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.SeatUpsert) {
+//			SetSeatNumber(v+v).
+//		}).
+//		Exec(ctx)
+func (sc *SeatCreate) OnConflict(opts ...sql.ConflictOption) *SeatUpsertOne {
+	sc.conflict = opts
+	return &SeatUpsertOne{
+		create: sc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Seat.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (sc *SeatCreate) OnConflictColumns(columns ...string) *SeatUpsertOne {
+	sc.conflict = append(sc.conflict, sql.ConflictColumns(columns...))
+	return &SeatUpsertOne{
+		create: sc,
+	}
+}
+
+type (
+	// SeatUpsertOne is the builder for "upsert"-ing
+	//  one Seat node.
+	SeatUpsertOne struct {
+		create *SeatCreate
+	}
+
+	// SeatUpsert is the "OnConflict" setter.
+	SeatUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetSeatNumber sets the "seat_number" field.
+func (u *SeatUpsert) SetSeatNumber(v string) *SeatUpsert {
+	u.Set(seat.FieldSeatNumber, v)
+	return u
+}
+
+// UpdateSeatNumber sets the "seat_number" field to the value that was provided on create.
+func (u *SeatUpsert) UpdateSeatNumber() *SeatUpsert {
+	u.SetExcluded(seat.FieldSeatNumber)
+	return u
+}
+
+// SetRoomID sets the "room_id" field.
+func (u *SeatUpsert) SetRoomID(v uuid.UUID) *SeatUpsert {
+	u.Set(seat.FieldRoomID, v)
+	return u
+}
+
+// UpdateRoomID sets the "room_id" field to the value that was provided on create.
+func (u *SeatUpsert) UpdateRoomID() *SeatUpsert {
+	u.SetExcluded(seat.FieldRoomID)
+	return u
+}
+
+// SetCategory sets the "category" field.
+func (u *SeatUpsert) SetCategory(v seat.Category) *SeatUpsert {
+	u.Set(seat.FieldCategory, v)
+	return u
+}
+
+// UpdateCategory sets the "category" field to the value that was provided on create.
+func (u *SeatUpsert) UpdateCategory() *SeatUpsert {
+	u.SetExcluded(seat.FieldCategory)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *SeatUpsert) SetUpdatedAt(v time.Time) *SeatUpsert {
+	u.Set(seat.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *SeatUpsert) UpdateUpdatedAt() *SeatUpsert {
+	u.SetExcluded(seat.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Seat.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(seat.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *SeatUpsertOne) UpdateNewValues() *SeatUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(seat.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(seat.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Seat.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *SeatUpsertOne) Ignore() *SeatUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *SeatUpsertOne) DoNothing() *SeatUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the SeatCreate.OnConflict
+// documentation for more info.
+func (u *SeatUpsertOne) Update(set func(*SeatUpsert)) *SeatUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&SeatUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetSeatNumber sets the "seat_number" field.
+func (u *SeatUpsertOne) SetSeatNumber(v string) *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetSeatNumber(v)
+	})
+}
+
+// UpdateSeatNumber sets the "seat_number" field to the value that was provided on create.
+func (u *SeatUpsertOne) UpdateSeatNumber() *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateSeatNumber()
+	})
+}
+
+// SetRoomID sets the "room_id" field.
+func (u *SeatUpsertOne) SetRoomID(v uuid.UUID) *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetRoomID(v)
+	})
+}
+
+// UpdateRoomID sets the "room_id" field to the value that was provided on create.
+func (u *SeatUpsertOne) UpdateRoomID() *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateRoomID()
+	})
+}
+
+// SetCategory sets the "category" field.
+func (u *SeatUpsertOne) SetCategory(v seat.Category) *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetCategory(v)
+	})
+}
+
+// UpdateCategory sets the "category" field to the value that was provided on create.
+func (u *SeatUpsertOne) UpdateCategory() *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateCategory()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *SeatUpsertOne) SetUpdatedAt(v time.Time) *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *SeatUpsertOne) UpdateUpdatedAt() *SeatUpsertOne {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *SeatUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for SeatCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *SeatUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *SeatUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: SeatUpsertOne.ID is not supported by MySQL driver. Use SeatUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *SeatUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // SeatCreateBulk is the builder for creating many Seat entities in bulk.
 type SeatCreateBulk struct {
 	config
 	err      error
 	builders []*SeatCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Seat entities in the database.
@@ -286,6 +533,7 @@ func (scb *SeatCreateBulk) Save(ctx context.Context) ([]*Seat, error) {
 					_, err = mutators[i+1].Mutate(root, scb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = scb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, scb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -332,6 +580,179 @@ func (scb *SeatCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (scb *SeatCreateBulk) ExecX(ctx context.Context) {
 	if err := scb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Seat.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.SeatUpsert) {
+//			SetSeatNumber(v+v).
+//		}).
+//		Exec(ctx)
+func (scb *SeatCreateBulk) OnConflict(opts ...sql.ConflictOption) *SeatUpsertBulk {
+	scb.conflict = opts
+	return &SeatUpsertBulk{
+		create: scb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Seat.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (scb *SeatCreateBulk) OnConflictColumns(columns ...string) *SeatUpsertBulk {
+	scb.conflict = append(scb.conflict, sql.ConflictColumns(columns...))
+	return &SeatUpsertBulk{
+		create: scb,
+	}
+}
+
+// SeatUpsertBulk is the builder for "upsert"-ing
+// a bulk of Seat nodes.
+type SeatUpsertBulk struct {
+	create *SeatCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Seat.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(seat.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *SeatUpsertBulk) UpdateNewValues() *SeatUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(seat.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(seat.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Seat.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *SeatUpsertBulk) Ignore() *SeatUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *SeatUpsertBulk) DoNothing() *SeatUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the SeatCreateBulk.OnConflict
+// documentation for more info.
+func (u *SeatUpsertBulk) Update(set func(*SeatUpsert)) *SeatUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&SeatUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetSeatNumber sets the "seat_number" field.
+func (u *SeatUpsertBulk) SetSeatNumber(v string) *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetSeatNumber(v)
+	})
+}
+
+// UpdateSeatNumber sets the "seat_number" field to the value that was provided on create.
+func (u *SeatUpsertBulk) UpdateSeatNumber() *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateSeatNumber()
+	})
+}
+
+// SetRoomID sets the "room_id" field.
+func (u *SeatUpsertBulk) SetRoomID(v uuid.UUID) *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetRoomID(v)
+	})
+}
+
+// UpdateRoomID sets the "room_id" field to the value that was provided on create.
+func (u *SeatUpsertBulk) UpdateRoomID() *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateRoomID()
+	})
+}
+
+// SetCategory sets the "category" field.
+func (u *SeatUpsertBulk) SetCategory(v seat.Category) *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetCategory(v)
+	})
+}
+
+// UpdateCategory sets the "category" field to the value that was provided on create.
+func (u *SeatUpsertBulk) UpdateCategory() *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateCategory()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *SeatUpsertBulk) SetUpdatedAt(v time.Time) *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *SeatUpsertBulk) UpdateUpdatedAt() *SeatUpsertBulk {
+	return u.Update(func(s *SeatUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *SeatUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the SeatCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for SeatCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *SeatUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

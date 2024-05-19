@@ -3,10 +3,11 @@ package config
 import "time"
 
 type Configurations struct {
-	Postgres  PostgresConfig `mapstructure:"postgres"`
-	AppConfig AppConfig      `mapstructure:"app"`
-	Payos     PayosConfig    `mapstructure:"payos"`
-	SMTP      SMTPConfig     `mapstructure:"smtp"`
+	Postgres    PostgresConfig    `mapstructure:"postgres"`
+	AppConfig   AppConfig         `mapstructure:"app"`
+	Payos       PayosConfig       `mapstructure:"payos"`
+	SMTP        SMTPConfig        `mapstructure:"smtp"`
+	Cloundinary CloundinaryConfig `mapstructure:"clouldinary"`
 }
 
 type PostgresConfig struct {
@@ -33,4 +34,10 @@ type SMTPConfig struct {
 	SMTPUsername string `mapstructure:"username"`
 	SMTPPassword string `mapstructure:"password"`
 	SenderEmail  string `mapstructure:"from"`
+}
+
+type CloundinaryConfig struct {
+	Name      string `mapstructure:"name"`
+	ApiKey    string `mapstructure:"apiKey"`
+	ApiSecret string `mapstructure:"apiSecret"`
 }

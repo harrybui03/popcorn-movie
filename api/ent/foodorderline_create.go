@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type FoodOrderLineCreate struct {
 	config
 	mutation *FoodOrderLineMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetQuantity sets the "quantity" field.
@@ -196,6 +199,7 @@ func (folc *FoodOrderLineCreate) createSpec() (*FoodOrderLine, *sqlgraph.CreateS
 		_node = &FoodOrderLine{config: folc.config}
 		_spec = sqlgraph.NewCreateSpec(foodorderline.Table, sqlgraph.NewFieldSpec(foodorderline.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = folc.conflict
 	if id, ok := folc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -249,11 +253,267 @@ func (folc *FoodOrderLineCreate) createSpec() (*FoodOrderLine, *sqlgraph.CreateS
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.FoodOrderLine.Create().
+//		SetQuantity(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.FoodOrderLineUpsert) {
+//			SetQuantity(v+v).
+//		}).
+//		Exec(ctx)
+func (folc *FoodOrderLineCreate) OnConflict(opts ...sql.ConflictOption) *FoodOrderLineUpsertOne {
+	folc.conflict = opts
+	return &FoodOrderLineUpsertOne{
+		create: folc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.FoodOrderLine.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (folc *FoodOrderLineCreate) OnConflictColumns(columns ...string) *FoodOrderLineUpsertOne {
+	folc.conflict = append(folc.conflict, sql.ConflictColumns(columns...))
+	return &FoodOrderLineUpsertOne{
+		create: folc,
+	}
+}
+
+type (
+	// FoodOrderLineUpsertOne is the builder for "upsert"-ing
+	//  one FoodOrderLine node.
+	FoodOrderLineUpsertOne struct {
+		create *FoodOrderLineCreate
+	}
+
+	// FoodOrderLineUpsert is the "OnConflict" setter.
+	FoodOrderLineUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetQuantity sets the "quantity" field.
+func (u *FoodOrderLineUpsert) SetQuantity(v int) *FoodOrderLineUpsert {
+	u.Set(foodorderline.FieldQuantity, v)
+	return u
+}
+
+// UpdateQuantity sets the "quantity" field to the value that was provided on create.
+func (u *FoodOrderLineUpsert) UpdateQuantity() *FoodOrderLineUpsert {
+	u.SetExcluded(foodorderline.FieldQuantity)
+	return u
+}
+
+// AddQuantity adds v to the "quantity" field.
+func (u *FoodOrderLineUpsert) AddQuantity(v int) *FoodOrderLineUpsert {
+	u.Add(foodorderline.FieldQuantity, v)
+	return u
+}
+
+// SetFoodID sets the "food_id" field.
+func (u *FoodOrderLineUpsert) SetFoodID(v uuid.UUID) *FoodOrderLineUpsert {
+	u.Set(foodorderline.FieldFoodID, v)
+	return u
+}
+
+// UpdateFoodID sets the "food_id" field to the value that was provided on create.
+func (u *FoodOrderLineUpsert) UpdateFoodID() *FoodOrderLineUpsert {
+	u.SetExcluded(foodorderline.FieldFoodID)
+	return u
+}
+
+// SetTransactionID sets the "transaction_id" field.
+func (u *FoodOrderLineUpsert) SetTransactionID(v uuid.UUID) *FoodOrderLineUpsert {
+	u.Set(foodorderline.FieldTransactionID, v)
+	return u
+}
+
+// UpdateTransactionID sets the "transaction_id" field to the value that was provided on create.
+func (u *FoodOrderLineUpsert) UpdateTransactionID() *FoodOrderLineUpsert {
+	u.SetExcluded(foodorderline.FieldTransactionID)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *FoodOrderLineUpsert) SetUpdatedAt(v time.Time) *FoodOrderLineUpsert {
+	u.Set(foodorderline.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *FoodOrderLineUpsert) UpdateUpdatedAt() *FoodOrderLineUpsert {
+	u.SetExcluded(foodorderline.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.FoodOrderLine.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(foodorderline.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *FoodOrderLineUpsertOne) UpdateNewValues() *FoodOrderLineUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(foodorderline.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(foodorderline.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.FoodOrderLine.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *FoodOrderLineUpsertOne) Ignore() *FoodOrderLineUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *FoodOrderLineUpsertOne) DoNothing() *FoodOrderLineUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the FoodOrderLineCreate.OnConflict
+// documentation for more info.
+func (u *FoodOrderLineUpsertOne) Update(set func(*FoodOrderLineUpsert)) *FoodOrderLineUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&FoodOrderLineUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetQuantity sets the "quantity" field.
+func (u *FoodOrderLineUpsertOne) SetQuantity(v int) *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetQuantity(v)
+	})
+}
+
+// AddQuantity adds v to the "quantity" field.
+func (u *FoodOrderLineUpsertOne) AddQuantity(v int) *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.AddQuantity(v)
+	})
+}
+
+// UpdateQuantity sets the "quantity" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertOne) UpdateQuantity() *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateQuantity()
+	})
+}
+
+// SetFoodID sets the "food_id" field.
+func (u *FoodOrderLineUpsertOne) SetFoodID(v uuid.UUID) *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetFoodID(v)
+	})
+}
+
+// UpdateFoodID sets the "food_id" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertOne) UpdateFoodID() *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateFoodID()
+	})
+}
+
+// SetTransactionID sets the "transaction_id" field.
+func (u *FoodOrderLineUpsertOne) SetTransactionID(v uuid.UUID) *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "transaction_id" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertOne) UpdateTransactionID() *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *FoodOrderLineUpsertOne) SetUpdatedAt(v time.Time) *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertOne) UpdateUpdatedAt() *FoodOrderLineUpsertOne {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *FoodOrderLineUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for FoodOrderLineCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *FoodOrderLineUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *FoodOrderLineUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: FoodOrderLineUpsertOne.ID is not supported by MySQL driver. Use FoodOrderLineUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *FoodOrderLineUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // FoodOrderLineCreateBulk is the builder for creating many FoodOrderLine entities in bulk.
 type FoodOrderLineCreateBulk struct {
 	config
 	err      error
 	builders []*FoodOrderLineCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the FoodOrderLine entities in the database.
@@ -283,6 +543,7 @@ func (folcb *FoodOrderLineCreateBulk) Save(ctx context.Context) ([]*FoodOrderLin
 					_, err = mutators[i+1].Mutate(root, folcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = folcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, folcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -329,6 +590,186 @@ func (folcb *FoodOrderLineCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (folcb *FoodOrderLineCreateBulk) ExecX(ctx context.Context) {
 	if err := folcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.FoodOrderLine.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.FoodOrderLineUpsert) {
+//			SetQuantity(v+v).
+//		}).
+//		Exec(ctx)
+func (folcb *FoodOrderLineCreateBulk) OnConflict(opts ...sql.ConflictOption) *FoodOrderLineUpsertBulk {
+	folcb.conflict = opts
+	return &FoodOrderLineUpsertBulk{
+		create: folcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.FoodOrderLine.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (folcb *FoodOrderLineCreateBulk) OnConflictColumns(columns ...string) *FoodOrderLineUpsertBulk {
+	folcb.conflict = append(folcb.conflict, sql.ConflictColumns(columns...))
+	return &FoodOrderLineUpsertBulk{
+		create: folcb,
+	}
+}
+
+// FoodOrderLineUpsertBulk is the builder for "upsert"-ing
+// a bulk of FoodOrderLine nodes.
+type FoodOrderLineUpsertBulk struct {
+	create *FoodOrderLineCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.FoodOrderLine.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(foodorderline.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *FoodOrderLineUpsertBulk) UpdateNewValues() *FoodOrderLineUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(foodorderline.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(foodorderline.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.FoodOrderLine.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *FoodOrderLineUpsertBulk) Ignore() *FoodOrderLineUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *FoodOrderLineUpsertBulk) DoNothing() *FoodOrderLineUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the FoodOrderLineCreateBulk.OnConflict
+// documentation for more info.
+func (u *FoodOrderLineUpsertBulk) Update(set func(*FoodOrderLineUpsert)) *FoodOrderLineUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&FoodOrderLineUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetQuantity sets the "quantity" field.
+func (u *FoodOrderLineUpsertBulk) SetQuantity(v int) *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetQuantity(v)
+	})
+}
+
+// AddQuantity adds v to the "quantity" field.
+func (u *FoodOrderLineUpsertBulk) AddQuantity(v int) *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.AddQuantity(v)
+	})
+}
+
+// UpdateQuantity sets the "quantity" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertBulk) UpdateQuantity() *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateQuantity()
+	})
+}
+
+// SetFoodID sets the "food_id" field.
+func (u *FoodOrderLineUpsertBulk) SetFoodID(v uuid.UUID) *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetFoodID(v)
+	})
+}
+
+// UpdateFoodID sets the "food_id" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertBulk) UpdateFoodID() *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateFoodID()
+	})
+}
+
+// SetTransactionID sets the "transaction_id" field.
+func (u *FoodOrderLineUpsertBulk) SetTransactionID(v uuid.UUID) *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetTransactionID(v)
+	})
+}
+
+// UpdateTransactionID sets the "transaction_id" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertBulk) UpdateTransactionID() *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateTransactionID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *FoodOrderLineUpsertBulk) SetUpdatedAt(v time.Time) *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *FoodOrderLineUpsertBulk) UpdateUpdatedAt() *FoodOrderLineUpsertBulk {
+	return u.Update(func(s *FoodOrderLineUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *FoodOrderLineUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the FoodOrderLineCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for FoodOrderLineCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *FoodOrderLineUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

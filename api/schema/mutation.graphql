@@ -1,11 +1,11 @@
 type Mutation {
     #Auth
-    Signup(input: RegisterInput!):String!
+    Signup(input: RegisterInput!):User!
     Login(input: LoginInput!):JWT!
-    ForgotPassword(input: String!):String!
-    ResetPassword(input: ResetPasswordInput!):String!
+    ForgotPassword(input: String!):MessageCreateOutput!
+    ResetPassword(input: ResetPasswordInput!):MessageCreateOutput!
     RenewAccessToken(input: RenewAccessTokenInput!):JWT! @auth
-    ChangePassword(input: ChangePasswordInput!):String! @auth
+    ChangePassword(input: ChangePasswordInput!):MessageCreateOutput! @auth
     CreateUser(input: CreateUserInput!):User! @auth @hasRole(roles: [ADMIN ,TICKET_MANAGER])
     UpdateUser(input: UpdateUserInput!):User! @auth @hasRole(roles: [ADMIN, TICKET_MANAGER])
     #Transaction
@@ -17,7 +17,7 @@ type Mutation {
     #ShowTime
     CreateShowTime(input: CreateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
     UpdateShowTime(input: UpdateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
-    DeleteShowTime(input: ID!):String! @auth @hasRole(roles: [TICKET_MANAGER])
+    DeleteShowTime(input: ID!):MessageCreateOutput! @auth @hasRole(roles: [TICKET_MANAGER])
     #Tickets
     GenerateTicket(input: GenerateTicketInput!):[Ticket!] @auth @hasRole(roles: [TICKET_MANAGER])
 }

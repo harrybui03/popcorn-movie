@@ -12,13 +12,13 @@ import (
 )
 
 // Signup is the resolver for the Signup field.
-func (r *mutationResolver) Signup(ctx context.Context, input model.RegisterInput) (string, error) {
-	_, err := r.service.Auth().Register(ctx, input)
+func (r *mutationResolver) Signup(ctx context.Context, input model.RegisterInput) (*ent.User, error) {
+	userRecord, err := r.service.Auth().Register(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return "Register Successfully", nil
+	return userRecord, nil
 }
 
 // Login is the resolver for the Login field.
@@ -32,23 +32,27 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginInput) (*
 }
 
 // ForgotPassword is the resolver for the ForgotPassword field.
-func (r *mutationResolver) ForgotPassword(ctx context.Context, input string) (string, error) {
+func (r *mutationResolver) ForgotPassword(ctx context.Context, input string) (*model.MessageCreateOutput, error) {
 	message, err := r.service.Auth().ForgotPassword(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return message, nil
+	return &model.MessageCreateOutput{
+		Output: message,
+	}, nil
 }
 
 // ResetPassword is the resolver for the ResetPassword field.
-func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (string, error) {
+func (r *mutationResolver) ResetPassword(ctx context.Context, input model.ResetPasswordInput) (*model.MessageCreateOutput, error) {
 	message, err := r.service.Auth().ResetPassword(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return message, nil
+	return &model.MessageCreateOutput{
+		Output: message,
+	}, nil
 }
 
 // RenewAccessToken is the resolver for the RenewAccessToken field.
@@ -62,13 +66,15 @@ func (r *mutationResolver) RenewAccessToken(ctx context.Context, input model.Ren
 }
 
 // ChangePassword is the resolver for the ChangePassword field.
-func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (string, error) {
+func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangePasswordInput) (*model.MessageCreateOutput, error) {
 	changePasswordStr, err := r.service.Auth().ChangePassword(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return changePasswordStr, err
+	return &model.MessageCreateOutput{
+		Output: changePasswordStr,
+	}, nil
 }
 
 // CreateUser is the resolver for the CreateUser field.
@@ -164,13 +170,15 @@ func (r *mutationResolver) UpdateShowTime(ctx context.Context, input model.Updat
 }
 
 // DeleteShowTime is the resolver for the DeleteShowTime field.
-func (r *mutationResolver) DeleteShowTime(ctx context.Context, input string) (string, error) {
+func (r *mutationResolver) DeleteShowTime(ctx context.Context, input string) (*model.MessageCreateOutput, error) {
 	message, err := r.service.ShowTime().DeleteShowTime(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return message, nil
+	return &model.MessageCreateOutput{
+		Output: message,
+	}, nil
 }
 
 // GenerateTicket is the resolver for the GenerateTicket field.

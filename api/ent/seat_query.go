@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -27,6 +28,7 @@ type SeatQuery struct {
 	predicates  []predicate.Seat
 	withRoom    *RoomQuery
 	withTickets *TicketQuery
+	modifiers   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -421,6 +423,9 @@ func (sq *SeatQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Seat, e
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -508,6 +513,9 @@ func (sq *SeatQuery) loadTickets(ctx context.Context, query *TicketQuery, nodes 
 
 func (sq *SeatQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
+	if len(sq.modifiers) > 0 {
+		_spec.Modifiers = sq.modifiers
+	}
 	_spec.Node.Columns = sq.ctx.Fields
 	if len(sq.ctx.Fields) > 0 {
 		_spec.Unique = sq.ctx.Unique != nil && *sq.ctx.Unique
@@ -573,6 +581,9 @@ func (sq *SeatQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if sq.ctx.Unique != nil && *sq.ctx.Unique {
 		selector.Distinct()
 	}
+	for _, m := range sq.modifiers {
+		m(selector)
+	}
 	for _, p := range sq.predicates {
 		p(selector)
 	}
@@ -588,6 +599,32 @@ func (sq *SeatQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (sq *SeatQuery) ForUpdate(opts ...sql.LockOption) *SeatQuery {
+	if sq.driver.Dialect() == dialect.Postgres {
+		sq.Unique(false)
+	}
+	sq.modifiers = append(sq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return sq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (sq *SeatQuery) ForShare(opts ...sql.LockOption) *SeatQuery {
+	if sq.driver.Dialect() == dialect.Postgres {
+		sq.Unique(false)
+	}
+	sq.modifiers = append(sq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return sq
 }
 
 // SeatGroupBy is the group-by builder for Seat entities.

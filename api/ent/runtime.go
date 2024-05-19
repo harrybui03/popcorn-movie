@@ -7,6 +7,7 @@ import (
 	"PopcornMovie/ent/food"
 	"PopcornMovie/ent/foodorderline"
 	"PopcornMovie/ent/movie"
+	"PopcornMovie/ent/resetpassword"
 	"PopcornMovie/ent/room"
 	"PopcornMovie/ent/schema"
 	"PopcornMovie/ent/seat"
@@ -89,6 +90,12 @@ func init() {
 	movie.DefaultUpdatedAt = movieDescUpdatedAt.Default.(func() time.Time)
 	// movie.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	movie.UpdateDefaultUpdatedAt = movieDescUpdatedAt.UpdateDefault.(func() time.Time)
+	resetpasswordFields := schema.ResetPassword{}.Fields()
+	_ = resetpasswordFields
+	// resetpasswordDescCreatedAt is the schema descriptor for created_at field.
+	resetpasswordDescCreatedAt := resetpasswordFields[2].Descriptor()
+	// resetpassword.DefaultCreatedAt holds the default value on creation for the created_at field.
+	resetpassword.DefaultCreatedAt = resetpasswordDescCreatedAt.Default.(func() time.Time)
 	roomFields := schema.Room{}.Fields()
 	_ = roomFields
 	// roomDescRoomNumber is the schema descriptor for room_number field.

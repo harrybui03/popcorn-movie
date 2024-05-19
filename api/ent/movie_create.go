@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -21,6 +23,7 @@ type MovieCreate struct {
 	config
 	mutation *MovieMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetTitle sets the "title" field.
@@ -284,6 +287,7 @@ func (mc *MovieCreate) createSpec() (*Movie, *sqlgraph.CreateSpec) {
 		_node = &Movie{config: mc.config}
 		_spec = sqlgraph.NewCreateSpec(movie.Table, sqlgraph.NewFieldSpec(movie.FieldID, field.TypeUUID))
 	)
+	_spec.OnConflict = mc.conflict
 	if id, ok := mc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -379,11 +383,501 @@ func (mc *MovieCreate) createSpec() (*Movie, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Movie.Create().
+//		SetTitle(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MovieUpsert) {
+//			SetTitle(v+v).
+//		}).
+//		Exec(ctx)
+func (mc *MovieCreate) OnConflict(opts ...sql.ConflictOption) *MovieUpsertOne {
+	mc.conflict = opts
+	return &MovieUpsertOne{
+		create: mc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Movie.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mc *MovieCreate) OnConflictColumns(columns ...string) *MovieUpsertOne {
+	mc.conflict = append(mc.conflict, sql.ConflictColumns(columns...))
+	return &MovieUpsertOne{
+		create: mc,
+	}
+}
+
+type (
+	// MovieUpsertOne is the builder for "upsert"-ing
+	//  one Movie node.
+	MovieUpsertOne struct {
+		create *MovieCreate
+	}
+
+	// MovieUpsert is the "OnConflict" setter.
+	MovieUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetTitle sets the "title" field.
+func (u *MovieUpsert) SetTitle(v string) *MovieUpsert {
+	u.Set(movie.FieldTitle, v)
+	return u
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateTitle() *MovieUpsert {
+	u.SetExcluded(movie.FieldTitle)
+	return u
+}
+
+// SetGenre sets the "genre" field.
+func (u *MovieUpsert) SetGenre(v string) *MovieUpsert {
+	u.Set(movie.FieldGenre, v)
+	return u
+}
+
+// UpdateGenre sets the "genre" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateGenre() *MovieUpsert {
+	u.SetExcluded(movie.FieldGenre)
+	return u
+}
+
+// SetStatus sets the "status" field.
+func (u *MovieUpsert) SetStatus(v movie.Status) *MovieUpsert {
+	u.Set(movie.FieldStatus, v)
+	return u
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateStatus() *MovieUpsert {
+	u.SetExcluded(movie.FieldStatus)
+	return u
+}
+
+// SetLanguage sets the "language" field.
+func (u *MovieUpsert) SetLanguage(v string) *MovieUpsert {
+	u.Set(movie.FieldLanguage, v)
+	return u
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateLanguage() *MovieUpsert {
+	u.SetExcluded(movie.FieldLanguage)
+	return u
+}
+
+// SetDirector sets the "director" field.
+func (u *MovieUpsert) SetDirector(v string) *MovieUpsert {
+	u.Set(movie.FieldDirector, v)
+	return u
+}
+
+// UpdateDirector sets the "director" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateDirector() *MovieUpsert {
+	u.SetExcluded(movie.FieldDirector)
+	return u
+}
+
+// SetCast sets the "cast" field.
+func (u *MovieUpsert) SetCast(v string) *MovieUpsert {
+	u.Set(movie.FieldCast, v)
+	return u
+}
+
+// UpdateCast sets the "cast" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateCast() *MovieUpsert {
+	u.SetExcluded(movie.FieldCast)
+	return u
+}
+
+// SetPoster sets the "poster" field.
+func (u *MovieUpsert) SetPoster(v string) *MovieUpsert {
+	u.Set(movie.FieldPoster, v)
+	return u
+}
+
+// UpdatePoster sets the "poster" field to the value that was provided on create.
+func (u *MovieUpsert) UpdatePoster() *MovieUpsert {
+	u.SetExcluded(movie.FieldPoster)
+	return u
+}
+
+// SetRated sets the "rated" field.
+func (u *MovieUpsert) SetRated(v string) *MovieUpsert {
+	u.Set(movie.FieldRated, v)
+	return u
+}
+
+// UpdateRated sets the "rated" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateRated() *MovieUpsert {
+	u.SetExcluded(movie.FieldRated)
+	return u
+}
+
+// SetDuration sets the "duration" field.
+func (u *MovieUpsert) SetDuration(v int) *MovieUpsert {
+	u.Set(movie.FieldDuration, v)
+	return u
+}
+
+// UpdateDuration sets the "duration" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateDuration() *MovieUpsert {
+	u.SetExcluded(movie.FieldDuration)
+	return u
+}
+
+// AddDuration adds v to the "duration" field.
+func (u *MovieUpsert) AddDuration(v int) *MovieUpsert {
+	u.Add(movie.FieldDuration, v)
+	return u
+}
+
+// SetTrailer sets the "trailer" field.
+func (u *MovieUpsert) SetTrailer(v string) *MovieUpsert {
+	u.Set(movie.FieldTrailer, v)
+	return u
+}
+
+// UpdateTrailer sets the "trailer" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateTrailer() *MovieUpsert {
+	u.SetExcluded(movie.FieldTrailer)
+	return u
+}
+
+// SetOpeningDay sets the "opening_day" field.
+func (u *MovieUpsert) SetOpeningDay(v time.Time) *MovieUpsert {
+	u.Set(movie.FieldOpeningDay, v)
+	return u
+}
+
+// UpdateOpeningDay sets the "opening_day" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateOpeningDay() *MovieUpsert {
+	u.SetExcluded(movie.FieldOpeningDay)
+	return u
+}
+
+// SetStory sets the "story" field.
+func (u *MovieUpsert) SetStory(v string) *MovieUpsert {
+	u.Set(movie.FieldStory, v)
+	return u
+}
+
+// UpdateStory sets the "story" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateStory() *MovieUpsert {
+	u.SetExcluded(movie.FieldStory)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MovieUpsert) SetUpdatedAt(v time.Time) *MovieUpsert {
+	u.Set(movie.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MovieUpsert) UpdateUpdatedAt() *MovieUpsert {
+	u.SetExcluded(movie.FieldUpdatedAt)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Movie.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(movie.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MovieUpsertOne) UpdateNewValues() *MovieUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(movie.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(movie.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Movie.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *MovieUpsertOne) Ignore() *MovieUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MovieUpsertOne) DoNothing() *MovieUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MovieCreate.OnConflict
+// documentation for more info.
+func (u *MovieUpsertOne) Update(set func(*MovieUpsert)) *MovieUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MovieUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTitle sets the "title" field.
+func (u *MovieUpsertOne) SetTitle(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetTitle(v)
+	})
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateTitle() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateTitle()
+	})
+}
+
+// SetGenre sets the "genre" field.
+func (u *MovieUpsertOne) SetGenre(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetGenre(v)
+	})
+}
+
+// UpdateGenre sets the "genre" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateGenre() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateGenre()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *MovieUpsertOne) SetStatus(v movie.Status) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateStatus() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetLanguage sets the "language" field.
+func (u *MovieUpsertOne) SetLanguage(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetLanguage(v)
+	})
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateLanguage() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateLanguage()
+	})
+}
+
+// SetDirector sets the "director" field.
+func (u *MovieUpsertOne) SetDirector(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetDirector(v)
+	})
+}
+
+// UpdateDirector sets the "director" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateDirector() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateDirector()
+	})
+}
+
+// SetCast sets the "cast" field.
+func (u *MovieUpsertOne) SetCast(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetCast(v)
+	})
+}
+
+// UpdateCast sets the "cast" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateCast() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateCast()
+	})
+}
+
+// SetPoster sets the "poster" field.
+func (u *MovieUpsertOne) SetPoster(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetPoster(v)
+	})
+}
+
+// UpdatePoster sets the "poster" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdatePoster() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdatePoster()
+	})
+}
+
+// SetRated sets the "rated" field.
+func (u *MovieUpsertOne) SetRated(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetRated(v)
+	})
+}
+
+// UpdateRated sets the "rated" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateRated() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateRated()
+	})
+}
+
+// SetDuration sets the "duration" field.
+func (u *MovieUpsertOne) SetDuration(v int) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetDuration(v)
+	})
+}
+
+// AddDuration adds v to the "duration" field.
+func (u *MovieUpsertOne) AddDuration(v int) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.AddDuration(v)
+	})
+}
+
+// UpdateDuration sets the "duration" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateDuration() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateDuration()
+	})
+}
+
+// SetTrailer sets the "trailer" field.
+func (u *MovieUpsertOne) SetTrailer(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetTrailer(v)
+	})
+}
+
+// UpdateTrailer sets the "trailer" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateTrailer() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateTrailer()
+	})
+}
+
+// SetOpeningDay sets the "opening_day" field.
+func (u *MovieUpsertOne) SetOpeningDay(v time.Time) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetOpeningDay(v)
+	})
+}
+
+// UpdateOpeningDay sets the "opening_day" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateOpeningDay() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateOpeningDay()
+	})
+}
+
+// SetStory sets the "story" field.
+func (u *MovieUpsertOne) SetStory(v string) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetStory(v)
+	})
+}
+
+// UpdateStory sets the "story" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateStory() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateStory()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MovieUpsertOne) SetUpdatedAt(v time.Time) *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MovieUpsertOne) UpdateUpdatedAt() *MovieUpsertOne {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *MovieUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MovieCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MovieUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *MovieUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: MovieUpsertOne.ID is not supported by MySQL driver. Use MovieUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *MovieUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // MovieCreateBulk is the builder for creating many Movie entities in bulk.
 type MovieCreateBulk struct {
 	config
 	err      error
 	builders []*MovieCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Movie entities in the database.
@@ -413,6 +907,7 @@ func (mcb *MovieCreateBulk) Save(ctx context.Context) ([]*Movie, error) {
 					_, err = mutators[i+1].Mutate(root, mcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = mcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, mcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -459,6 +954,312 @@ func (mcb *MovieCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (mcb *MovieCreateBulk) ExecX(ctx context.Context) {
 	if err := mcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Movie.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.MovieUpsert) {
+//			SetTitle(v+v).
+//		}).
+//		Exec(ctx)
+func (mcb *MovieCreateBulk) OnConflict(opts ...sql.ConflictOption) *MovieUpsertBulk {
+	mcb.conflict = opts
+	return &MovieUpsertBulk{
+		create: mcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Movie.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (mcb *MovieCreateBulk) OnConflictColumns(columns ...string) *MovieUpsertBulk {
+	mcb.conflict = append(mcb.conflict, sql.ConflictColumns(columns...))
+	return &MovieUpsertBulk{
+		create: mcb,
+	}
+}
+
+// MovieUpsertBulk is the builder for "upsert"-ing
+// a bulk of Movie nodes.
+type MovieUpsertBulk struct {
+	create *MovieCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Movie.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(movie.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+func (u *MovieUpsertBulk) UpdateNewValues() *MovieUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(movie.FieldID)
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(movie.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Movie.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *MovieUpsertBulk) Ignore() *MovieUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *MovieUpsertBulk) DoNothing() *MovieUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the MovieCreateBulk.OnConflict
+// documentation for more info.
+func (u *MovieUpsertBulk) Update(set func(*MovieUpsert)) *MovieUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&MovieUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetTitle sets the "title" field.
+func (u *MovieUpsertBulk) SetTitle(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetTitle(v)
+	})
+}
+
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateTitle() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateTitle()
+	})
+}
+
+// SetGenre sets the "genre" field.
+func (u *MovieUpsertBulk) SetGenre(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetGenre(v)
+	})
+}
+
+// UpdateGenre sets the "genre" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateGenre() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateGenre()
+	})
+}
+
+// SetStatus sets the "status" field.
+func (u *MovieUpsertBulk) SetStatus(v movie.Status) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetStatus(v)
+	})
+}
+
+// UpdateStatus sets the "status" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateStatus() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateStatus()
+	})
+}
+
+// SetLanguage sets the "language" field.
+func (u *MovieUpsertBulk) SetLanguage(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetLanguage(v)
+	})
+}
+
+// UpdateLanguage sets the "language" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateLanguage() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateLanguage()
+	})
+}
+
+// SetDirector sets the "director" field.
+func (u *MovieUpsertBulk) SetDirector(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetDirector(v)
+	})
+}
+
+// UpdateDirector sets the "director" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateDirector() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateDirector()
+	})
+}
+
+// SetCast sets the "cast" field.
+func (u *MovieUpsertBulk) SetCast(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetCast(v)
+	})
+}
+
+// UpdateCast sets the "cast" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateCast() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateCast()
+	})
+}
+
+// SetPoster sets the "poster" field.
+func (u *MovieUpsertBulk) SetPoster(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetPoster(v)
+	})
+}
+
+// UpdatePoster sets the "poster" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdatePoster() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdatePoster()
+	})
+}
+
+// SetRated sets the "rated" field.
+func (u *MovieUpsertBulk) SetRated(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetRated(v)
+	})
+}
+
+// UpdateRated sets the "rated" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateRated() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateRated()
+	})
+}
+
+// SetDuration sets the "duration" field.
+func (u *MovieUpsertBulk) SetDuration(v int) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetDuration(v)
+	})
+}
+
+// AddDuration adds v to the "duration" field.
+func (u *MovieUpsertBulk) AddDuration(v int) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.AddDuration(v)
+	})
+}
+
+// UpdateDuration sets the "duration" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateDuration() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateDuration()
+	})
+}
+
+// SetTrailer sets the "trailer" field.
+func (u *MovieUpsertBulk) SetTrailer(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetTrailer(v)
+	})
+}
+
+// UpdateTrailer sets the "trailer" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateTrailer() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateTrailer()
+	})
+}
+
+// SetOpeningDay sets the "opening_day" field.
+func (u *MovieUpsertBulk) SetOpeningDay(v time.Time) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetOpeningDay(v)
+	})
+}
+
+// UpdateOpeningDay sets the "opening_day" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateOpeningDay() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateOpeningDay()
+	})
+}
+
+// SetStory sets the "story" field.
+func (u *MovieUpsertBulk) SetStory(v string) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetStory(v)
+	})
+}
+
+// UpdateStory sets the "story" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateStory() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateStory()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *MovieUpsertBulk) SetUpdatedAt(v time.Time) *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *MovieUpsertBulk) UpdateUpdatedAt() *MovieUpsertBulk {
+	return u.Update(func(s *MovieUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// Exec executes the query.
+func (u *MovieUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MovieCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for MovieCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *MovieUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

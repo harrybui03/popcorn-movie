@@ -197,6 +197,16 @@ func (i impl) ListShowTimes(ctx context.Context, input model.ListShowTimeInput) 
 			query.Where(showtime.MovieID(movieID))
 		}
 
+		if input.Filter.RoomID != nil {
+			roomID, err := uuid.Parse(*input.Filter.RoomID)
+			if err != nil {
+				i.logger.Error(err.Error())
+				return nil, 0, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+			}
+
+			query.Where(showtime.RoomID(roomID))
+		}
+
 	}
 
 	count, err := i.repository.ShowTime().CountShowTime(ctx, query)

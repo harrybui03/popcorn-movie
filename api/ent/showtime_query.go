@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -29,6 +30,7 @@ type ShowTimeQuery struct {
 	withRoom    *RoomQuery
 	withMovie   *MovieQuery
 	withTickets *TicketQuery
+	modifiers   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -458,6 +460,9 @@ func (stq *ShowTimeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Sh
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(stq.modifiers) > 0 {
+		_spec.Modifiers = stq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -580,6 +585,9 @@ func (stq *ShowTimeQuery) loadTickets(ctx context.Context, query *TicketQuery, n
 
 func (stq *ShowTimeQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := stq.querySpec()
+	if len(stq.modifiers) > 0 {
+		_spec.Modifiers = stq.modifiers
+	}
 	_spec.Node.Columns = stq.ctx.Fields
 	if len(stq.ctx.Fields) > 0 {
 		_spec.Unique = stq.ctx.Unique != nil && *stq.ctx.Unique
@@ -648,6 +656,9 @@ func (stq *ShowTimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if stq.ctx.Unique != nil && *stq.ctx.Unique {
 		selector.Distinct()
 	}
+	for _, m := range stq.modifiers {
+		m(selector)
+	}
 	for _, p := range stq.predicates {
 		p(selector)
 	}
@@ -663,6 +674,32 @@ func (stq *ShowTimeQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// ForUpdate locks the selected rows against concurrent updates, and prevent them from being
+// updated, deleted or "selected ... for update" by other sessions, until the transaction is
+// either committed or rolled-back.
+func (stq *ShowTimeQuery) ForUpdate(opts ...sql.LockOption) *ShowTimeQuery {
+	if stq.driver.Dialect() == dialect.Postgres {
+		stq.Unique(false)
+	}
+	stq.modifiers = append(stq.modifiers, func(s *sql.Selector) {
+		s.ForUpdate(opts...)
+	})
+	return stq
+}
+
+// ForShare behaves similarly to ForUpdate, except that it acquires a shared mode lock
+// on any rows that are read. Other sessions can read the rows, but cannot modify them
+// until your transaction commits.
+func (stq *ShowTimeQuery) ForShare(opts ...sql.LockOption) *ShowTimeQuery {
+	if stq.driver.Dialect() == dialect.Postgres {
+		stq.Unique(false)
+	}
+	stq.modifiers = append(stq.modifiers, func(s *sql.Selector) {
+		s.ForShare(opts...)
+	})
+	return stq
 }
 
 // ShowTimeGroupBy is the group-by builder for ShowTime entities.

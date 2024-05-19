@@ -18,6 +18,9 @@ type FoodOrderLine func(*sql.Selector)
 // Movie is the predicate function for movie builders.
 type Movie func(*sql.Selector)
 
+// ResetPassword is the predicate function for resetpassword builders.
+type ResetPassword func(*sql.Selector)
+
 // Room is the predicate function for room builders.
 type Room func(*sql.Selector)
 

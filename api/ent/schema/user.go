@@ -32,5 +32,6 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("transactions", Transaction.Type),
 		edge.To("comments", Comment.Type),
+		edge.To("reset_password", ResetPassword.Type),
 	}
 }

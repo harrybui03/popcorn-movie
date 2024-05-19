@@ -21,7 +21,7 @@ type Service interface {
 	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*payos.CheckoutResponseDataType, error)
 	GetAllTransactions(ctx context.Context, input model.ListTransactionInput) ([]*ent.Transaction, int, error)
 	VerifyPaymentData(ctx context.Context, webhookDataReq payos.WebhookType) error
-	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error)
+	GetRevenue(ctx context.Context, input model.RevenueInput) (*model.YearlyRevenueOutput, error)
 }
 
 type impl struct {
@@ -30,8 +30,27 @@ type impl struct {
 	appConfig  config.Configurations
 }
 
-func (i impl) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.MonthlyRevenueOutput, error) {
-	return nil, nil
+func (i impl) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.YearlyRevenueOutput, error) {
+	total := 0.0
+	monthlyArr := make([]*model.MonthlyRevenueOutput, 12)
+	for idx := 1; idx <= 12; idx++ {
+		totalInMonth, err := i.repository.Transaction().GetRevenue(ctx, input.Year, idx)
+		if err != nil {
+			i.logger.Error(err.Error())
+			return nil, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+		}
+		monthlyArr[idx-1] = &model.MonthlyRevenueOutput{
+			Month: idx,
+			Total: totalInMonth,
+		}
+
+		total += totalInMonth
+	}
+
+	return &model.YearlyRevenueOutput{
+		Total: total,
+		Arr:   monthlyArr,
+	}, nil
 }
 
 func (i impl) VerifyPaymentData(ctx context.Context, webhookDataReq payos.WebhookType) error {

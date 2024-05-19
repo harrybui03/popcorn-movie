@@ -1,3 +1,5 @@
+scalar Upload
+
 type Movie{
     id:ID!
     title:String!
@@ -41,12 +43,12 @@ input CreateMovieInput{
     language:String!
     director:String!
     cast:String!
-    poster:String!
     rated:String!
     duration:Int!
     trailer:String!
     openingDay:Time!
     story:String!
+    file:Upload!
 }
 
 input UpdateMovieInput {
@@ -57,10 +59,10 @@ input UpdateMovieInput {
     language:String
     director:String
     cast:String
-    poster:String
     rated:String
     duration:Int
     trailer:String
     openingDay:Time
     story:String
+    file:Upload
 }
