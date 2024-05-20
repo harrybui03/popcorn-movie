@@ -18,6 +18,7 @@ function useLogin({setIsLoginSuccess,setLoginErrorMessage }) {
     onSuccess: (data) => {
         const accessToken = data?.[login.operation]?.accessToken
         const refreshToken = data?.[login.operation]?.refreshToken
+        toast.success('Đăng nhập thành công')
         if (accessToken && refreshToken) {
             const token = {accessToken ,refreshToken }
             auth.setToken(JSON.stringify(token));
@@ -25,7 +26,7 @@ function useLogin({setIsLoginSuccess,setLoginErrorMessage }) {
         }
     },
     onError: (error) => {
-      toast.error('Fail to Login')
+      toast.error('Sai Email hoặc mật khẩu')
     }
   })
 
@@ -59,11 +60,10 @@ function useSignUp({setIsSignupSuccess ,setSignupErrorMessage}) {
         input: input,
       }),
       onSuccess: (data) =>{
-        // Show popup
-        console.log(data)
+        toast.success('Đăng kí thành công')
       },
       onError: (error) => {
-        console.log(error)
+        toast.error('Email đã tồn tại trong hệ thống')
       }
   })
 
@@ -93,4 +93,73 @@ function useSignUp({setIsSignupSuccess ,setSignupErrorMessage}) {
   }
 }
 
-export  {useLogin , useSignUp}
+function useForgotPassword() {
+  const {forgotPassword} = useGraphql()
+  const {mutate , isSuccess} = useMutation({
+    mutationFn: (input) =>
+    fetchGraphQL(forgotPassword.query, {
+        input:input
+    }),
+    onSuccess: (data) =>{
+        toast.success('Một thư email khôi phục mật khẩu đã được gửi cho địa chỉ email tài khoản của bạn')
+    },
+    onError:(error) => {
+        console.log('Error')
+
+        toast.error('Email không tồn tại')
+    }
+  })
+
+  function onForgot(email) {
+    if (email === '') {
+      toast.error('Vui lòng điền đủ thông tin')
+    }
+    else {
+      try {
+        mutate(email)
+     } catch (error) {
+         console.error('Error during forgotpassword:', error);
+     }
+    }
+    
+  }
+
+  return {
+    onForgot,
+    isSuccess
+  }
+}
+
+function useResetPassword() {
+  const {resetPassword} = useGraphql()
+  const navigate = useNavigate()
+  const {mutate , isSuccess} = useMutation({
+    mutationFn: (input) => 
+      fetchGraphQL(resetPassword.query , {
+        input:input
+      }),
+      onSuccess: (data) => {
+        toast.success('Reset mật khẩu thành công ')
+        navigate("/")
+      },
+      onError:(error) => {
+        toast.error('Reset mật khẩu thất bại')
+      }
+  })
+
+  function onReset({newPassword , confirmNewPassword , token}){
+    try {
+      console.log({newPassword , confirmNewPassword , token})
+      mutate({newPassword ,confirmNewPassword , token})
+   } catch (error) {
+       console.error('Error during sign-in:', error);
+   }
+  }
+
+  return {
+    isSuccess,
+    onReset
+  }
+}
+
+export  {useLogin , useSignUp , useForgotPassword ,useResetPassword}

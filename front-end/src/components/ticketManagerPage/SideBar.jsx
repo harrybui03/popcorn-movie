@@ -18,8 +18,8 @@ function SideBar({ chosen, isCollapse }) {
                 <div onClick={() => handleChosenData('showtime')} id='showtime' className={`items p-3 ${chosen === 'showtime' ? 'activeItems' : ''}`}><FontAwesomeIcon className='mx-2' icon={faTicket} /> Xếp lịch chiếu</div>
                 <div onClick={() => handleChosenData('profit')} id='profit' className={`items p-3 ${chosen === 'profit' ? 'activeItems' : ''}`}><FontAwesomeIcon className='mx-2' icon={faChartLine} /> Doanh thu</div>
             </nav>
-            <nav id="sidebar-background" className={`col-2 ${!isCollapse ? '' : 'collapse'}`} style={{flexShrink: '0'}}>
-            </nav>
+            {/* <nav id="sidebar-background" className={`col-2 ${!isCollapse ? '' : 'collapse'}`} style={{flexShrink: '0'}}>
+            </nav> */}
         </>
     )
 }

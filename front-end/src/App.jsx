@@ -18,6 +18,8 @@ import HistoryBooking from './components/customerPage/HistoryBooking';
 import VerifyAccount from './components/defaultPage/VerifyAccount';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ForgotPassword from './components/defaultPage/ForgotPassword';
+import ResetPassword from './components/defaultPage/RestPassword';
 function App() {
   const getRoles = (accessToken) => {
     if (accessToken) {
@@ -85,6 +87,13 @@ function App() {
               <DefaultPage />
             )
           } />
+          <Route path='/forgot-password' element={
+              <ForgotPassword/>
+          } />
+          <Route path='/reset-password' element={
+            <ResetPassword />
+          }>
+          </Route>
           <Route path='/payments/success' element={
             roles.find(role => role === "CUSTOMER") ? (
               <PrivateRoute>

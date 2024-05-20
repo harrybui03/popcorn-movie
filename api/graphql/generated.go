@@ -1907,8 +1907,8 @@ input UpdateMovieInput {
     #Users
     Users(input: ListUserInput!):ListUserOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
     #Transaction
-    Transactions(input: ListTransactionInput!):ListTransactionOutput!
-    GetRevenue(input: RevenueInput!):YearlyRevenueOutput!
+    Transactions(input: ListTransactionInput!):ListTransactionOutput! @auth @hasRole(roles: [CUSTOMER])
+    GetRevenue(input: RevenueInput!):YearlyRevenueOutput! @auth @hasRole(roles: [ADMIN , TICKET_MANAGER ])
     #Ticket
     Tickets(input: ListTicketInput!):ListTicketOutput!
 }`, BuiltIn: false},
@@ -2067,7 +2067,7 @@ type ListTheatersOutput{
 }
 
 input CreateTicketInput{
-    seatID: ID!
+    ID: ID!
     price: Float!
 }
 
@@ -2116,7 +2116,6 @@ type CheckOutOutput{
 input CreateTransactionInput{
     ticketIDs: [CreateTicketInput!]!
     foods: [CreateFoodOrderLineInput!]!
-    showTimeID: ID!
 }
 
 input ListTransactionFilter{
@@ -8295,8 +8294,38 @@ func (ec *executionContext) _Query_Transactions(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Transactions(rctx, fc.Args["input"].(model.ListTransactionInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Transactions(rctx, fc.Args["input"].(model.ListTransactionInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕPopcornMovieᚋmodelᚐRoleᚄ(ctx, []interface{}{"CUSTOMER"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, roles)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.ListTransactionOutput); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/model.ListTransactionOutput`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8356,8 +8385,38 @@ func (ec *executionContext) _Query_GetRevenue(ctx context.Context, field graphql
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetRevenue(rctx, fc.Args["input"].(model.RevenueInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetRevenue(rctx, fc.Args["input"].(model.RevenueInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			roles, err := ec.unmarshalORole2ᚕPopcornMovieᚋmodelᚐRoleᚄ(ctx, []interface{}{"ADMIN", "TICKET_MANAGER"})
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, roles)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.YearlyRevenueOutput); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/model.YearlyRevenueOutput`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -12412,20 +12471,20 @@ func (ec *executionContext) unmarshalInputCreateTicketInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"seatID", "price"}
+	fieldsInOrder := [...]string{"ID", "price"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "seatID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seatID"))
+		case "ID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ID"))
 			data, err := ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.SeatID = data
+			it.ID = data
 		case "price":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("price"))
 			data, err := ec.unmarshalNFloat2float64(ctx, v)
@@ -12446,7 +12505,7 @@ func (ec *executionContext) unmarshalInputCreateTransactionInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"ticketIDs", "foods", "showTimeID"}
+	fieldsInOrder := [...]string{"ticketIDs", "foods"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12467,13 +12526,6 @@ func (ec *executionContext) unmarshalInputCreateTransactionInput(ctx context.Con
 				return it, err
 			}
 			it.Foods = data
-		case "showTimeID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("showTimeID"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ShowTimeID = data
 		}
 	}
 

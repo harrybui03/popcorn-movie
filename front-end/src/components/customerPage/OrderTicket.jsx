@@ -13,10 +13,10 @@ import './styles.css'
 import useAuth from "../../hooks/useAuth";
 import {  useGetMovieByID } from '../defaultPage/hook/useQuery';
 import { useGetAllSeats, useGetAllShowTimes, useGetAllThearters, useGetAllTickets  } from './hook/useQuery';
+import { useCreateTransaction } from './hook/useMutation';
 
 function CustomerDashBoard(params) {
   const { id } = useParams();
-  const auth = useAuth();
 
   const dataTheaters = useGetAllThearters()
   const theater = dataTheaters?.data??[]
@@ -25,7 +25,7 @@ function CustomerDashBoard(params) {
   const [theaterChosen, setTheaterChosen] = useState(theater[0]?.id);
   const [showtimeChosen, setShowTimeChosen] = useState(null);
   const [seats , setSeats] = useState([])
-  const showTimesData = useGetAllShowTimes(theaterChosen ,id)
+  const showTimesData = useGetAllShowTimes(theaterChosen ,id , dateChosen)
   const movieData = useGetMovieByID(id)
   const movie = movieData?.data?.GetMovieByID
   const ticketsData = useGetAllTickets(showtimeChosen?.id)
@@ -37,7 +37,7 @@ function CustomerDashBoard(params) {
   const [seatNumbers, setSeatNumbers] = useState('');
 
   const [foods, setFoods] = useState([]);
-  const [feeFoods, setfeeFoods] = useState(0);
+  const {onCreateTransaction} = useCreateTransaction()
 
   // const showtimes = showTimesData.data
 
@@ -58,38 +58,18 @@ function CustomerDashBoard(params) {
   //   return timeA - timeB;
   // });
 
-  // const getTheater = async () => {
-  //   try {
-  //     // Địa chỉ API và tham số
-  //     const apiUrl = 'http://localhost:8080/theaters';
-
-  //     // Gọi API bằng phương thức GET
-  //     const response = await fetch(apiUrl);
-
-  //     // Kiểm tra trạng thái của response
-  //     if (!response.ok) {
-  //       throw new Error('Network response was not ok');
-  //     }
-  //     else {
-  //       // Chuyển đổi response thành JSON
-  //       const result = await response.json();
-  //       // Cập nhật state với dữ liệu từ API
-  //       setTheater(result);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
-
   const getDate = () => {
     const today = new Date();
     const fiveDays = Array.from({ length: 5 }, (_, index) => {
       const currentDate = addDays(today, index);
       return format(currentDate, 'dd/MM/yyyy');
     });
-    return fiveDays
+    setDate(fiveDays);
   };
 
+  useEffect(() => {
+    getDate();
+  }, []);
 
 
   // const getShowTime = async (idMovie, idTheater, date) => {
@@ -117,9 +97,7 @@ function CustomerDashBoard(params) {
   
   
 
-  // useEffect(() => {
-  //   getDate();
-  // }, []);
+
 
   useEffect(() => {
     setTheaterChosen(theater[0]?.id);
@@ -128,13 +106,6 @@ function CustomerDashBoard(params) {
   }, [movie, theater, date]);
 
 
-  useEffect(() => {
-    // console.log(theaterChosen);
-    // console.log(dateChosen);
-    // if (theaterChosen) {
-    //   getShowTime(id, theaterChosen, dateChosen);
-    // }
-  }, [dateChosen, theaterChosen]);
 
   const handleChangeTheater = (event) => {
     setTheaterChosen(event.target.value);
@@ -143,40 +114,6 @@ function CustomerDashBoard(params) {
   const handleChangeDate = (event) => {
     setDateChosen(event.target.value);
   };
-
-
-
-  // const getTickets = async (idShowtime) => {
-  //   try {
-  //     // Địa chỉ API và tham số
-  //     const apiUrl = `http://localhost:8080/tickets?showtime=${idShowtime}`;
-
-  //     // Gọi API bằng phương thức GET
-  //     const response = await fetch(apiUrl);
-
-  //     // Kiểm tra trạng thái của response
-  //     if (!response.ok) {
-  //       throw new Error('Network response was not ok');
-  //     }
-  //     else {
-  //       // Chuyển đổi response thành JSON
-  //       const result = await response.json();
-  //       result.sort((a, b) => {
-  //         const aPrefix = a.seat.seatNumber.substring(0, 1);
-  //         const bPrefix = b.seat.seatNumber.substring(0, 1);
-  //         if (aPrefix === bPrefix) {
-  //           const aNumber = parseInt(a.seat.seatNumber.substring(1), 10);
-  //           const bNumber = parseInt(b.seat.seatNumber.substring(1), 10);
-  //           return aNumber - bNumber;
-  //         }
-  //         return aPrefix.localeCompare(bPrefix);
-  //       });
-  //       setTickets(result);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // }
 
   const handleChooseSeat = (showtime) => {
     setStep('choose-seat');
@@ -253,7 +190,7 @@ function CustomerDashBoard(params) {
     let sum = 0;
     let str = '';
     seats.forEach(e => {
-      sum += e.Price;
+      sum += e.Seat.Category == 'STANDARD'  ? e.Price  : e.Price * 2;
       str += e.Seat.SeatNumber + ', ';
     })
     setSeatNumbers(str.substring(0, str.length - 2));
@@ -279,31 +216,44 @@ function CustomerDashBoard(params) {
     } else {
       setDisabledBtnPayment(true);
       setMessage({ isShow: true, text: 'Đang xử lý dữ liệu, vui lòng đợi...', status: 'loading' });
-      const response = await postCheckoutInit();
-      setDisabledBtnPayment(false);
-      // setMessage({ isShow: false, text: '', status: '' });
-      if (response && response.status === 'Success') {
-        console.log(seats, foods);
-        let seatId = [];
-        // let foodId = [];
-        for (let i of seats) {
-          seatId.push(i.id);
-        }
-        // for (let i of foods) {
-        //   Thêm food here
-        //   {
-        //     "foodId": 0,
-        //     "quantity": 0
-        //   }
-        //   foodId.push()
-        // }
-        const item = {
-          "ticketIds": seatId,
-          "orderLineDtoList": []
-        };
-        localStorage.setItem('listItem', JSON.stringify(item));
-        window.location.href = response.redirectUrl;
+
+      const seatRecords = seats.map((item) => ({
+        ID: item.ID,
+        price: item.Price,
+      }));
+
+
+      const foodRecords = foods.map((item) => ({
+        foodID: item.id , quantity: item.quantity
       }
+      ))
+
+      onCreateTransaction({ticketIDs:seatRecords , foods:foodRecords})
+
+      setDisabledBtnPayment(false);
+      // // setMessage({ isShow: false, text: '', status: '' });
+      // if (response && response.status === 'Success') {
+      //   console.log(seats, foods);
+      //   let seatId = [];
+      //   // let foodId = [];
+      //   for (let i of seats) {
+      //     seatId.push(i.id);
+      //   }
+      //   // for (let i of foods) {
+      //   //   Thêm food here
+      //   //   {
+      //   //     "foodId": 0,
+      //   //     "quantity": 0
+      //   //   }
+      //   //   foodId.push()
+      //   // }
+      //   const item = {
+      //     "ticketIds": seatId,
+      //     "orderLineDtoList": []
+      //   };
+      //   localStorage.setItem('listItem', JSON.stringify(item));
+      //   window.location.href = response.redirectUrl;
+      // }
     }
   }
 
@@ -697,10 +647,10 @@ function CustomerDashBoard(params) {
               <div className='fs-5 my-2' style={{ textAlign: 'start' }}>Chọn hình thức thanh toán</div>
               <div className='my-1 d-flex justify-content-start align-items-center'>
                 <input onChange={handlePaymentMethod} className='radio-button mx-3' type="checkbox" id="option1" checked={paymentMethod}></input>
-                <label htmlFor="option1">Paypal</label>
+                <label htmlFor="option1">PaypOS</label>
                 <br />
               </div>
-              <img onClick={handlePaymentMethod} className='mx-5' src="https://th.bing.com/th/id/OIP.wBKSzdf1HTUgx1Ax_EecKwHaHa?rs=1&pid=ImgDetMain" style={{ width: '3rem' }} alt="logo Paypal" />
+              <img onClick={handlePaymentMethod} className='mx-5' src="https://payos.vn/wp-content/uploads/sites/13/2023/07/Untitled-design-8.svg" style={{ width: '3rem' }} alt="logo Paypal" />
 
             </div>
           </div>

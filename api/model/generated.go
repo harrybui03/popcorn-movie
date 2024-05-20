@@ -67,14 +67,13 @@ type CreateShowTimeInput struct {
 }
 
 type CreateTicketInput struct {
-	SeatID string  `json:"seatID"`
-	Price  float64 `json:"price"`
+	ID    string  `json:"ID"`
+	Price float64 `json:"price"`
 }
 
 type CreateTransactionInput struct {
-	TicketIDs  []*CreateTicketInput        `json:"ticketIDs"`
-	Foods      []*CreateFoodOrderLineInput `json:"foods"`
-	ShowTimeID string                      `json:"showTimeID"`
+	TicketIDs []*CreateTicketInput        `json:"ticketIDs"`
+	Foods     []*CreateFoodOrderLineInput `json:"foods"`
 }
 
 type CreateUserInput struct {

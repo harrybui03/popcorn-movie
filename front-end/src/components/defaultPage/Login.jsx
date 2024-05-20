@@ -124,7 +124,7 @@ function LoginSignup() {
                                     )}
                                     <div className="foot d-flex justify-content-between">
                                         <label htmlFor="tab-2">Chưa có tài khoản?</label>
-                                        <a href="#">Quên mật khẩu?</a>
+                                        <a href="/forgot-password">Quên mật khẩu?</a>
                                     </div>
                                     <hr className="text-white"></hr>
                                     <div>

@@ -33,9 +33,9 @@ function TicketManagerDashBoard(params) {
 
       <div className="container-fluid">
         <div className="row">
-          <SideBar
+          {/* <SideBar
             chosen={currentChosen}
-            isCollapse={isCollapse}></SideBar>
+            isCollapse={isCollapse}></SideBar> */}
           <div className='col p-0 d-flex flex-column justify-content-between'  style={{flexShrink: '0'}}>
             <Header updateData={updateData} isCollapse={isCollapse} params={params} ></Header>
             <Notification notification={notification}></Notification>

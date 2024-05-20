@@ -27,16 +27,30 @@ function useGetAllThearters() {
     };
   }
 
-  function useGetAllShowTimes(theaterId , movieId) {
+  function convertDate(dateString) {
+    const [day, month, year] = dateString.split('/');
+
+    // Create a new Date object (Month is 0-indexed in JavaScript Date)
+    const dateObject = new Date(`${year}-${month}-${day}`);
+
+    // Format the date to the desired format
+    const formattedDate = `${dateObject.getFullYear()}-${(dateObject.getMonth() + 1).toString().padStart(2, '0')}-${dateObject.getDate().toString().padStart(2, '0')}T${dateObject.getHours().toString().padStart(2, '0')}:${dateObject.getMinutes().toString().padStart(2, '0')}:${dateObject.getSeconds().toString().padStart(2, '0')}.${dateObject.getMilliseconds().toString().padStart(3, '0')}Z`;
+    
+    return formattedDate;
+}
+
+
+  function useGetAllShowTimes(theaterId , movieId , dateChosen) {
     const { getAllShowTimes, queryKey } = useGraphql();
     const { isLoading, error, data, refetch } = useQuery({
       gcTime: 0,
-      queryKey: [queryKey , theaterId , movieId],
+      queryKey: [queryKey , theaterId , movieId, dateChosen],
       queryFn: async () => fetchGraphQL(getAllShowTimes.query, {
         input:{
             filter:{
                 movieId:movieId,
                 theaterId:theaterId,
+                date:convertDate(dateChosen)
             } , 
               pagination:{
                 page:1,

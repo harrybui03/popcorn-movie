@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import useAuth from '../../hooks/useAuth';
 import './styles.css';
+import { useChangePassword } from "./hook/useMutation";
 
 function ChangePW(params) {
     const auth = useAuth()
@@ -11,57 +12,9 @@ function ChangePW(params) {
     const [oldPW, setOldPW] = useState('');
     const [newPW, setNewPW] = useState('');
     const [confirmPW, setConfirmPW] = useState('');
-
-    const handleChangePW = async () => {
-        setIsChangePWSuccess(true);
-        setChangePWErrorMessage("");
-        const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\\/-]).{8,}$/;
-        if (oldPW === '' || newPW === '' || confirmPW === '') {
-            setIsChangePWSuccess(false);
-            setChangePWErrorMessage("Vui lòng điền đủ thông tin.");
-        } else if (newPW !== confirmPW) {
-            setIsChangePWSuccess(false);
-            setChangePWErrorMessage("Vui lòng xác nhận lại mật khẩu.");
-        } else if (newPW === oldPW) {
-            setIsChangePWSuccess(false);
-            setChangePWErrorMessage("Mật khẩu mới phải khác mật khẩu cũ.");
-        } else if (!passwordRegex.test(newPW)) {
-            setIsChangePWSuccess(false);
-            setChangePWErrorMessage("Mật khẩu ít nhất 8 kí tự (phải bao gồm chữ hoa, chữ thường, chữ số và kí tự đặt biệt).");
-        } else {
-            try {
-                const response = await fetch('http://localhost:8080/auth/forgot-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email: params.email, oldPassword: oldPW, newPassword: newPW }),
-                });
-                if (response.status === 200) {
-                    alert('Đổi mật khẩu thành công');
-                    const response = await fetch('http://localhost:8080/auth/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ email: params.email, password: newPW }),
-                    });
-                    if (response.status === 200) {
-                        const data = await response.json();
-                        auth.setAccessToken(data.accessToken);
-                        window.location.href = '/';
-                    } else {
-                        console.error('Error during change password');
-                    }
-                } else {
-                    setIsChangePWSuccess(false);
-                    setChangePWErrorMessage("Đổi mật khẩu thất bại, vui lòng kiểm tra mật khẩu cũ và thử lại.");
-                }
-
-            } catch (error) {
-                console.error('Error during change password:', error);
-            }
-        }
+    const {onChangePassword} = useChangePassword(setIsChangePWSuccess,setChangePWErrorMessage)
+    const handleChangePW = () => {
+        onChangePassword({oldPassword:oldPW , newPassword:newPW , confirmNewPassword:confirmPW})
     }
 
     useEffect(() => {

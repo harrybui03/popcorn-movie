@@ -130,6 +130,16 @@ function useGraphql() {
         }
     })
 
+    const createMovie = buildQuery({
+      operation:"CreateMovie",
+      options:{
+        type:'mutation'
+      },
+      params:{
+        input:"CreateMovieInput!"
+      }
+    })
+
     const deleteMovie = buildQuery({
         operation:"DeleteMovie",
         options:{
@@ -162,7 +172,7 @@ function useGraphql() {
 
     
 
-    return {queryKey , getAllRooms,getAllShowtimes , generateTickets , createShowTime , updateShowTime,deleteShowTime,getRevenue , deleteMovie}
+    return {queryKey , getAllRooms,getAllShowtimes , generateTickets , createShowTime , updateShowTime,deleteShowTime,getRevenue , deleteMovie , createMovie}
 }
 
 export default useGraphql;

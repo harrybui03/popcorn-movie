@@ -131,20 +131,19 @@ func (i impl) CreateTransaction(ctx context.Context, input model.CreateTransacti
 			return err
 		}
 
-		showTimeID, err := uuid.Parse(input.ShowTimeID)
 		if err != nil {
 			return err
 		}
 
 		// Update Ticket
-		for _, seat := range input.TicketIDs {
-			seatID, err := uuid.Parse(seat.SeatID)
+		for _, ticketRecord := range input.TicketIDs {
+			ticketID, err := uuid.Parse(ticketRecord.ID)
 			if err != nil {
 				return err
 			}
 
 			// Get Ticket By ShowTimeID and SeatID
-			ticketRecord, err := repo.Ticket().TicketQuery().Where(ticket.And(ticket.ShowTimeID(showTimeID), ticket.SeatID(seatID))).First(ctx)
+			ticketRecord, err := repo.Ticket().TicketQuery().Where(ticket.ID(ticketID)).First(ctx)
 			if err != nil {
 				return err
 			}

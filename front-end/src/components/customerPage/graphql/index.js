@@ -107,9 +107,29 @@ function useGraphql() {
     `
   })
 
+  const createTransaction = buildQuery({
+    operation:"CreateTransaction",
+    params:{input:"CreateTransactionInput!"},
+    options:{type: "mutation"},
+    node:`
+    OrderCode
+    Status
+    CheckoutUrl
+    QRCode
+    `
+  })
+
+  const changePassword = buildQuery({
+    operation:"ChangePassword",
+    params:{input:"ChangePasswordInput!"},
+    options:{type:"mutation"},
+    node:`output`,
+  })
+  
 
 
-  return {getAllTheaters , getAllShowTimes,getAllTickets , getAllTransactions , getAllSeats , queryKey}
+
+  return {getAllTheaters , getAllShowTimes,getAllTickets , getAllTransactions , getAllSeats, createTransaction,changePassword , queryKey}
 
 }
 export default useGraphql;

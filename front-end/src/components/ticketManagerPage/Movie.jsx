@@ -5,13 +5,14 @@ import { faHouse, faMagnifyingGlass, faAdd, faEdit, faTrash, faAngleRight, faUns
 import LoadingSpinner from '../defaultPage/Loading'
 import { set } from 'date-fns';
 import { useGetAllMovies } from '../defaultPage/hook/useQuery';
+import { useCreateMovie } from './hook/useMutation';
 
 function Movie({ setDeleteId }) {
     const auth = useAuth();
     const movieData = useGetAllMovies(null)
     const movies = movieData?.data??[]
     const [moviesDisplay, setMoviesDisplay] = useState(null);
-
+    const {onCreateMovie} = useCreateMovie()
     useEffect(() => {
         const a = [];
         if (movies !== null) {
@@ -191,45 +192,55 @@ function Movie({ setDeleteId }) {
             status: formData.status,
             story: formData.story,
             trailer: formData.trailer,
-        }
-        console.log(movie);
+        };
+    
         if (isObjectEmpty(movie) || selectedImage === null || selectedImage === '') {
             setMessage({ isShow: true, text: 'Vui lòng điền đầy đủ thông tin', success: false });
-        } else {
-            setDisabledBtn(true);
-            setMessage({ isShow: true, text: 'Đang thêm dữ liệu, vui lòng đợi...', success: true });
-
-            const response = await postDataWithFile(movie, selectedFile);
-            getMovie();
-            setFormData({
-                id: '',
-                title: '',
-                director: '',
-                cast: '',
-                duration: '',
-                genre: '',
-                language: '',
-                openingDay: '',
-                rated: '',
-                status: 'Upcoming',
-                story: '',
-                poster: '',
-                trailer: '',
-            });
-            setSelectedImage(null);
-            setSelectedFile(null);
-            setMessage({ isShow: true, text: 'Thêm phim thành công', success: true });
-
-            setDisabledBtn(false);
+            return; // Return early if form data is incomplete
         }
-    }
+    
+        setDisabledBtn(true);
+        setMessage({ isShow: true, text: 'Đang thêm dữ liệu, vui lòng đợi...', success: true });
+    
+        const formData = new FormData();
+        formData.append('poster', selectedFile);
+        const movieBlob = new Blob([JSON.stringify(movie)], { type: 'application/json' });
+        formData.append('movie', movieBlob);
+    
+        onCreateMovie(formData)
+            .then(() => {
+                // Reset form data only if the movie is successfully created
+                setFormData({
+                    title: '',
+                    director: '',
+                    cast: '',
+                    duration: '',
+                    genre: '',
+                    language: '',
+                    openingDay: '',
+                    rated: '',
+                    status: 'Upcoming',
+                    story: '',
+                    poster: '',
+                    trailer: '',
+                });
+    
+                setSelectedImage(null);
+                setSelectedFile(null);
+                setMessage({ isShow: true, text: 'Thêm phim thành công', success: true });
+            })
+            .catch((error) => {
+                console.error('Error adding movie:', error);
+                setMessage({ isShow: true, text: 'Thêm phim thất bại', success: false });
+            })
+            .finally(() => {
+                setDisabledBtn(false);
+            });
+    };
+    
 
     const postDataWithFile = async (data, file) => {
-        const formData = new FormData();
-
-        formData.append('poster', file);
-        const movieBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-        formData.append('movie', movieBlob);
+        
 
         try {
             const response = await fetch('http://localhost:8080/movies', {

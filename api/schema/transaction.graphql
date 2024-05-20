@@ -25,7 +25,6 @@ type CheckOutOutput{
 input CreateTransactionInput{
     ticketIDs: [CreateTicketInput!]!
     foods: [CreateFoodOrderLineInput!]!
-    showTimeID: ID!
 }
 
 input ListTransactionFilter{

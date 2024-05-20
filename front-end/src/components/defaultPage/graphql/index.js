@@ -83,6 +83,31 @@ function useGraphql() {
     }
   })
 
-  return { getAllMovies, login,signup, queryKey , getMovieByID };
+  const forgotPassword = buildQuery({
+    operation:"ForgotPassword",
+    options:{
+      type:"mutation",
+    },
+    node:`
+      output
+    `,
+    params:{
+      input:"String!"
+    }
+  })
+
+  const resetPassword = buildQuery({
+    operation:"ResetPassword",
+    options:{
+      type:"mutation",
+    },
+    node:
+    `output`,
+    params:{
+      input:"ResetPasswordInput!"
+    }
+  })
+
+  return { getAllMovies, login,signup, queryKey , getMovieByID ,forgotPassword , resetPassword};
 }
 export default useGraphql;
