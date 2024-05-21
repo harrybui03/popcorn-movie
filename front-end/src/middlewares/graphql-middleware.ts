@@ -1,6 +1,6 @@
 import { RequestMiddleware, ResponseMiddleware } from 'graphql-request'
 
-function getAccessToken() {
+export function getAccessToken() {
   const localStorageValue = localStorage.getItem('token');
   if (!localStorageValue) {
     window.location.href = '/'

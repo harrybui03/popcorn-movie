@@ -3,7 +3,7 @@ type Query {
     Theaters(input: ListTheatersInput!): ListTheatersOutput!
     #Room
     Rooms(input: ListRoomInput!):ListRoomOutput!
-    GetAvailableRooms(input: ListAvailableRoomInput!):ListAvailableRoomOutput!
+    GetAvailableRooms(input: ListAvailableRoomInput!):AvailableRoomOutput!
     #Food
     Foods(input: ListFoodInput!):ListFoodOutput!
     #Movie

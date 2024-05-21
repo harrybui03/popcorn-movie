@@ -66,7 +66,7 @@ func (i impl) VerifyPaymentData(ctx context.Context, webhookDataReq payos.Webhoo
 		if webhookData.Code == "00" {
 			ticketsArray := transactionRecord.QueryTickets().AllX(ctx)
 			for _, ticketRecord := range ticketsArray {
-				ticketRecord.Update().SetIsBooked(true).SaveX(ctx)
+				ticketRecord.Update().SetIsBooked(true).SetTransactionID(transactionRecord.ID).SaveX(ctx)
 			}
 			transactionRecord.Update().SetStatus(transaction.StatusPAID).SaveX(ctx)
 		} else {
@@ -149,7 +149,7 @@ func (i impl) CreateTransaction(ctx context.Context, input model.CreateTransacti
 			}
 
 			// update ticket
-			repo.Ticket().TicketUpdate().SetTransactionID(transaction.ID).Where(ticket.ID(ticketRecord.ID)).SaveX(ctx)
+			//repo.Ticket().TicketUpdate().SetTransactionID(transaction.ID).Where(ticket.ID(ticketRecord.ID)).SaveX(ctx)
 			total += ticketRecord.Price
 
 			if err != nil {
@@ -192,8 +192,8 @@ func (i impl) CreateTransaction(ctx context.Context, input model.CreateTransacti
 			Amount:      int(total),
 			Items:       items,
 			Description: "Thanh toán đơn hàng",
-			CancelUrl:   i.appConfig.Payos.Domain,
-			ReturnUrl:   i.appConfig.Payos.Domain + "/success/",
+			CancelUrl:   i.appConfig.Payos.Domain + "/payments/cancel",
+			ReturnUrl:   i.appConfig.Payos.Domain + "/payments/success/",
 		}
 
 		_, err = transaction.Update().SetTotal(total).SetCode(int(orderCode)).Save(ctx)

@@ -82,4 +82,26 @@ function useGetRevenue(year) {
     }
 }
 
-export  {useGetAllRooms , useGetAllShowtimes, useGetRevenue};
+function useCheckAvailableRoom(startAt ,endAt , roomID ){
+    const {checkAvailableRoom , queryKey} = useGraphql()
+    const {isLoading,error,data,refetch} = useQuery({
+        gcTime:0,
+        queryKey:[queryKey],
+        queryFn:async () => fetchGraphQLWithToken(checkAvailableRoom.query , {
+            input:{
+                startAt:startAt,
+                endAt:endAt,
+                roomID:roomID
+            }
+        })
+    })
+
+    return {
+        isLoading,
+        error,
+        isAvailableRoom,
+        refetch,
+    }
+}
+
+export  {useGetAllRooms , useGetAllShowtimes, useGetRevenue,useCheckAvailableRoom };

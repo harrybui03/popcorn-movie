@@ -65,25 +65,13 @@ function useGraphql() {
             type:"mutation"
         },
         node:`
-        data{
-            id
-            startAt
-            endAt
-            movie {
-              title
-            }
-            room{
-              id
-              roomNumber
-              theater{
-                address
-                name
-              }
-            }
-          }
-          pagination{
-            total
-          }
+        ID
+        Seat{
+         SeatNumber
+         Category
+       }
+        IsBooked
+        Price
         `,
         params:{
             input:"GenerateTicketInput!"
@@ -135,6 +123,19 @@ function useGraphql() {
       options:{
         type:'mutation'
       },
+      node:`id
+      title
+      genre
+      status
+      language
+      director
+      cast
+      poster
+      rated
+      duration
+      trailer
+      openingDay
+      story`,
       params:{
         input:"CreateMovieInput!"
       }
@@ -147,7 +148,8 @@ function useGraphql() {
         },
         params:{
             input:"ID!"
-        }
+        },
+        node:`output`,
     })
 
     const getRevenue = buildQuery({
@@ -165,14 +167,18 @@ function useGraphql() {
           month
         }
         `,
-       
     })
 
-    
+    const checkAvailableRoom = buildQuery({
+      operation:"GetAvailableRooms",
+      options:{
+        type:"query"
+      },
+      params:{input:"ListAvailableRoomInput"},
+      node:`isAvailableRoom`
+    })
 
-    
-
-    return {queryKey , getAllRooms,getAllShowtimes , generateTickets , createShowTime , updateShowTime,deleteShowTime,getRevenue , deleteMovie , createMovie}
+    return {queryKey , getAllRooms,getAllShowtimes , generateTickets , createShowTime , updateShowTime,deleteShowTime,getRevenue , deleteMovie , createMovie,checkAvailableRoom}
 }
 
 export default useGraphql;

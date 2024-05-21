@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import useGraphql from "../graphql";
-import { fetchGraphQL } from "../../../services/graphql-services";
+import { fetchGraphQL, fetchGraphQLWithToken } from "../../../services/graphql-services";
 
 function useGetAllThearters() {
     const { getAllTheaters, queryKey } = useGraphql();
@@ -28,15 +28,28 @@ function useGetAllThearters() {
   }
 
   function convertDate(dateString) {
-    const [day, month, year] = dateString.split('/');
-
-    // Create a new Date object (Month is 0-indexed in JavaScript Date)
-    const dateObject = new Date(`${year}-${month}-${day}`);
-
-    // Format the date to the desired format
-    const formattedDate = `${dateObject.getFullYear()}-${(dateObject.getMonth() + 1).toString().padStart(2, '0')}-${dateObject.getDate().toString().padStart(2, '0')}T${dateObject.getHours().toString().padStart(2, '0')}:${dateObject.getMinutes().toString().padStart(2, '0')}:${dateObject.getSeconds().toString().padStart(2, '0')}.${dateObject.getMilliseconds().toString().padStart(3, '0')}Z`;
+    const isDateString = dateString.includes('/');
+    let dateObject;
     
-    return formattedDate;
+    if (isDateString) {
+        // If the input is in the format "day/month/year"
+        const [day, month, year] = dateString.split('/');
+        dateObject = new Date(`${year}-${month}-${day}`);
+    } else {
+        // If the input is in ISO format like "2024-05-26T07:00:00.000Z"
+        dateObject = new Date(dateString);
+    }
+
+    // Set hours, minutes, and seconds to zero
+    dateObject.setUTCHours(0);
+    dateObject.setUTCMinutes(0);
+    dateObject.setUTCSeconds(0);
+    dateObject.setUTCMilliseconds(0);
+
+    // Convert back to string in the desired format
+    const convertedTimestamp = dateObject.toISOString();
+
+    return convertedTimestamp;
 }
 
 
@@ -105,7 +118,7 @@ function useGetAllThearters() {
       gcTime: 0,
       enabled:!!userID,
       queryKey: [queryKey , userID],
-      queryFn: async () => fetchGraphQL(getAllTransactions.query, {
+      queryFn: async () => fetchGraphQLWithToken(getAllTransactions.query, {
         input:{
             filter:{
               userID:userID

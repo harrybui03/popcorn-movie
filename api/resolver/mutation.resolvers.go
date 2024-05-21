@@ -140,13 +140,15 @@ func (r *mutationResolver) UpdateMovie(ctx context.Context, input model.UpdateMo
 }
 
 // DeleteMovie is the resolver for the DeleteMovie field.
-func (r *mutationResolver) DeleteMovie(ctx context.Context, input string) (string, error) {
+func (r *mutationResolver) DeleteMovie(ctx context.Context, input string) (*model.MessageCreateOutput, error) {
 	message, err := r.service.Movie().DeleteMovie(ctx, input)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return message, nil
+	return &model.MessageCreateOutput{
+		Output: message,
+	}, nil
 }
 
 // CreateShowTime is the resolver for the CreateShowTime field.

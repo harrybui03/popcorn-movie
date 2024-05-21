@@ -13,7 +13,7 @@ type Mutation {
     #Movie
     CreateMovie(input: CreateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER ])
     UpdateMovie(input: UpdateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER])
-    DeleteMovie(input: ID!):String! @auth @hasRole(roles: [TICKET_MANAGER])
+    DeleteMovie(input: ID!):MessageCreateOutput! @auth @hasRole(roles: [TICKET_MANAGER])
     #ShowTime
     CreateShowTime(input: CreateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
     UpdateShowTime(input: UpdateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])

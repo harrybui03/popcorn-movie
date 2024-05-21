@@ -401,9 +401,6 @@ function CustomerDashBoard(params) {
         {(index % 10 === 9) && <br />}
       </React.Fragment>
     ))
-    
-    
-              
             ) : (
               <div className='d-flex justify-content-center my-5'>
                 <LoadingSpinner />
@@ -426,7 +423,7 @@ function CustomerDashBoard(params) {
           </div>
           <div className='container'>
             <button onClick={handleBack} className='btn btn-lg text-light fw-bold m-2' style={{ background: 'orange' }}>Quay lại</button>
-            <button onClick={handleBuyFood} className='btn btn-lg text-light fw-bold m-2' style={{ background: 'orange' }}>Mua đồ ăn</button>
+            {/* <button onClick={handleBuyFood} className='btn btn-lg text-light fw-bold m-2' style={{ background: 'orange' }}>Mua đồ ăn</button> */}
             <button onClick={handlePayment} className='btn btn-lg text-light fw-bold m-2' disabled={seats.length <= 0} style={{ background: 'orange' }}>Thanh toán</button>
           </div>
         </div >
@@ -483,7 +480,7 @@ function CustomerDashBoard(params) {
           </div>
           <div className='container'>
             <button onClick={handleBack} className='btn btn-lg text-light fw-bold m-2' style={{ background: 'orange' }}>Quay lại</button>
-            <button onClick={handlePayment} className='btn btn-lg text-light fw-bold m-2' disabled={seats.length <= 0} style={{ background: 'orange' }}>Thanh toán</button>
+            {/* <button onClick={handlePayment} className='btn btn-lg text-light fw-bold m-2' disabled={seats.length <= 0} style={{ background: 'orange' }}>Thanh toán</button> */}
           </div>
         </div>
       ) : step === 'choose-payment' ? (

@@ -1,5 +1,5 @@
 import { GraphQLClient } from 'graphql-request'
-import { requestMiddleware, responseMiddleware } from '../middlewares/graphql-middleware'
+import { getAccessToken, requestMiddleware, responseMiddleware } from '../middlewares/graphql-middleware'
 interface IbuildQuery {
   operation: string
   node: string
@@ -60,4 +60,18 @@ export const fetchGraphQLWithToken = async <T extends object>(
   variables?: any
 ): Promise<T> => {
   return await graphQLClientWithToken.request(query, variables)
+}
+
+export const fetchUploadFile = async (
+  formData:FormData
+):Promise<Response> => {
+  return await fetch('http://localhost:8000/query', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      "Authorization": getAccessToken(),
+      // 'Content-Type':'multipart/form-data; boundary=<calculated when request is sent>',
+      //  'Accept': '*/*',
+    }
+  })
 }

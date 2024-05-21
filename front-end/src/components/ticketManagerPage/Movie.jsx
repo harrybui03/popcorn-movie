@@ -3,16 +3,33 @@ import useAuth from "../../hooks/useAuth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse, faMagnifyingGlass, faAdd, faEdit, faTrash, faAngleRight, faUnsorted, faSortUp, faSortDown } from "@fortawesome/free-solid-svg-icons";
 import LoadingSpinner from '../defaultPage/Loading'
-import { set } from 'date-fns';
 import { useGetAllMovies } from '../defaultPage/hook/useQuery';
-import { useCreateMovie } from './hook/useMutation';
-
+import { useCreateMovie, useDeleteMovie } from './hook/useMutation';
+import FormData from 'form-data';
 function Movie({ setDeleteId }) {
     const auth = useAuth();
     const movieData = useGetAllMovies(null)
     const movies = movieData?.data??[]
     const [moviesDisplay, setMoviesDisplay] = useState(null);
-    const {onCreateMovie} = useCreateMovie()
+    const [formData, setFormData] = useState({
+        id: '',
+        title: '',
+        director: '',
+        cast: '',
+        duration: '',
+        genre: '',
+        language: '',
+        openingDay: '',
+        rated: '',
+        status: 'Upcoming',
+        story: '',
+        poster: '',
+        trailer: '',
+    });
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [message, setMessage] = useState({ isShow: false, text: '', success: false });
+    const {onCreateMovie} = useCreateMovie(setFormData ,setSelectedImage , setSelectedFile , setMessage)
     useEffect(() => {
         const a = [];
         if (movies !== null) {
@@ -107,22 +124,7 @@ function Movie({ setDeleteId }) {
         }
     }
 
-    const [formData, setFormData] = useState({
-        id: '',
-        title: '',
-        director: '',
-        cast: '',
-        duration: '',
-        genre: '',
-        language: '',
-        openingDay: '',
-        rated: '',
-        status: 'Upcoming',
-        story: '',
-        poster: '',
-        trailer: '',
-    });
-
+ 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
@@ -147,8 +149,7 @@ function Movie({ setDeleteId }) {
         setSelectedFile(null);
     };
 
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(null);
+
 
     const handleChangeFormFile = (e) => {
         const file = e.target.files[0];
@@ -165,7 +166,6 @@ function Movie({ setDeleteId }) {
         }
     };
 
-    const [message, setMessage] = useState({ isShow: false, text: '', success: false });
 
     const isObjectEmpty = (obj) => {
         for (const key in obj) {
@@ -179,7 +179,8 @@ function Movie({ setDeleteId }) {
     const [disabledBtn, setDisabledBtn] = useState(false);
 
 
-    const addMovie = async () => {
+    const addMovie = () => {
+        const  date = new Date(formData.openingDay);
         const movie = {
             title: formData.title,
             director: formData.director,
@@ -187,9 +188,9 @@ function Movie({ setDeleteId }) {
             duration: formData.duration,
             genre: formData.genre,
             language: formData.language,
-            openingDay: formData.openingDay,
+            openingDay: date,
             rated: formData.rated,
-            status: formData.status,
+            status: formData.status.toUpperCase(),
             story: formData.story,
             trailer: formData.trailer,
         };
@@ -199,71 +200,12 @@ function Movie({ setDeleteId }) {
             return; // Return early if form data is incomplete
         }
     
-        setDisabledBtn(true);
+        // setDisabledBtn(true);
         setMessage({ isShow: true, text: 'Đang thêm dữ liệu, vui lòng đợi...', success: true });
     
-        const formData = new FormData();
-        formData.append('poster', selectedFile);
-        const movieBlob = new Blob([JSON.stringify(movie)], { type: 'application/json' });
-        formData.append('movie', movieBlob);
-    
-        onCreateMovie(formData)
-            .then(() => {
-                // Reset form data only if the movie is successfully created
-                setFormData({
-                    title: '',
-                    director: '',
-                    cast: '',
-                    duration: '',
-                    genre: '',
-                    language: '',
-                    openingDay: '',
-                    rated: '',
-                    status: 'Upcoming',
-                    story: '',
-                    poster: '',
-                    trailer: '',
-                });
-    
-                setSelectedImage(null);
-                setSelectedFile(null);
-                setMessage({ isShow: true, text: 'Thêm phim thành công', success: true });
-            })
-            .catch((error) => {
-                console.error('Error adding movie:', error);
-                setMessage({ isShow: true, text: 'Thêm phim thất bại', success: false });
-            })
-            .finally(() => {
-                setDisabledBtn(false);
-            });
+        onCreateMovie(movie ,selectedFile)
     };
     
-
-    const postDataWithFile = async (data, file) => {
-        
-
-        try {
-            const response = await fetch('http://localhost:8080/movies', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${auth.accessToken}`,
-                },
-                body: formData,
-            });
-
-            if (!response.ok) {
-                setMessage({ isShow: true, text: 'Vui lòng kiểm tra lại dữ liệu phải đầy đủ ý nghĩa', success: false });
-                setDisabledBtn(false);
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const result = await response.json();
-            return result;
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    };
-
     const editMovie = async () => {
         const movie = {
             id: formData.id,
@@ -413,7 +355,7 @@ function Movie({ setDeleteId }) {
                                         <tr key={item.id}>
                                             <th className="align-middle" scope="row">{item.id}</th>
                                             <td className="align-middle">{item.title}</td>
-                                            <td className="align-middle">{item.openingDay}</td>
+                                            <td className="align-middle">{item.openingDay.slice(0, -10)}</td>
                                             <td className="align-middle">{item.status}</td>
                                             <td className="align-middle"><img style={{ height: '7rem' }} src={item.poster} alt='poster'></img></td>
                                             <td className="align-middle">

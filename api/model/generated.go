@@ -12,6 +12,10 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
+type AvailableRoomOutput struct {
+	IsAvailableRoom bool `json:"isAvailableRoom"`
+}
+
 type ChangePasswordInput struct {
 	OldPassword        string `json:"oldPassword"`
 	NewPassword        string `json:"newPassword"`
@@ -99,14 +103,13 @@ type Jwt struct {
 }
 
 type ListAvailableRoomFilter struct {
-	StartAt    *time.Time `json:"startAt,omitempty"`
-	EndAt      *time.Time `json:"endAt,omitempty"`
-	ShowTimeID *string    `json:"showTimeID,omitempty"`
+	StartAt *time.Time `json:"startAt,omitempty"`
+	EndAt   *time.Time `json:"endAt,omitempty"`
+	RoomID  *string    `json:"roomID,omitempty"`
 }
 
 type ListAvailableRoomInput struct {
-	Filter     *ListAvailableRoomFilter `json:"filter,omitempty"`
-	Pagination *PaginationInput         `json:"pagination,omitempty"`
+	Filter *ListAvailableRoomFilter `json:"filter,omitempty"`
 }
 
 type ListAvailableRoomOutput struct {

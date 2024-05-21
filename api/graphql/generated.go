@@ -62,6 +62,10 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AvailableRoomOutput struct {
+		IsAvailableRoom func(childComplexity int) int
+	}
+
 	CheckOutOutput struct {
 		AccountName   func(childComplexity int) int
 		AccountNumber func(childComplexity int) int
@@ -332,7 +336,7 @@ type MutationResolver interface {
 	CreateTransaction(ctx context.Context, input model.CreateTransactionInput) (*model.CheckOutOutput, error)
 	CreateMovie(ctx context.Context, input model.CreateMovieInput) (*ent.Movie, error)
 	UpdateMovie(ctx context.Context, input model.UpdateMovieInput) (*ent.Movie, error)
-	DeleteMovie(ctx context.Context, input string) (string, error)
+	DeleteMovie(ctx context.Context, input string) (*model.MessageCreateOutput, error)
 	CreateShowTime(ctx context.Context, input model.CreateShowTimeInput) (*ent.ShowTime, error)
 	UpdateShowTime(ctx context.Context, input model.UpdateShowTimeInput) (*ent.ShowTime, error)
 	DeleteShowTime(ctx context.Context, input string) (*model.MessageCreateOutput, error)
@@ -341,7 +345,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Theaters(ctx context.Context, input model.ListTheatersInput) (*model.ListTheatersOutput, error)
 	Rooms(ctx context.Context, input model.ListRoomInput) (*model.ListRoomOutput, error)
-	GetAvailableRooms(ctx context.Context, input model.ListAvailableRoomInput) (*model.ListAvailableRoomOutput, error)
+	GetAvailableRooms(ctx context.Context, input model.ListAvailableRoomInput) (*model.AvailableRoomOutput, error)
 	Foods(ctx context.Context, input model.ListFoodInput) (*model.ListFoodOutput, error)
 	Movies(ctx context.Context, input model.ListMovieInput) (*model.ListMovieOutput, error)
 	GetMovieByID(ctx context.Context, input string) (*ent.Movie, error)
@@ -415,6 +419,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AvailableRoomOutput.isAvailableRoom":
+		if e.complexity.AvailableRoomOutput.IsAvailableRoom == nil {
+			break
+		}
+
+		return e.complexity.AvailableRoomOutput.IsAvailableRoom(childComplexity), true
 
 	case "CheckOutOutput.AccountName":
 		if e.complexity.CheckOutOutput.AccountName == nil {
@@ -1878,7 +1889,7 @@ input UpdateMovieInput {
     #Movie
     CreateMovie(input: CreateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER ])
     UpdateMovie(input: UpdateMovieInput!):Movie! @auth @hasRole(roles: [TICKET_MANAGER])
-    DeleteMovie(input: ID!):String! @auth @hasRole(roles: [TICKET_MANAGER])
+    DeleteMovie(input: ID!):MessageCreateOutput! @auth @hasRole(roles: [TICKET_MANAGER])
     #ShowTime
     CreateShowTime(input: CreateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
     UpdateShowTime(input: UpdateShowTimeInput!):ShowTime! @auth @hasRole(roles: [TICKET_MANAGER])
@@ -1891,7 +1902,7 @@ input UpdateMovieInput {
     Theaters(input: ListTheatersInput!): ListTheatersOutput!
     #Room
     Rooms(input: ListRoomInput!):ListRoomOutput!
-    GetAvailableRooms(input: ListAvailableRoomInput!):ListAvailableRoomOutput!
+    GetAvailableRooms(input: ListAvailableRoomInput!):AvailableRoomOutput!
     #Food
     Foods(input: ListFoodInput!):ListFoodOutput!
     #Movie
@@ -1935,12 +1946,11 @@ input ListRoomInput {
 input ListAvailableRoomFilter {
     startAt:Time
     endAt:Time
-    showTimeID:ID
+    roomID:ID
 }
 
 input ListAvailableRoomInput {
     filter: ListAvailableRoomFilter
-    pagination: PaginationInput
 }
 
 type ListRoomOutput {
@@ -1951,6 +1961,10 @@ type ListRoomOutput {
 type ListAvailableRoomOutput {
     data: [Room]!
     pagination: PaginationOutput!
+}
+
+type AvailableRoomOutput{
+    isAvailableRoom:Boolean!
 }`, BuiltIn: false},
 	{Name: "../schema/seat.graphql", Input: `type Seat {
     ID: String!
@@ -2734,6 +2748,50 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AvailableRoomOutput_isAvailableRoom(ctx context.Context, field graphql.CollectedField, obj *model.AvailableRoomOutput) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AvailableRoomOutput_isAvailableRoom(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsAvailableRoom, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AvailableRoomOutput_isAvailableRoom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AvailableRoomOutput",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _CheckOutOutput_Bin(ctx context.Context, field graphql.CollectedField, obj *model.CheckOutOutput) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CheckOutOutput_Bin(ctx, field)
@@ -7091,10 +7149,10 @@ func (ec *executionContext) _Mutation_DeleteMovie(ctx context.Context, field gra
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(string); ok {
+		if data, ok := tmp.(*model.MessageCreateOutput); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *PopcornMovie/model.MessageCreateOutput`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7106,9 +7164,9 @@ func (ec *executionContext) _Mutation_DeleteMovie(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.MessageCreateOutput)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNMessageCreateOutput2ᚖPopcornMovieᚋmodelᚐMessageCreateOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_DeleteMovie(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7118,7 +7176,11 @@ func (ec *executionContext) fieldContext_Mutation_DeleteMovie(ctx context.Contex
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "output":
+				return ec.fieldContext_MessageCreateOutput_output(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MessageCreateOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -7706,9 +7768,9 @@ func (ec *executionContext) _Query_GetAvailableRooms(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.ListAvailableRoomOutput)
+	res := resTmp.(*model.AvailableRoomOutput)
 	fc.Result = res
-	return ec.marshalNListAvailableRoomOutput2ᚖPopcornMovieᚋmodelᚐListAvailableRoomOutput(ctx, field.Selections, res)
+	return ec.marshalNAvailableRoomOutput2ᚖPopcornMovieᚋmodelᚐAvailableRoomOutput(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_GetAvailableRooms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7719,12 +7781,10 @@ func (ec *executionContext) fieldContext_Query_GetAvailableRooms(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "data":
-				return ec.fieldContext_ListAvailableRoomOutput_data(ctx, field)
-			case "pagination":
-				return ec.fieldContext_ListAvailableRoomOutput_pagination(ctx, field)
+			case "isAvailableRoom":
+				return ec.fieldContext_AvailableRoomOutput_isAvailableRoom(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ListAvailableRoomOutput", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type AvailableRoomOutput", field.Name)
 		},
 	}
 	defer func() {
@@ -12621,7 +12681,7 @@ func (ec *executionContext) unmarshalInputListAvailableRoomFilter(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"startAt", "endAt", "showTimeID"}
+	fieldsInOrder := [...]string{"startAt", "endAt", "roomID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12642,13 +12702,13 @@ func (ec *executionContext) unmarshalInputListAvailableRoomFilter(ctx context.Co
 				return it, err
 			}
 			it.EndAt = data
-		case "showTimeID":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("showTimeID"))
+		case "roomID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roomID"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ShowTimeID = data
+			it.RoomID = data
 		}
 	}
 
@@ -12662,7 +12722,7 @@ func (ec *executionContext) unmarshalInputListAvailableRoomInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"filter", "pagination"}
+	fieldsInOrder := [...]string{"filter"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12676,13 +12736,6 @@ func (ec *executionContext) unmarshalInputListAvailableRoomInput(ctx context.Con
 				return it, err
 			}
 			it.Filter = data
-		case "pagination":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pagination"))
-			data, err := ec.unmarshalOPaginationInput2ᚖPopcornMovieᚋmodelᚐPaginationInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Pagination = data
 		}
 	}
 
@@ -13766,6 +13819,45 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var availableRoomOutputImplementors = []string{"AvailableRoomOutput"}
+
+func (ec *executionContext) _AvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, obj *model.AvailableRoomOutput) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, availableRoomOutputImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AvailableRoomOutput")
+		case "isAvailableRoom":
+			out.Values[i] = ec._AvailableRoomOutput_isAvailableRoom(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
 
 var checkOutOutputImplementors = []string{"CheckOutOutput"}
 
@@ -17090,6 +17182,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAvailableRoomOutput2PopcornMovieᚋmodelᚐAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, v model.AvailableRoomOutput) graphql.Marshaler {
+	return ec._AvailableRoomOutput(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAvailableRoomOutput2ᚖPopcornMovieᚋmodelᚐAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, v *model.AvailableRoomOutput) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AvailableRoomOutput(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -17399,20 +17505,6 @@ func (ec *executionContext) marshalNJWT2ᚖPopcornMovieᚋmodelᚐJwt(ctx contex
 func (ec *executionContext) unmarshalNListAvailableRoomInput2PopcornMovieᚋmodelᚐListAvailableRoomInput(ctx context.Context, v interface{}) (model.ListAvailableRoomInput, error) {
 	res, err := ec.unmarshalInputListAvailableRoomInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNListAvailableRoomOutput2PopcornMovieᚋmodelᚐListAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, v model.ListAvailableRoomOutput) graphql.Marshaler {
-	return ec._ListAvailableRoomOutput(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNListAvailableRoomOutput2ᚖPopcornMovieᚋmodelᚐListAvailableRoomOutput(ctx context.Context, sel ast.SelectionSet, v *model.ListAvailableRoomOutput) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._ListAvailableRoomOutput(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNListAvailableSeatFilter2ᚖPopcornMovieᚋmodelᚐListAvailableSeatFilter(ctx context.Context, v interface{}) (*model.ListAvailableSeatFilter, error) {

@@ -57,7 +57,6 @@ func (i impl) CreateShowTime(ctx context.Context, input model.CreateShowTimeInpu
 	// validate time format
 	exist, _ = i.repository.ShowTime().ShowTimeQuery().Where(showtime.StartAtGTE(input.StartAt), showtime.EndAtLTE(input.EndAt)).Exist(ctx)
 	if exist {
-		i.logger.Error(err.Error())
 		return nil, utils.WrapGQLError(ctx, "Time is not available", utils.ErrorCodeBadRequest)
 	}
 

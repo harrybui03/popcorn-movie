@@ -43,8 +43,15 @@ func (r *queryResolver) Rooms(ctx context.Context, input model.ListRoomInput) (*
 }
 
 // GetAvailableRooms is the resolver for the GetAvailableRooms field.
-func (r *queryResolver) GetAvailableRooms(ctx context.Context, input model.ListAvailableRoomInput) (*model.ListAvailableRoomOutput, error) {
-	panic(fmt.Errorf("not implemented: GetAvailableRooms - GetAvailableRooms"))
+func (r *queryResolver) GetAvailableRooms(ctx context.Context, input model.ListAvailableRoomInput) (*model.AvailableRoomOutput, error) {
+	check, err := r.service.Room().CheckAvailableRoom(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.AvailableRoomOutput{
+		IsAvailableRoom: check,
+	}, nil
 }
 
 // Foods is the resolver for the Foods field.

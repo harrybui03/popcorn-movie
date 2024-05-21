@@ -17,6 +17,7 @@ import (
 // Service is an interface for Room Service
 type Service interface {
 	ListRooms(ctx context.Context, input model.ListRoomInput) ([]*ent.Room, int, error)
+	CheckAvailableRoom(ctx context.Context, input model.ListAvailableRoomInput) (bool, error)
 }
 
 // impl is implement for Room Service
@@ -24,6 +25,31 @@ type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
 	appConfig  config.Configurations
+}
+
+func (i impl) CheckAvailableRoom(ctx context.Context, input model.ListAvailableRoomInput) (bool, error) {
+	query := i.repository.ShowTime().ShowTimeQuery()
+	if input.Filter != nil {
+		if input.Filter.RoomID != nil {
+			roomID := uuid.MustParse(*input.Filter.RoomID)
+			query.Where(showtime.RoomID(roomID))
+		}
+		if input.Filter.StartAt != nil && input.Filter.EndAt != nil {
+			query.Where(
+				showtime.Or(
+					showtime.And(showtime.StartAtGT(*input.Filter.StartAt), showtime.StartAtLT(*input.Filter.EndAt)),
+					showtime.And(showtime.EndAtGT(*input.Filter.StartAt), showtime.EndAtLT(*input.Filter.EndAt)),
+				),
+			)
+		}
+	}
+
+	check, err := query.Exist(ctx)
+	if err != nil {
+		return false, utils.WrapGQLError(ctx, string(utils.ErrorMessageInternal), utils.ErrorCodeInternal)
+	}
+
+	return check, nil
 }
 
 func (i impl) ListRooms(ctx context.Context, input model.ListRoomInput) ([]*ent.Room, int, error) {

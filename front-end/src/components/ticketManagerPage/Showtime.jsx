@@ -6,7 +6,8 @@ import LoadingSpinner from '../defaultPage/Loading'
 import { addDays, addMinutes, format, parseISO } from 'date-fns';
 import { useGetAllThearters } from '../customerPage/hook/useQuery';
 import { useGetAllMovies } from '../defaultPage/hook/useQuery';
-import  { useGetAllShowtimes ,useGetAllRooms} from './hook/useQuery';
+import  { useGetAllShowtimes ,useGetAllRooms, useCheckAvailableRoom} from './hook/useQuery';
+import { useCreateShowTime, useGenerateTickets } from './hook/useMutation';
 
 
 function Showtime({ setDeleteIdShowtime }) {
@@ -43,18 +44,25 @@ function Showtime({ setDeleteIdShowtime }) {
     const showTimeData = useGetAllShowtimes(theaterChosen,roomChosen);
     const displayShowtime = showTimeData.data??[]
 
-    // const [defaultShowtime, setDefaultShowtime] = useState([]);
-    // const [customShowtime, setCustomShowtime] = useState([]);
-    // const [displayShowtime, setDisplayShowtime] = useState([]);
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [messageAddShowtime, setMessageAddShowtime] = useState({ isShow: false, text: '', success: false, item: null });
     const [showtimeData, setShowtimeData] = useState({});
     const [timeStartAddShowtime, setTimeStartAddShowtime] = useState('');
     const [isConflict, setIsConflict] = useState(true);
+    const {onGenerateTickets} = useGenerateTickets()
 
+    function generateTicket(id) {
+        onGenerateTickets({showTimeID:id, price:50000})
+    }
+
+    const {onCreateShowTime} = useCreateShowTime(generateTicket , setShowtimeData, setTimeStartAddShowtime,setIsConflict,setMessageAddShowtime)
     const handleChangeTheater = (event) => {
         setTheaterChosen(event.target.value);
+    };
+
+    const postShowtime =  () => {
+        onCreateShowTime(showtimeData)
     };
 
     const handleChangeRoom = (event) => {
@@ -115,8 +123,6 @@ function Showtime({ setDeleteIdShowtime }) {
 
     const handleChangeDate = (e) => {
         const { name, value } = e.target;
-        console.log(name, value);
-        console.log(value === '');
         if (name === 'dateFrom') {
             setDateFrom(value);
         } else {
@@ -133,7 +139,6 @@ function Showtime({ setDeleteIdShowtime }) {
     useEffect(() => {
         if (dateFrom !== '' && dateTo !== '' && isValidDateRange(dateFrom, dateTo)) {
             const a = generateDateRange(dateFrom, dateTo);
-            console.log(a);
             setCustomDate(a);
         } else {
             setCustomDate([]);
@@ -365,102 +370,41 @@ function Showtime({ setDeleteIdShowtime }) {
         return endFormatted;
     }
 
-    // async function checkAvailableShowtime(end) {
-    //     try {
-    //         const response = await fetch(`http://localhost:8080/rooms/available?room=${parseInt(roomChosen)}&start=${timeStartAddShowtime}&end=${end}`, {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Bearer ${auth.accessToken}`,
-    //             },
-    //         });
+    async function checkAvailableShowtime(end) {
 
-    //         if (!response.ok) {
-    //             return false;
-    //         }
-    //         const data = await response.json();
-    //         if (data.message === 'Room is available') {
-    //             return true;
-    //         } else {
-    //             return false;
-    //         }
-    //     } catch (error) {
-    //         console.error('Error:', error);
-    //         throw error;
-    //     }
-    // }
+        const {isAvailableRoom} = useCheckAvailableRoom(timeStartAddShowtime , end , roomChosen)
+        return isAvailableRoom
+    }
 
-    // const checkConflict = async (item) => {
-    //     const end = calculateEnd(timeStartAddShowtime, item.duration);
-    //     const condition = await checkAvailableShowtime(end);
-    //     if (condition) {
-    //         const data = {
-    //             movieId: item.id,
-    //             roomId: parseInt(roomChosen),
-    //             startAt: timeStartAddShowtime,
-    //             endAt: end,
-    //         };
-    //         setIsConflict(false);
-    //         setShowtimeData(data);
-    //         setMessageAddShowtime({ isShow: true, text: 'Đã chọn, vui lòng lưu để cập nhật dữ liệu.', success: true, item: item });
-    //     } else {
-    //         setIsConflict(true);
-    //         setShowtimeData({});
-    //         setMessageAddShowtime({ isShow: true, text: 'Bị xung đột thời gian, vui lòng chọn phim hoặc giờ chiếu khác!', success: false, item: item });
-    //     }
-    // }
-
-    async function generateTicket(ticket) {
-        try {
-            const response = await fetch(`http://localhost:8080/tickets/generate-ticket/${ticket.id}?price=50000`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${auth.accessToken}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
+    const checkConflict =  (item) => {
+        const end = calculateEnd(timeStartAddShowtime, item.duration);
+        const condition =  checkAvailableShowtime(end);
+        if (condition) {
+            const data = {
+                movieId: item.id,
+                roomId: roomChosen,
+                startAt: timeStartAddShowtime,
+                endAt: end,
+            };
+            setIsConflict(false);
+            setShowtimeData(data);
+            setMessageAddShowtime({ isShow: true, text: 'Đã chọn, vui lòng lưu để cập nhật dữ liệu.', success: true, item: item });
+        } else {
+            setIsConflict(true);
+            setShowtimeData({});
+            setMessageAddShowtime({ isShow: true, text: 'Bị xung đột thời gian, vui lòng chọn phim hoặc giờ chiếu khác!', success: false, item: item });
         }
     }
 
-    const postShowtime = async () => {
-        try {
-            const response = await fetch('http://localhost:8080/showtimes', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${auth.accessToken}`,
-                },
-                body: JSON.stringify(showtimeData),
-            });
+ 
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const data = await response.json();
-            generateTicket(data);
-            setShowtimeData({});
-            setTimeStartAddShowtime('');
-            setIsConflict(true);
-            setMessageAddShowtime({ isShow: false, text: '', success: false, item: null });
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
-    };
+   
 
     const [showtimeDelete, setShowtimeDelete] = useState({});
     const [messageDeleteShowtime, setMessageDeleteShowtime] = useState({ isShow: false, text: '', success: false });
 
     const editShowtime = (data) => {
         setShowtimeDelete(data);
-        console.log(data)
         handleChangeAction('edit-showtime');
     }
 

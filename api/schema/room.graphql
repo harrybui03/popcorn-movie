@@ -21,12 +21,11 @@ input ListRoomInput {
 input ListAvailableRoomFilter {
     startAt:Time
     endAt:Time
-    showTimeID:ID
+    roomID:ID
 }
 
 input ListAvailableRoomInput {
     filter: ListAvailableRoomFilter
-    pagination: PaginationInput
 }
 
 type ListRoomOutput {
@@ -37,4 +36,8 @@ type ListRoomOutput {
 type ListAvailableRoomOutput {
     data: [Room]!
     pagination: PaginationOutput!
+}
+
+type AvailableRoomOutput{
+    isAvailableRoom:Boolean!
 }

@@ -2,33 +2,37 @@ import React, { useEffect, useState, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import useAuth from "../../hooks/useAuth";
+import { useDeleteMovie } from "./hook/useMutation";
 
 
 function DeleteMovie({ deleteId, setNotification }) {
     const auth = useAuth();
+    const {onDeleteMovie} = useDeleteMovie(setNotification)
 
     const handleDeleteMovie = async () => {
-        try {
-            const response = await fetch(`http://localhost:8080/movies/${deleteId}`, {
-                method: 'Delete',
-                headers: {
-                    'Authorization': `Bearer ${auth.accessToken}`,
-                }
-            });
-            const result = await response.json();
-            if (result.message === 'Delete success fully') {
-                setNotification({ title: 'Thông báo', body: 'Đã xóa phim thành công!', footer: 'OK', status: 'success' });
-                $('#deleteMovie').modal('hide');
-                $('#notification').modal('show');
-            } else {
-                setNotification({ title: 'Thông báo', body: 'Phim đã có lịch chiếu, chỉ có thể xóa phim chưa có lịch chiếu!', footer: 'OK', status: 'danger' });
-                $('#deleteMovie').modal('hide');
-                $('#notification').modal('show');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
-        }
+        onDeleteMovie(deleteId)
+
+        // try {
+        //     const response = await fetch(`http://localhost:8080/movies/${deleteId}`, {
+        //         method: 'Delete',
+        //         headers: {
+        //             'Authorization': `Bearer ${auth.accessToken}`,
+        //         }
+        //     });
+        //     const result = await response.json();
+        //     if (result.message === 'Delete success fully') {
+        //         setNotification({ title: 'Thông báo', body: 'Đã xóa phim thành công!', footer: 'OK', status: 'success' });
+        //         $('#deleteMovie').modal('hide');
+        //         $('#notification').modal('show');
+        //     } else {
+        //         setNotification({ title: 'Thông báo', body: 'Phim đã có lịch chiếu, chỉ có thể xóa phim chưa có lịch chiếu!', footer: 'OK', status: 'danger' });
+        //         $('#deleteMovie').modal('hide');
+        //         $('#notification').modal('show');
+        //     }
+        // } catch (error) {
+        //     console.error('Error:', error);
+        //     throw error;
+        // }
     }
 
     useEffect(() => {
