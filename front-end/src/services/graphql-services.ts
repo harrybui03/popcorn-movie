@@ -1,5 +1,8 @@
 import { GraphQLClient } from 'graphql-request'
 import { getAccessToken, requestMiddleware, responseMiddleware } from '../middlewares/graphql-middleware'
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 interface IbuildQuery {
   operation: string
   node: string
@@ -41,7 +44,8 @@ export const buildQuery = (props: IbuildQuery): IbuildQueryReturn => {
   }
 }
 
-export const graphQLClient = new GraphQLClient('http://localhost:8000/query')
+const reactURL = process.env.REACT_APP_GRAPHQL_URL ?? 'http://localhost:8000/query'
+export const graphQLClient = new GraphQLClient(reactURL)
 
 export const fetchGraphQL = async <T extends object>(
   query: any,
@@ -50,7 +54,7 @@ export const fetchGraphQL = async <T extends object>(
   return await graphQLClient.request(query, variables)
 }
 
-export const graphQLClientWithToken = new GraphQLClient('http://localhost:8000/query', {
+export const graphQLClientWithToken = new GraphQLClient(reactURL, {
   requestMiddleware,
   responseMiddleware,
 })
@@ -65,7 +69,7 @@ export const fetchGraphQLWithToken = async <T extends object>(
 export const fetchUploadFile = async (
   formData:FormData
 ):Promise<Response> => {
-  return await fetch('http://localhost:8000/query', {
+  return await fetch(reactURL, {
     method: 'POST',
     body: formData,
     headers: {
