@@ -98,7 +98,7 @@ func New(entClient *ent.Client, logger *zap.Logger, appConfig config.Configurati
 		movie:       movie.New(repositoryRegistry, logger, appConfig, clouldinary),
 		showTime:    show_time.New(repositoryRegistry, logger, appConfig),
 		seat:        seat.New(repositoryRegistry, logger, appConfig),
-		transaction: transaction.New(repositoryRegistry, logger, appConfig),
+		transaction: transaction.New(repositoryRegistry, logger, appConfig, mailer),
 		ticket:      ticket.New(repositoryRegistry, logger, appConfig),
 	}
 }

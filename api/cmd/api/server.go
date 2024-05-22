@@ -5,7 +5,9 @@ import (
 	"PopcornMovie/config"
 	"PopcornMovie/ent"
 	"PopcornMovie/gateway/payment"
+	"PopcornMovie/gateway/rest"
 	"PopcornMovie/resolver"
+	"PopcornMovie/service"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
@@ -50,7 +52,9 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 				os.Exit(1)
 			}
 			// GraphQL schema resolver handler.
-			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(db, logger, *configs))
+			service := service.New(db, logger, *configs)
+			resolverHandler := handler.NewDefaultServer(resolver.NewExecutableSchema(service, logger))
+			restCall := rest.New(service)
 			// Create a Gin router instance
 			app := gin.Default()
 
@@ -64,6 +68,7 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 			// Define the GraphQL endpoint
 			app.POST("/query", gin.WrapH(resolverHandler))
 
+			app.POST("/verify-hook", restCall.WebHooktype)
 			// Define the GraphQL Playground endpoint
 			app.GET("/", func(c *gin.Context) {
 				playground.Handler("GraphQL", "/query").ServeHTTP(c.Writer, c.Request)

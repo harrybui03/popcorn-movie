@@ -2,8 +2,6 @@ package resolver
 
 import (
 	"PopcornMovie/cmd/middleware"
-	"PopcornMovie/config"
-	"PopcornMovie/ent"
 	generated "PopcornMovie/graphql"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
@@ -23,8 +21,7 @@ type Resolver struct {
 }
 
 // NewExecutableSchema creates an ExecutableSchema instance.
-func NewExecutableSchema(client *ent.Client, logger *zap.Logger, appConfig config.Configurations) graphql.ExecutableSchema {
-	service := service.New(client, logger, appConfig)
+func NewExecutableSchema(service service.Registry, logger *zap.Logger) graphql.ExecutableSchema {
 	config := generated.Config{
 		Resolvers: &Resolver{service: service, logger: logger},
 	}

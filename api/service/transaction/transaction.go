@@ -7,10 +7,12 @@ import (
 	"PopcornMovie/ent/ticket"
 	"PopcornMovie/ent/transaction"
 	"PopcornMovie/ent/user"
+	"PopcornMovie/gateway/email"
 	"PopcornMovie/internal/utils"
 	"PopcornMovie/model"
 	"PopcornMovie/repository"
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/payOSHQ/payos-lib-golang"
 	"go.uber.org/zap"
@@ -28,6 +30,7 @@ type impl struct {
 	repository repository.Registry
 	logger     *zap.Logger
 	appConfig  config.Configurations
+	mailer     email.MailSender
 }
 
 func (i impl) GetRevenue(ctx context.Context, input model.RevenueInput) (*model.YearlyRevenueOutput, error) {
@@ -57,7 +60,7 @@ func (i impl) VerifyPaymentData(ctx context.Context, webhookDataReq payos.Webhoo
 	err := i.repository.DoinTx(ctx, func(ctx context.Context, repo repository.Registry) error {
 		webhookData, err := payos.VerifyPaymentWebhookData(webhookDataReq)
 		orderCode := webhookData.OrderCode
-		transactionRecord, err := repo.Transaction().TransactionQuery().Where(transaction.Code(int(orderCode))).First(ctx)
+		transactionRecord, err := repo.Transaction().TransactionQuery().Where(transaction.Code(int(orderCode))).WithUser().WithTickets().First(ctx)
 		if err != nil {
 			return err
 		}
@@ -66,7 +69,88 @@ func (i impl) VerifyPaymentData(ctx context.Context, webhookDataReq payos.Webhoo
 		if webhookData.Code == "00" {
 			ticketsArray := transactionRecord.QueryTickets().AllX(ctx)
 			for _, ticketRecord := range ticketsArray {
-				ticketRecord.Update().SetIsBooked(true).SetTransactionID(transactionRecord.ID).SaveX(ctx)
+				_, err = ticketRecord.Update().SetIsBooked(true).SetTransactionID(transactionRecord.ID).Save(ctx)
+				if err != nil {
+					return err
+				}
+			}
+			emailContent := fmt.Sprintf(`<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cảm ơn bạn đã mua lựa chọn chúng tôi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #ff6600;
+        }
+        .content {
+            line-height: 1.6;
+        }
+        .order-details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .order-details h3 {
+            margin-top: 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cảm ơn bạn đã mua lựa chọn chúng tôi!</h1>
+        </div>
+        <div class="content">
+            <p>Chào %s,</p>
+            <p>Cảm ơn bạn đã mua hàng tại cửa hàng của chúng tôi. Đơn hàng của bạn đã được xử lý thành công.</p>
+            <p>Lưu ý Tuyệt đối chỉ đưa cho nhân viên tại rạp mã đơn hàng để được lấy vé</p>
+            <div class="order-details">
+                <h3>Thông tin đơn hàng</h3>
+                <p><strong>Mã đơn hàng:</strong> %d</p>
+                <p><strong>Giá tiền:</strong> %d VND</p>
+            </div>
+            <p>Nếu bạn có bất kỳ câu hỏi nào về đơn hàng, vui lòng liên hệ với chúng tôi qua email hoặc số điện thoại hỗ trợ.</p>
+            <p>Trân trọng,<br>Cửa hàng %s</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2024 %s. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`, transactionRecord.Edges.User.Displayname, orderCode, webhookData.Amount, "Popcorn Movie", "Popcorn Movie")
+
+			err := i.mailer.SendMail(transactionRecord.Edges.User.Email, "Cảm ơn quý khách đã đặt vé tại Popcorn Movie", emailContent)
+			if err != nil {
+				return err
 			}
 			transactionRecord.Update().SetStatus(transaction.StatusPAID).SaveX(ctx)
 		} else {
@@ -149,7 +233,7 @@ func (i impl) CreateTransaction(ctx context.Context, input model.CreateTransacti
 			}
 
 			// update ticket
-			//repo.Ticket().TicketUpdate().SetTransactionID(transaction.ID).Where(ticket.ID(ticketRecord.ID)).SaveX(ctx)
+			repo.Ticket().TicketUpdate().SetTransactionID(transaction.ID).Where(ticket.ID(ticketRecord.ID)).SaveX(ctx)
 			total += ticketRecord.Price
 
 			if err != nil {
@@ -237,10 +321,11 @@ func getAllDaysInMonth(year int, month time.Month) []time.Time {
 	return days
 }
 
-func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations) Service {
+func New(repository repository.Registry, logger *zap.Logger, appConfig config.Configurations, mailer email.MailSender) Service {
 	return &impl{
 		repository: repository,
 		logger:     logger,
 		appConfig:  appConfig,
+		mailer:     mailer,
 	}
 }
