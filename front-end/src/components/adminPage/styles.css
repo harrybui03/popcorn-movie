@@ -75,7 +75,7 @@
 /* Manage Users CSS */
 
 #interface {
-    width: calc(100%-300px);
+    /* width: calc(100%-300px); */
     margin-left: 300px;
     overflow-x: hidden;
 }
